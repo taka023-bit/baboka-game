@@ -11,7 +11,17 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
 .field { display:grid; grid-template-columns:50px 70px 70px 70px 50px; grid-template-rows:70px 70px 70px; gap:6px;}
 .enemy { transform:rotate(180deg);}
 .enemy .area { transform:rotate(180deg);}
-.area { border:2px solid #fff; border-radius:8px; display:flex; justify-content:center; align-items:center; flex-wrap:wrap; font-size:9px;}
+.area {
+    border:2px solid #fff;
+    border-radius:8px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    font-size:9px;
+    position: relative;  /* 追加：文字・カード中央揃え統一 */
+    text-align: center;   /* 追加：文字中央 */
+}
 .card { width:40px; height:60px; background:white; color:black; border-radius:6px; font-size:9px; display:flex; justify-content:center; align-items:center; margin:2px;}
 #hand { display:flex; justify-content:center; gap:5px; height:80px; flex-shrink:0; margin-top:5px;}
 .set-top { grid-column:1; grid-row:1; background:purple; }
