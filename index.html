@@ -76,6 +76,149 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
         <div class="area serve">サーブ</div>
         <div class="area event">イベント</div>
     </div>
-</div><div id="hand"></div></div>
-</body>
+</div><div id="hand"></div></div><script>
+// ===== ゲームロジック =====
+let gameState = {
+    deck: [],
+    hand: {player:[], enemy:[]},
+    mulliganSelected: [],
+    phase: null,
+    turnPlayer: null
+};
+
+// デッキ生成
+for(let i=1;i<=40;i++){
+    gameState.deck.push({name:"キャラ"+i});
+}
+
+// シャッフル
+function shuffle(deck){
+    for(let i=deck.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [deck[i],deck[j]]=[deck[j],deck[i]];
+    }
+}
+shuffle(gameState.deck);
+
+// デッキ表示
+function updateDeck(){
+    document.querySelectorAll('.deck').forEach(d=>{
+        d.innerText = "デッキ
+"+gameState.deck.length;
+    });
+}
+
+// カード生成
+function createCard(card){
+    const div=document.createElement('div');
+    div.className='card';
+    div.innerText=card.name;
+
+    div.onclick=()=>{
+        if(gameState.phase===null){
+            div.style.border = div.style.border?"":"2px solid red";
+            if(gameState.mulliganSelected.includes(card)){
+                gameState.mulliganSelected = gameState.mulliganSelected.filter(c=>c!==card);
+            }else{
+                gameState.mulliganSelected.push(card);
+            }
+        }
+    };
+
+    document.getElementById('hand').appendChild(div);
+}
+
+// ドロー
+function draw(owner){
+    if(gameState.deck.length===0) return;
+    const c=gameState.deck.shift();
+    gameState.hand[owner].push(c);
+    if(owner==='player') createCard(c);
+    updateDeck();
+}
+
+// マリガン
+function showMulligan(){
+    const ui=document.getElementById('setUpUI');
+    ui.innerHTML='戻すカード選択 → 確定';
+
+    const btn=document.createElement('button');
+    btn.innerText='確定';
+    btn.onclick=()=>{
+        gameState.mulliganSelected.forEach(c=>{
+            gameState.hand.player = gameState.hand.player.filter(x=>x!==c);
+            gameState.deck.push(c);
+        });
+
+        shuffle(gameState.deck);
+
+        let n=gameState.mulliganSelected.length;
+        for(let i=0;i<n;i++) draw('player');
+
+        ui.innerHTML='';
+        startDice();
+    };
+
+    ui.appendChild(btn);
+}
+
+// サイコロ
+function startDice(){
+    const ui=document.getElementById('setUpUI');
+    ui.innerHTML='サイコロで先攻決定';
+
+    const btn=document.createElement('button');
+    btn.innerText='振る';
+
+    btn.onclick=()=>{
+        const p=Math.floor(Math.random()*6)+1;
+        const e=Math.floor(Math.random()*6)+1;
+
+        alert(`あなた:${p} CPU:${e}`);
+
+        const winner = (p>=e)?'player':'enemy';
+
+        if(winner==='player'){
+            ui.innerHTML='選択';
+
+            const s=document.createElement('button');
+            s.innerText='サーブ';
+            s.onclick=()=>startServe('player');
+
+            const r=document.createElement('button');
+            r.innerText='レシーブ';
+            r.onclick=()=>startServe('enemy');
+
+            ui.appendChild(s);
+            ui.appendChild(r);
+        }else{
+            const cpuChoice = Math.random()>0.5?'player':'enemy';
+            startServe(cpuChoice);
+        }
+    };
+
+    ui.appendChild(btn);
+}
+
+// サーブ開始
+function startServe(server){
+    gameState.turnPlayer=server;
+    gameState.phase='serve';
+
+    document.getElementById('phaseDisplay').innerText =
+        'フェイズ: サーブ（'+server+'）';
+
+    document.getElementById('setUpUI').innerHTML='';
+}
+
+// 初期処理
+function startGame(){
+    for(let i=0;i<6;i++) draw('player');
+    for(let i=0;i<6;i++) draw('enemy');
+    updateDeck();
+    showMulligan();
+}
+
+startGame();
+</script></body>
 </html>
