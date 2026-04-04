@@ -12,10 +12,10 @@ color:white;
 font-family:sans-serif;
 }
 
-/* フィールド */
+/* フィールド（←ここ絶対変更なし） */
 .field{
 display:grid;
-grid-template-columns:repeat(3,1fr);
+grid-template-columns:repeat(5,1fr);
 gap:8px;
 padding:10px;
 }
@@ -84,20 +84,26 @@ padding:10px;
 
 <!-- 相手 -->
 <div class="field" id="enemy">
+<div></div>
 <div class="area receive"><div class="label">レシーブ</div></div>
 <div class="area toss"><div class="label">トス</div></div>
 <div class="area attack"><div class="label">アタック</div></div>
+<div></div>
 </div>
 
 <!-- 自分 -->
 <div class="field" id="player">
+<div></div>
 <div class="area receive"><div class="label">レシーブ</div></div>
 <div class="area toss"><div class="label">トス</div></div>
 <div class="area attack"><div class="label">アタック</div></div>
+<div></div>
 
+<div></div>
 <div></div>
 <div class="area serve"><div class="label">サーブ</div></div>
 <div class="area event"><div class="label">イベント</div></div>
+<div></div>
 </div>
 
 <div id="hand"></div>
