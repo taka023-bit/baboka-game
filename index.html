@@ -15,50 +15,29 @@ font-family:sans-serif;
 .field{
 display:grid;
 grid-template-columns:repeat(5,1fr);
+grid-template-rows:repeat(3,80px);
 gap:8px;
 padding:10px;
 }
 
-.area{
-border:2px solid white;
-border-radius:8px;
-min-height:70px;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:flex-start;
-padding:3px;
-position:relative;
-}
+/* 配置（←これが重要） */
+.set-top { grid-column:1; grid-row:1; background:purple; }
+.side-l { grid-column:2; grid-row:1; background:#ccc; color:black;}
+.center { grid-column:3; grid-row:1; background:#666;}
+.side-r { grid-column:4; grid-row:1; background:#ccc; color:black;}
+.deck { grid-column:5; grid-row:1; background:orange; color:black;}
 
-.label{
-position:absolute;
-top:2px;
-left:4px;
-font-size:10px;
-opacity:0.7;
-pointer-events:none;
-}
+.receive { grid-column:2; grid-row:2; background:blue;}
+.toss { grid-column:3; grid-row:2; background:green;}
+.attack { grid-column:4; grid-row:2; background:red;}
+.drop { grid-column:5; grid-row:2; background:orange; color:black;}
 
-.receive{background:#2563eb;}
-.toss{background:#16a34a;}
-.attack{background:#dc2626;}
-.block{background:#7c3aed;} /* ←復活 */
-.serve{background:#facc15;color:black;}
-.event{background:#e5e7eb;color:black;}
+.set-bottom { grid-column:1; grid-row:3; background:purple;}
 
-.card{
-background:white;
-color:black;
-width:40px;
-height:55px;
-margin-top:14px;
-font-size:9px;
-display:flex;
-align-items:center;
-justify-content:center;
-cursor:pointer;
-}
+.serve { grid-column:2 / span 2; grid-row:3; background:yellow; color:black;}
+.event { grid-column:4 / span 2; grid-row:3; background:white; color:black;}
+
+
 
 #hand{
 display:flex;
