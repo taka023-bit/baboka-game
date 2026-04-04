@@ -32,6 +32,10 @@ html, body {
     gap:6px;
 }
 
+.enemy {
+    transform:rotate(180deg);
+}
+
 .area {
     border:2px solid #fff;
     border-radius:8px;
@@ -64,7 +68,7 @@ html, body {
 <body><div class="container"><div class="field-wrapper">
     <div class="field" id="playerField"></div>
 </div><div class="field-wrapper">
-    <div class="field" id="cpuField"></div>
+    <div class="field enemy" id="cpuField"></div>
 </div><script>
 function renderField(id){
     const field=document.getElementById(id);
