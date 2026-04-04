@@ -2,31 +2,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>バボカBREAK CPU対戦 完全版</title><style>
-html, body {
-    margin:0; padding:0; overflow:hidden;
-    background:#1a1a1a; color:white; font-family:sans-serif;
-}
-.container {
-    display:flex; flex-direction:column; height:100dvh; justify-content:space-between;
-}
-.field-wrapper {
-    display:flex; justify-content:center; align-items:center;
-}
-.field {
-    display:grid;
-    grid-template-columns:50px 70px 70px 70px 50px;
-    grid-template-rows:70px 70px 70px;
-    gap:6px;
-}
+<title>バボカBREAK CPU対戦</title>
+<style>
+html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:white; font-family:sans-serif; }
+.container { display:flex; flex-direction:column; height:100dvh; }
+.field-wrapper { display:flex; justify-content:center; align-items:center; flex:1; margin:10px 0; }
+.field { display:grid; grid-template-columns:50px 70px 70px 70px 50px; grid-template-rows:70px 70px 70px; gap:6px; }
 .enemy { transform:rotate(180deg); }
 .enemy .area { transform:rotate(180deg); }
-.area {
-    border:2px solid #fff; border-radius:8px;
-    display:flex; justify-content:center; align-items:center;
-    flex-wrap:wrap; font-size:9px; position:relative; text-align:center;
-}
-/* ===== 配置（絶対変更不可） ===== */
+.area { border:2px solid #fff; border-radius:8px; display:flex; justify-content:center; align-items:center; flex-wrap:wrap; font-size:9px; position:relative; text-align:center; }
 .set-top { grid-column:1; grid-row:1; background:purple; }
 .side-l { grid-column:2; grid-row:1; background:#ccc; color:black; }
 .center { grid-column:3; grid-row:1; background:#666; }
@@ -39,65 +23,44 @@ html, body {
 .set-bottom { grid-column:1; grid-row:3; background:purple; }
 .serve { grid-column:3; grid-row:3; background:yellow; color:black; }
 .event { grid-column:4; grid-row:3; background:white; color:black; }
-.card {
-    width:40px; height:60px; background:white; color:black; border-radius:6px;
-    font-size:9px; display:flex; justify-content:center; align-items:center;
-    margin:2px; cursor:pointer;
-}
-#cpuHand, #hand {
-    display:flex; justify-content:center; gap:5px; flex-shrink:0; margin:5px;
-}
-#cpuHand .card { background:gray; color:transparent; }
-#hand .card.selected { border:2px solid yellow; }
-.card-detail {
-    position:absolute; top:-150px; left:0; width:150px;
-    background:#333; border:1px solid #fff; border-radius:6px; padding:4px;
-    display:none; font-size:10px; z-index:10;
-}
-#deckCount { text-align:center; margin:5px; }
+.card { width:40px; height:60px; background:white; color:black; border-radius:6px; font-size:9px; display:flex; justify-content:center; align-items:center; margin:2px; cursor:pointer; }
+#hand, #cpuHand { display:flex; justify-content:center; gap:5px; height:80px; flex-shrink:0; margin:5px; }
 #setUpUI { text-align:center; margin:5px; }
 button { padding:4px 8px; margin:2px; font-size:12px; }
-</style></head>
+.card-detail { position:absolute; top:-150px; left:0; width:150px; background:#333; border:1px solid #fff; border-radius:6px; padding:4px; display:none; font-size:10px; z-index:10; }
+#deckCount { text-align:center; margin:5px; }
+</style>
+</head>
 <body>
 <div class="container">
 <div id="phaseDisplay" style="text-align:center; margin:5px;">フェイズ: ゲーム開始前</div>
 <div id="deckCount">デッキ40</div>
 <div id="setUpUI"></div>
-<!-- CPU手札 -->
 <div id="cpuHand"></div>
-<!-- CPUフィールド -->
 <div class="field-wrapper"><div class="field enemy" id="cpuField"></div></div>
-<!-- プレイヤーフィールド -->
 <div class="field-wrapper"><div class="field" id="playerField"></div></div>
-<!-- プレイヤー手札 -->
 <div id="hand"></div>
 </div>
 <script>
-const allCards=[
-    // キャラクターカード
-    {name:'キャラ1', serve:-1, block:-1, receive:6, toss:0, attack:0},
-    {name:'キャラ2', serve:-1, block:-1, receive:6, toss:0, attack:0},
-    {name:'キャラ3', serve:-1, block:-1, receive:6, toss:0, attack:0},
-    {name:'キャラ4', serve:-1, block:-1, receive:6, toss:0, attack:0},
-    {name:'キャラ5', serve:-1, block:-1, receive:6, toss:0, attack:0},
-    {name:'キャラ6', serve:-1, block:-1, receive:6, toss:0, attack:0},
-    {name:'キャラ7', serve:-1, block:-1, receive:6, toss:0, attack:0},
-    {name:'キャラ8', serve:-1, block:-1, receive:5, toss:0, attack:0, skill:'登場・レシーブエリア:2ガッツでレシーブ+1カード1枚引く'},
-    {name:'キャラ9', serve:-1, block:-1, receive:5, toss:0, attack:0, skill:'登場・レシーブエリア:2ガッツでレシーブ+1カード1枚引く'},
-    {name:'キャラ10', serve:-1, block:-1, receive:5, toss:0, attack:0, skill:'登場・レシーブエリア:2ガッツでレシーブ+1カード1枚引く'},
-    {name:'キャラ11', serve:-1, block:-1, receive:5, toss:0, attack:0, skill:'登場・レシーブエリア:2ガッツでレシーブ+1カード1枚引く'}
-    // ここに残りキャラクター・イベントカードを追加
-];let gameState={phase:'gameBefore', deck:[], hand:[], cpuHand:[], selectedCard:null};
+let gameState = { phase:'gameBefore', turnPlayer:null, deck:{player:[],cpu:[]}, hand:{player:[],cpu:[]}, mulliganSelected:[] };// --- キャラクター・イベントカード設定 --- const cards = []; // キャラクターカード例 cards.push({name:'キャラA',serve:'-',block:'-',receive:6,toss:0,attack:0}); cards.push({name:'キャラB',serve:'-',block:'-',receive:5,toss:0,attack:0,skill:'【登場・レシーブエリア】2ガッツでレシーブ+1,カード1枚引く'}); cards.push({name:'キャラC',serve:2,block:1,receive:1,toss:2,attack:3}); cards.push({name:'キャラD',serve:2,block:2,receive:3,toss:1,attack:1,skill:'【登場・トスエリア】2ガッツでカード1枚引き,トス+1'}); cards.push({name:'キャラE',serve:3,block:2,receive:4,toss:0,attack:3}); cards.push({name:'キャラF',serve:2,block:3,receive:5,toss:0,attack:3}); cards.push({name:'キャラG',serve:2,block:2,receive:2,toss:0,attack:2,skill:'【登場・アタックエリア】2ガッツでこのキャラのアタック+2'}); cards.push({name:'キャラH',serve:1,block:3,receive:3,toss:0,attack:2,skill:'【登場・ブロックエリア】1ガッツでブロック成功時ドシャット5'}); // イベントカード cards.push({name:'繋げ！',phase:'レシーブ',skill:'カード1枚引き,レシーブ+1'}); cards.push({name:'王様だ！',phase:'トス',skill:'カード1枚引き,トス+1'}); cards.push({name:'見えた！',phase:'アタック',skill:'カード1枚引き,アタック+1'}); cards.push({name:'がんばれ',phase:'ドロー',skill:'ドロップエリアから2枚まで手札に加える'}); cards.push({name:'これがバレー!',phase:'レシーブ・トス・アタック',skill:'カード1枚引き,パラメータ1つに+1'});
 
-function shuffle(array){for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[array[i],array[j]]=[array[j],array[i]];}}
+function shuffle(deck){for(let i=deck.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}}
 
-function renderField(id){const field=document.getElementById(id);field.innerHTML=''; ['set-top','side-l','center','side-r','deck','receive','toss','attack','drop','set-bottom','serve','event'].forEach(a=>{ const div=document.createElement('div');div.className='area '+a;div.innerText=a;field.appendChild(div);});}
+function initDecks(){gameState.deck.player=[...cards]; gameState.deck.cpu=[...cards]; shuffle(gameState.deck.player); shuffle(gameState.deck.cpu);}
 
-function renderHand(){const handDiv=document.getElementById('hand');handDiv.innerHTML=''; gameState.hand.forEach(card=>{ const div=document.createElement('div');div.className='card';div.innerText=card.name; div.onclick=()=>{ if(gameState.selectedCard===card){gameState.selectedCard=null;div.classList.remove('selected');} else { gameState.selectedCard=card;div.classList.add('selected');}} handDiv.appendChild(div);}); }
+function updateDeckCount(){document.getElementById('deckCount').innerText='デッキ'+gameState.deck.player.length;}
 
-function renderCpuHand(){const cpuDiv=document.getElementById('cpuHand');cpuDiv.innerHTML=''; gameState.cpuHand.forEach(card=>{ const div=document.createElement('div');div.className='card';cpuDiv.appendChild(div);});}
+function renderHand(){const handDiv=document.getElementById('hand'); handDiv.innerHTML=''; gameState.hand.player.forEach(card=>{ const div=document.createElement('div'); div.className='card'; div.innerText=card.name; let selected=false; div.onclick=()=>{selected=!selected; if(selected){div.style.border='2px solid yellow'; alert(card.name+'\nサーブ:'+card.serve+',ブロック:'+card.block+',レシーブ:'+card.receive+',トス:'+card.toss+',アタック:'+card.attack+(card.skill?'\nスキル:'+card.skill:''));}else{div.style.border='';}}; handDiv.appendChild(div);});
 
-function startGame(){ shuffle(allCards); gameState.deck=allCards.slice(); gameState.hand=gameState.deck.splice(0,6); gameState.cpuHand=gameState.deck.splice(0,6); renderField('playerField'); renderField('cpuField'); renderHand(); renderCpuHand(); document.getElementById('deckCount').innerText='デッキ'+gameState.deck.length; }
+const cpuDiv=document.getElementById('cpuHand'); cpuDiv.innerHTML=''; gameState.hand.cpu.forEach(card=>{ const div=document.createElement('div'); div.className='card'; div.style.background='gray'; div.style.color='gray'; div.innerText=''; cpuDiv.appendChild(div);});}
+
+function renderField(id){const field=document.getElementById(id); field.innerHTML=''; ['set-top','side-l','center','side-r','deck','receive','toss','attack','drop','set-bottom','serve','event'].forEach(a=>{const div=document.createElement('div'); div.className='area '+a; div.innerText=a; field.appendChild(div);});}
+
+function confirmMulligan(){gameState.mulliganSelected.forEach(card=>{gameState.deck.player.push(card); gameState.hand.player=gameState.hand.player.filter(c=>c!==card);}); shuffle(gameState.deck.player); while(gameState.hand.player.length<6){gameState.hand.player.push(gameState.deck.player.shift());} renderHand(); document.getElementById('setUpUI').innerText='マリガン完了'; updateDeckCount(); setTimeout(startDiceRoll,500);}
+
+function startDiceRoll(){const ui=document.getElementById('setUpUI'); ui.innerHTML='サイコロを振る'; const btn=document.createElement('button'); btn.innerText='振る'; btn.onclick=()=>{const p=Math.floor(Math.random()*6)+1; const c=Math.floor(Math.random()*6)+1; alert('あなた:'+p+' CPU:'+c); if(p===c){alert('同点 再振り'); return;} gameState.turnPlayer=p>c?'player':'cpu'; alert(gameState.turnPlayer+'先攻'); ui.innerHTML=''; gameState.phase='serve'; updateDeckCount();}; ui.appendChild(btn);}
+
+function startGame(){initDecks(); for(let i=0;i<6;i++){gameState.hand.player.push(gameState.deck.player.shift()); gameState.hand.cpu.push(gameState.deck.cpu.shift());} renderField('playerField'); renderField('cpuField'); renderHand(); const ui=document.getElementById('setUpUI'); ui.innerHTML='マリガンして確定'; const btn=document.createElement('button'); btn.innerText='確定'; btn.onclick=confirmMulligan; ui.appendChild(btn);}
 
 startGame(); </script>
 
