@@ -57,15 +57,20 @@ let gameState = {
     mulliganSelected: [],
     field: {player: {}, cpu: {}},
     diceRolls: {player:0, cpu:0}
-};// ----- キャラクター作成 ----- function createCharacters(){ let names = ['太郎','花子','一郎','二郎','三郎','四郎','五郎','六郎','七郎','八郎']; let chars = []; for(let i=1;i<=40;i++){ let name = names[i%10]+i; chars.push({name:name,serve:Math.floor(Math.random()*3),block:Math.floor(Math.random()*3),receive:Math.floor(Math.random()*6),toss:Math.floor(Math.random()*3),attack:Math.floor(Math.random()*4),skill:[]}); } return chars; }
+};// ----- キャラクター作成 -----
+    function createCharacters(){ let names = ['太郎','花子','一郎','二郎','三郎','四郎','五郎','六郎','七郎','八郎']; let chars = []; for(let i=1;i<=40;i++){ let name = names[i%10]+i; chars.push({name:name,serve:Math.floor(Math.random()*3),block:Math.floor(Math.random()*3),receive:Math.floor(Math.random()*6),toss:Math.floor(Math.random()*3),attack:Math.floor(Math.random()*4),skill:[]}); } return chars; }
 
-// ----- シャッフル ----- function shuffle(deck){ for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } }
+// ----- シャッフル -----
+    function shuffle(deck){ for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } }
 
-// ----- デッキ初期化 ----- function initDecks(){ gameState.deck.player=createCharacters(); gameState.deck.cpu=createCharacters(); shuffle(gameState.deck.player); shuffle(gameState.deck.cpu); }
+// ----- デッキ初期化 -----
+    function initDecks(){ gameState.deck.player=createCharacters(); gameState.deck.cpu=createCharacters(); shuffle(gameState.deck.player); shuffle(gameState.deck.cpu); }
 
-// ----- デッキ残数表示 ----- function updateDeckCount(){ document.getElementById('deckCount').innerText = あなた: ${gameState.deck.player.length} CPU: ${gameState.deck.cpu.length}; }
+// ----- デッキ残数表示 -----
+    function updateDeckCount(){ document.getElementById('deckCount').innerText = あなた: ${gameState.deck.player.length} CPU: ${gameState.deck.cpu.length}; }
 
-// ----- 手札描画 ----- function createCardElement(card, owner, back=false){ const div=document.createElement('div'); div.classList.add('card'); div.innerText=back? '裏' : card.name; div.dataset.name=card.name; div.dataset.owner=owner; div.onmouseover=()=>showCardDetail(div,card); div.onmouseout=()=>hideCardDetail(div); if(!back){ div.onclick=()=>toggleMulligan(card,div); } if(owner==='player') document.getElementById('hand').appendChild(div); else document.getElementById('cpuHand').appendChild(div); }
+// ----- 手札描画 -----
+    function createCardElement(card, owner, back=false){ const div=document.createElement('div'); div.classList.add('card'); div.innerText=back? '裏' : card.name; div.dataset.name=card.name; div.dataset.owner=owner; div.onmouseover=()=>showCardDetail(div,card); div.onmouseout=()=>hideCardDetail(div); if(!back){ div.onclick=()=>toggleMulligan(card,div); } if(owner==='player') document.getElementById('hand').appendChild(div); else document.getElementById('cpuHand').appendChild(div); }
 
 function showCardDetail(div,card){ let detail=div.querySelector('.card-detail'); if(!detail){ detail=document.createElement('div'); detail.classList.add('card-detail'); detail.innerHTML=Serve:${card.serve} Block:${card.block} Receive:${card.receive} Toss:${card.toss} Attack:${card.attack}; div.appendChild(detail); } detail.style.display='block'; } function hideCardDetail(div){ const detail=div.querySelector('.card-detail'); if(detail) detail.style.display='none'; }
 
