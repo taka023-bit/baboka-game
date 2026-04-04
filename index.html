@@ -9,32 +9,37 @@
 html, body {
     margin: 0;
     padding: 0;
-    overflow: hidden; /* スクロール禁止 */
+    overflow: hidden;
     background: #1a1a1a;
     color: white;
     font-family: sans-serif;
 }
 
-/* 全体レイアウト（上下2画面） */
+/* 高さを安定させる */
 .container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 100dvh; /* ← ここ重要（vhの代わり） */
 }
 
-/* フィールド共通 */
+/* フィールド */
 .field {
     display: grid;
-    grid-template-columns: 60px 80px 80px 80px 60px;
-    grid-template-rows: 80px 80px 80px;
-    gap: 5px;
+    grid-template-columns: 50px 70px 70px 70px 50px;
+    grid-template-rows: 70px 70px 70px;
+    gap: 4px;
     justify-content: center;
     align-content: center;
     flex: 1;
 }
 
-/* 相手フィールド（上下反転） */
+/* 相手フィールド */
 .enemy {
+    transform: rotate(180deg);
+}
+
+/* 文字は元に戻す */
+.enemy .area {
     transform: rotate(180deg);
 }
 
@@ -46,57 +51,52 @@ html, body {
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    font-size: 10px;
+    font-size: 9px;
 }
 
 /* カード */
 .card {
-    width: 45px;
-    height: 70px;
+    width: 40px;
+    height: 60px;
     background: white;
     color: black;
     border-radius: 6px;
-    font-size: 10px;
+    font-size: 9px;
     display: flex;
     justify-content: center;
     align-items: center;
     margin: 2px;
 }
 
-/* 手札 */
+/* 手札（高さ固定） */
 #hand {
     display: flex;
     justify-content: center;
     gap: 5px;
-    padding: 5px;
+    height: 70px;
+    flex-shrink: 0;
 }
 
-/* ===== 配置（共通） ===== */
+/* ===== 配置 ===== */
 
-/* 上段 */
 .set-top { grid-column:1; grid-row:1; background:purple; }
 .side-l { grid-column:2; grid-row:1; background:#ccc; color:black;}
 .center { grid-column:3; grid-row:1; background:#666;}
 .side-r { grid-column:4; grid-row:1; background:#ccc; color:black;}
-
 .deck { grid-column:5; grid-row:1; background:orange; color:black;}
-.drop { grid-column:5; grid-row:2; background:orange; color:black;}
 
-/* 中段 */
 .receive { grid-column:2; grid-row:2; background:blue;}
 .toss { grid-column:3; grid-row:2; background:green;}
 .attack { grid-column:4; grid-row:2; background:red;}
+.drop { grid-column:5; grid-row:2; background:orange; color:black;}
 
-/* 下段 */
 .set-bottom { grid-column:1; grid-row:3; background:purple;}
-
 .serve {
     grid-column:2 / span 2;
     grid-row:3;
     background:yellow;
     color:black;
 }
-
 .event {
     grid-column:4 / span 2;
     grid-row:3;
@@ -110,9 +110,8 @@ html, body {
 
 <div class="container">
 
-    <!-- 相手フィールド -->
+    <!-- 相手 -->
     <div class="field enemy">
-
         <div class="area set-top">セット</div>
         <div class="area side-l">サイド</div>
         <div class="area center">センター</div>
@@ -127,12 +126,10 @@ html, body {
         <div class="area set-bottom">セット</div>
         <div class="area serve">サーブ</div>
         <div class="area event">イベント</div>
-
     </div>
 
-    <!-- 自分フィールド -->
+    <!-- 自分 -->
     <div class="field">
-
         <div class="area set-top">セット</div>
         <div class="area side-l">サイド</div>
         <div class="area center">センター</div>
@@ -147,7 +144,6 @@ html, body {
         <div class="area set-bottom">セット</div>
         <div class="area serve">サーブ</div>
         <div class="area event">イベント</div>
-
     </div>
 
     <!-- 手札 -->
@@ -168,6 +164,11 @@ function createCard(){
     };
 
     document.getElementById("hand").appendChild(card);
+}
+
+/* 最初に3枚出す */
+for(let i=0;i<3;i++){
+    createCard();
 }
 
 document.querySelectorAll(".area").forEach(area=>{
