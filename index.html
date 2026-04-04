@@ -97,7 +97,13 @@ let gameState = {
     hand:{player:[], cpu:[]},
     mulliganSelected:[],
     cpuHidden:true
-};// キャラクターとイベントカードのデータを作成 function createCards(){ const cards=[]; // 例：キャラクターカード（簡略化） cards.push({name:'キャラA', serve:'-', block:'-', receive:6, toss:0, attack:0}); cards.push({name:'キャラB', serve:'-', block:'-', receive:5, toss:0, attack:0, skill:'登場・レシーブエリア:2ガッツでレシーブ+1,カード1枚引く'}); cards.push({name:'キャラC', serve:2, block:1, receive:1, toss:2, attack:3}); cards.push({name:'キャラD', serve:2, block:2, receive:3, toss:1, attack:1, skill:'登場・トスエリア:2ガッツでカード1枚引き,トス+1'}); cards.push({name:'キャラE', serve:3, block:2, receive:4, toss:0, attack:3}); cards.push({name:'キャラF', serve:2, block:3, receive:5, toss:0, attack:3}); cards.push({name:'キャラG', serve:2, block:2, receive:2, toss:0, attack:2, skill:'登場・アタックエリア:2ガッツでアタック+2'}); cards.push({name:'キャラH', serve:1, block:3, receive:3, toss:0, attack:2, skill:'登場・ブロックエリア:1ガッツでターン中ブロック成功時ドシャット5'}); // イベントカード cards.push({name:'繋げ！', phase:'レシーブ', effect:'カード1枚引き,レシーブ+1'}); cards.push({name:'王様だ！', phase:'トス', effect:'カード1枚引き,トス+1'}); cards.push({name:'見えた！', phase:'アタック', effect:'カード1枚引き,アタック+1'}); cards.push({name:'がんばれ', phase:'ドロー', effect:'ドロップエリアから2枚まで手札に加える'}); cards.push({name:'これがバレー！', phase:'レシーブ・トス・アタック', effect:'カード1枚引き,任意のパラメータ+1'}); return cards; }
+};
+// キャラクターとイベントカードのデータを作成 　
+function createCards(){ const cards=[];
+// 例：キャラクターカード（簡略化）
+cards.push({name:'キャラA', serve:'-', block:'-', receive:6, toss:0, attack:0}); cards.push({name:'キャラB', serve:'-', block:'-', receive:5, toss:0, attack:0, skill:'登場・レシーブエリア:2ガッツでレシーブ+1,カード1枚引く'}); cards.push({name:'キャラC', serve:2, block:1, receive:1, toss:2, attack:3}); cards.push({name:'キャラD', serve:2, block:2, receive:3, toss:1, attack:1, skill:'登場・トスエリア:2ガッツでカード1枚引き,トス+1'}); cards.push({name:'キャラE', serve:3, block:2, receive:4, toss:0, attack:3}); cards.push({name:'キャラF', serve:2, block:3, receive:5, toss:0, attack:3}); cards.push({name:'キャラG', serve:2, block:2, receive:2, toss:0, attack:2, skill:'登場・アタックエリア:2ガッツでアタック+2'}); cards.push({name:'キャラH', serve:1, block:3, receive:3, toss:0, attack:2, skill:'登場・ブロックエリア:1ガッツでターン中ブロック成功時ドシャット5'});
+// イベントカード
+cards.push({name:'繋げ！', phase:'レシーブ', effect:'カード1枚引き,レシーブ+1'}); cards.push({name:'王様だ！', phase:'トス', effect:'カード1枚引き,トス+1'}); cards.push({name:'見えた！', phase:'アタック', effect:'カード1枚引き,アタック+1'}); cards.push({name:'がんばれ', phase:'ドロー', effect:'ドロップエリアから2枚まで手札に加える'}); cards.push({name:'これがバレー！', phase:'レシーブ・トス・アタック', effect:'カード1枚引き,任意のパラメータ+1'}); return cards; }
 
 function shuffle(array){ for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [array[i],array[j]]=[array[j],array[i]]; } }
 
