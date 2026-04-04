@@ -1,52 +1,85 @@
 <!DOCTYPE html>
-<html lang="ja"><head>
+<html lang="ja">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>バボカBREAK CPU対戦</title>
 <style>
 html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:white; font-family:sans-serif;}
 .container { display:flex; flex-direction:column; height:100dvh;}
-.field-wrapper { display:flex; justify-content:center; align-items:center; flex:1;}
-.field { display:grid; grid-template-columns:50px 70px 70px 70px 50px; grid-template-rows:70px 70px 70px; gap:6px;}
-.enemy { transform:rotate(180deg);}
-.enemy .area { transform:rotate(180deg);}
+
+/* ===== フィールド見た目（絶対変更しない）===== */
+
+.field-wrapper {
+display: flex;
+justify-content: center;
+align-items: center;
+flex: 1;
+}
+
+.field {
+display: grid;
+grid-template-columns: 50px 70px 70px 70px 50px;
+grid-template-rows: 70px 70px 70px;
+gap: 6px;
+}
+
+/* 相手反転 */
+.enemy {
+transform: rotate(180deg);
+}
+
+.enemy .area {
+transform: rotate(180deg);
+}
+
+/* エリア共通 */
 .area {
-    border:2px solid #fff;
-    border-radius:8px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    flex-wrap:wrap;
-    font-size:9px;
-    position: relative;
-    text-align:center;
-}/* ===== フィールド見た目（絶対変更しない）===== */
-
-.field-wrapper { display: flex; justify-content: center; align-items: center; flex: 1; }
-
-.field { display: grid; grid-template-columns: 50px 70px 70px 70px 50px; grid-template-rows: 70px 70px 70px; gap: 6px; }
-
-/* 相手反転 */ .enemy { transform: rotate(180deg); }
-
-.enemy .area { transform: rotate(180deg); }
-
-/* エリア共通 */ .area { border: 2px solid #fff; border-radius: 8px; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; font-size: 9px; position: relative; text-align: center; }
+border: 2px solid #fff;
+border-radius: 8px;
+display: flex;
+justify-content: center;
+align-items: center;
+flex-wrap: wrap;
+font-size: 9px;
+position: relative;
+text-align: center;
+}
 
 /* ===== 配置 ===== */
 
-/* 上段 */ .set-top { grid-column:1; grid-row:1; background:purple; } .side-l { grid-column:2; grid-row:1; background:#ccc; color:black;} .center { grid-column:3; grid-row:1; background:#666;} .side-r { grid-column:4; grid-row:1; background:#ccc; color:black;} .deck { grid-column:5; grid-row:1; background:orange; color:black;}
+/* 上段 */
+.set-top { grid-column:1; grid-row:1; background:purple; }
+.side-l { grid-column:2; grid-row:1; background:#ccc; color:black;}
+.center { grid-column:3; grid-row:1; background:#666;}
+.side-r { grid-column:4; grid-row:1; background:#ccc; color:black;}
+.deck { grid-column:5; grid-row:1; background:orange; color:black;}
 
-/* 中段 */ .receive { grid-column:2; grid-row:2; background:blue;} .toss { grid-column:3; grid-row:2; background:green;} .attack { grid-column:4; grid-row:2; background:red;} .drop { grid-column:5; grid-row:2; background:orange; color:black;}
+/* 中段 */
+.receive { grid-column:2; grid-row:2; background:blue;}
+.toss { grid-column:3; grid-row:2; background:green;}
+.attack { grid-column:4; grid-row:2; background:red;}
+.drop { grid-column:5; grid-row:2; background:orange; color:black;}
 
-/* 下段 */ .set-bottom { grid-column:1; grid-row:3; background:purple;} .serve { grid-column:3; grid-row:3; background:yellow; color:black;} .event { grid-column:4; grid-row:3; background:white; color:black;}
+/* 下段 */
+.set-bottom { grid-column:1; grid-row:3; background:purple;}
+.serve { grid-column:3; grid-row:3; background:yellow; color:black;}
+.event { grid-column:4; grid-row:3; background:white; color:black;}
 
-.card { width:40px; height:60px; background:white; color:black; border-radius:6px; font-size:9px; display:flex; justify-content:center; align-items:center; margin:2px; cursor:pointer;} #hand { display:flex; justify-content:center; gap:5px; height:80px; flex-shrink:0; margin-top:5px;} #setUpUI { text-align:center; margin:5px;} button { padding:4px 8px; margin:2px; font-size:12px;} .card-detail { position:absolute; top:-150px; left:0; width:150px; background:#333; border:1px solid #fff; border-radius:6px; padding:4px; display:none; font-size:10px; z-index:10;} </style>
-
+/* UI */
+.card { width:40px; height:60px; background:white; color:black; border-radius:6px; font-size:9px; display:flex; justify-content:center; align-items:center; margin:2px; cursor:pointer;}
+#hand { display:flex; justify-content:center; gap:5px; height:80px; flex-shrink:0; margin-top:5px;}
+#setUpUI { text-align:center; margin:5px;}
+button { padding:4px 8px; margin:2px; font-size:12px;}
+.card-detail { position:absolute; top:-150px; left:0; width:150px; background:#333; border:1px solid #fff; border-radius:6px; padding:4px; display:none; font-size:10px; z-index:10;}
+</style>
 </head>
 <body>
 <div class="container">
     <div id="phaseDisplay" style="text-align:center; margin:5px;">フェイズ: サーブ前</div>
-    <div id="setUpUI"></div><div class="field-wrapper">
+    <div id="setUpUI"></div>
+
+<div class="field-wrapper">
     <div class="field enemy">
         <div class="area set-top">セット</div>
         <div class="area side-l">サイド</div>
@@ -61,7 +94,9 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
         <div class="area serve">サーブ</div>
         <div class="area event">イベント</div>
     </div>
-</div><div class="field-wrapper">
+</div>
+
+<div class="field-wrapper">
     <div class="field">
         <div class="area set-top">セット</div>
         <div class="area side-l">サイド</div>
@@ -76,6 +111,10 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
         <div class="area serve">サーブ</div>
         <div class="area event">イベント</div>
     </div>
-</div><div id="hand"></div></div>
+</div>
+
+<div id="hand"></div>
+
+</div>
 </body>
 </html>
