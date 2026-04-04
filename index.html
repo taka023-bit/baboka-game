@@ -22,11 +22,6 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
     position: relative;
     text-align: center;
 }
-.toss {
-    flex-wrap: nowrap;      /* トスエリアだけ wrap を外す */
-    justify-content: center;
-    align-items: center;
-}
 .card { width:40px; height:60px; background:white; color:black; border-radius:6px; font-size:9px; display:flex; justify-content:center; align-items:center; margin:2px;}
 #hand { display:flex; justify-content:center; gap:5px; height:80px; flex-shrink:0; margin-top:5px;}
 .set-top { grid-column:1; grid-row:1; background:purple; }
@@ -96,31 +91,39 @@ const gameState = {
     hand: { player: [], enemy: [] },
     usedNames: [],
 };
-
 const phases = ["serve","receive","toss","attack","block","draw"];
+
 let selectedCard = null;
 
-// 手札作成
-function createCard(name){
+// カード作成
+function createCard({name,team,position,attack,defense,type="character"}){
     const card = document.createElement("div");
     card.innerText = name;
     card.classList.add("card");
     card.dataset.name = name;
+    card.dataset.team = team;
+    card.dataset.position = position;
+    card.dataset.attack = attack;
+    card.dataset.defense = defense;
+    card.dataset.type = type;
     card.onclick = () => selectedCard = card;
     document.getElementById("hand").appendChild(card);
     gameState.hand.player.push(card);
 }
 
-// 初期手札
-["田中","佐藤","鈴木"].forEach(createCard);
+// サンプル初期手札
+[ {name:"田中",team:"青山",position:"ウイング",attack:5,defense:3},
+  {name:"佐藤",team:"青山",position:"セッター",attack:3,defense:5},
+  {name:"鈴木",team:"青山",position:"ミドル",attack:4,defense:4} 
+].forEach(createCard);
 
-// フィールドクリック
+// エリアクリック
 document.querySelectorAll(".area").forEach(area=>{
     area.onclick = ()=>{
         if(selectedCard && gameState.turnPlayer==="player"){
             const name = selectedCard.dataset.name;
             if(gameState.usedNames.includes(name)){
-                alert("このターン中に同じ名前のカードは出せません");
+                alert("このターン中に同名カードは連続して出せません");
                 return;
             }
             area.appendChild(selectedCard);
@@ -133,29 +136,36 @@ document.querySelectorAll(".area").forEach(area=>{
 
 function nextPhase(){
     const i = phases.indexOf(gameState.phase);
-    if(i+1 >= phases.length) {
+    if(i+1 >= phases.length){
         endTurn();
     } else {
         gameState.phase = phases[i+1];
         document.getElementById("phaseDisplay").innerText = "フェイズ: " + gameState.phase;
-
-        // CPUの行動
         if(gameState.turnPlayer==="enemy") setTimeout(cpuAction,500);
     }
 }
 
+// CPU戦略
 function cpuAction(){
-    const hand = ["田中","佐藤","鈴木"];
+    const hand = [ {name:"田中",team:"赤山",position:"ウイング",attack:5,defense:3},
+                   {name:"佐藤",team:"赤山",position:"セッター",attack:3,defense:5},
+                   {name:"鈴木",team:"赤山",position:"ミドル",attack:4,defense:4} ];
     const areas = ["receive","toss","attack","drop"];
-    for(let name of hand){
-        if(!gameState.usedNames.includes(name)){
-            const areaName = areas[Math.floor(Math.random()*areas.length)];
+    for(let card of hand){
+        if(!gameState.usedNames.includes(card.name)){
+            const areaName = areas.find(a=>{
+                const el = document.querySelector(`.enemy .${a}`);
+                return el.children.length===0;
+            }) || "attack"; // 空きエリアがなければアタック
             const area = document.querySelector(`.enemy .${areaName}`);
-            const card = document.createElement("div");
-            card.innerText = name;
-            card.classList.add("card");
-            area.appendChild(card);
-            gameState.usedNames.push(name);
+            const div = document.createElement("div");
+            div.innerText = card.name;
+            div.classList.add("card");
+            Object.entries(card).forEach(([k,v])=>{
+                div.dataset[k]=v;
+            });
+            area.appendChild(div);
+            gameState.usedNames.push(card.name);
             break;
         }
     }
