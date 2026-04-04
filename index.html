@@ -15,12 +15,12 @@ font-family:sans-serif;
 /* フィールド */
 .field{
 display:grid;
-grid-template-columns:repeat(5,1fr);
+grid-template-columns:repeat(3,1fr);
 gap:8px;
 padding:10px;
 }
 
-/* 各エリア */
+/* エリア */
 .area{
 border:2px solid white;
 border-radius:8px;
@@ -29,20 +29,23 @@ display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:flex-start;
-font-size:12px;
 padding:3px;
+position:relative;
 }
 
 .label{
+position:absolute;
+top:2px;
+left:4px;
 font-size:10px;
 opacity:0.7;
+pointer-events:none;
 }
 
 /* 色 */
 .receive{background:#2563eb;}
 .toss{background:#16a34a;}
 .attack{background:#dc2626;}
-.block{background:#9333ea;}
 .serve{background:#facc15;color:black;}
 .event{background:#e5e7eb;color:black;}
 
@@ -52,11 +55,12 @@ background:white;
 color:black;
 width:40px;
 height:55px;
-margin:2px;
+margin-top:14px;
 font-size:9px;
 display:flex;
 align-items:center;
 justify-content:center;
+cursor:pointer;
 }
 
 /* 手札 */
@@ -91,7 +95,7 @@ padding:10px;
 <div class="area toss"><div class="label">トス</div></div>
 <div class="area attack"><div class="label">アタック</div></div>
 
-<div class="area block"><div class="label">ブロック</div></div>
+<div></div>
 <div class="area serve"><div class="label">サーブ</div></div>
 <div class="area event"><div class="label">イベント</div></div>
 </div>
@@ -103,7 +107,7 @@ padding:10px;
 let selected=null;
 let phase="serve";
 
-/* カード */
+/* カード生成 */
 function createCard(){
 const c=document.createElement("div");
 c.className="card";
@@ -122,7 +126,7 @@ hand.appendChild(c);
 
 for(let i=0;i<5;i++) createCard();
 
-/* CPU */
+/* CPU攻撃 */
 function cpuAttack(){
 ["receive","toss","attack"].forEach(p=>{
 const area=document.querySelector("#enemy ."+p);
@@ -147,14 +151,8 @@ showChoice();
 /* 選択 */
 function showChoice(){
 choice.innerHTML=`
-<button onclick="setBlock()">ブロック</button>
 <button onclick="setReceive()">レシーブ</button>
 `;
-}
-
-function setBlock(){
-phase="block";
-choice.innerText="ブロック（3枚まで）";
 }
 
 function setReceive(){
@@ -168,16 +166,13 @@ const atk=document.querySelector("#enemy .attack .card");
 
 let total=0;
 
-document.querySelectorAll("#player .block .card")
-.forEach(c=> total+=Number(c.dataset.def));
-
 const recv=document.querySelector("#player .receive .card");
 if(recv) total+=Number(recv.dataset.def);
 
 if(atk.dataset.atk > total){
 alert("失点");
 }else{
-alert("成功🔥");
+alert("防いだ🔥");
 }
 
 reset();
@@ -185,19 +180,16 @@ reset();
 
 /* リセット */
 function reset(){
-document.querySelectorAll("#enemy .area").forEach(a=>{
-a.innerHTML='<div class="label">'+a.classList[1]+'</div>';
-});
-
-document.querySelectorAll("#player .area").forEach(a=>{
-a.innerHTML='<div class="label">'+a.classList[1]+'</div>';
+document.querySelectorAll(".area").forEach(a=>{
+const name=a.classList[1];
+a.innerHTML='<div class="label">'+name+'</div>';
 });
 
 choice.innerHTML="";
 phase="serve";
 }
 
-/* クリック */
+/* クリック処理 */
 document.querySelectorAll("#player .area").forEach(area=>{
 area.onclick=()=>{
 if(!selected) return;
@@ -209,13 +201,6 @@ selected=null;
 
 phase="enemy";
 cpuAttack();
-}
-
-/* ブロック */
-else if(phase==="block" && area.classList.contains("block")){
-if(area.children.length>3) return;
-area.appendChild(selected);
-selected=null;
 }
 
 /* レシーブ */
