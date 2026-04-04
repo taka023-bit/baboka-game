@@ -33,6 +33,7 @@ button { padding:4px 8px; margin:2px; font-size:12px;}
 #popup h3 { margin:0 0 5px 0;}
 #popup p { margin:2px 0; font-size:12px;}
 #popup button { margin-top:5px;}
+#mariganArea { text-align:center; margin:5px;}
 </style>
 </head>
 <body>
@@ -40,6 +41,7 @@ button { padding:4px 8px; margin:2px; font-size:12px;}
 <div class="container">
     <div id="phaseDisplay">フェイズ: サーブ前</div>
     <div id="deckCount"></div>
+    <div id="mariganArea"></div>
 
     <!-- 相手 -->
     <div class="field-wrapper">
@@ -91,36 +93,20 @@ button { padding:4px 8px; margin:2px; font-size:12px;}
 
 <script>
 // ------------------------------
-// デッキ定義（サンプル40枚）
-const deckData = [
-    {name:"田中",serve:5,block:3,receive:4,toss:2,attack:6,skillArea:"レシーブ", skillEffect:["2ガッツ払えばレシーブポイント+1"]}, 
-    {name:"佐藤",serve:4,block:5,receive:3,toss:6,attack:3,skillArea:"トス", skillEffect:["2ガッツ払えばトスポイント+1","3ガッツ払えばイベントカード1枚手札"]}, 
-    {name:"鈴木",serve:6,block:2,receive:5,toss:3,attack:4,skillArea:"アタック", skillEffect:["3ガッツ払えばアタック+2","相手レシーブ-1"]},
-    {name:"高橋",serve:3,block:6,receive:2,toss:5,attack:4,skillArea:"レシーブ", skillEffect:[]},
-    {name:"中村",serve:4,block:3,receive:5,toss:4,attack:4,skillArea:"レシーブ", skillEffect:["2ガッツ払えばドロー"]},
-    {name:"小林",serve:5,block:4,receive:3,toss:5,attack:5,skillArea:"トス", skillEffect:["3ガッツでイベントカード1枚手札"]},
-    {name:"山田",serve:6,block:3,receive:4,toss:3,attack:5,skillArea:"アタック", skillEffect:["アタック+2 相手レシーブ-1"]},
-    {name:"松本",serve:3,block:5,receive:4,toss:5,attack:4,skillArea:"トス", skillEffect:[]},
-    // イベントカード8枚
-    {name:"イベント1",type:"event",skillArea:"イベント", skillEffect:["レシーブ+2 1ドロー"]}, 
-    {name:"イベント2",type:"event",skillArea:"イベント", skillEffect:["レシーブ+1 キャラ〇〇なら+2"]}, 
-    {name:"イベント3",type:"event",skillArea:"イベント", skillEffect:["トス+1 1ドロー"]}, 
-    {name:"イベント4",type:"event",skillArea:"イベント", skillEffect:["トス+1 次ターン相手アタック-1"]}, 
-    {name:"イベント5",type:"event",skillArea:"イベント", skillEffect:["アタック+1 1ドロー"]}, 
-    {name:"イベント6",type:"event",skillArea:"イベント", skillEffect:["アタック+2 特定キャラで追加効果"]}, 
-    {name:"イベント7",type:"event",skillArea:"イベント", skillEffect:["パラメータ+1 1ドロー"]}, 
-    {name:"イベント8",type:"event",skillArea:"イベント", skillEffect:["手札が4枚以下でガッツ2枚回収可能"]}
-];
+// 40枚デッキ作成（アタック10・トス10・レシーブ10・イベント+残り10）
+const deckData = [];
+for(let i=1;i<=10;i++){ deckData.push({name:`アタックA${i}`,serve:0,block:1,receive:0,toss:0,attack:Math.floor(Math.random()*3)+1,skillArea:"アタック",skillEffect:["3ガッツでアタック+1"]}); }
+for(let i=1;i<=10;i++){ deckData.push({name:`トスT${i}`,serve:0,block:0,receive:Math.floor(Math.random()*5)+1,toss:Math.floor(Math.random()*2)+1,attack:2,skillArea:"トス",skillEffect:["2ガッツでトス+1"]}); }
+for(let i=1;i<=10;i++){ deckData.push({name:`レシーブR${i}`,serve:0,block:0,receive:5+(i<=6?1:0),toss:0,attack:0,skillArea:"レシーブ",skillEffect:["2ガッツでレシーブ+1"]}); }
+// イベントカード
+for(let i=1;i<=8;i++){ deckData.push({name:`イベント${i}`,type:"event",skillArea:"イベント",skillEffect:["スキル効果例"]}); }
+// 残り2枚
+deckData.push({name:"特殊1",type:"event",skillArea:"イベント",skillEffect:["特殊効果"]});
+deckData.push({name:"特殊2",type:"event",skillArea:"イベント",skillEffect:["特殊効果"]});
 
 // ------------------------------
 // ゲーム状態
-let gameState = {
-    turnPlayer:"player",
-    phase:"serve",
-    hand:{player:[],enemy:[]},
-    deck:{player:[],enemy:[]},
-    usedNames:[],
-};
+let gameState = { turnPlayer:"player", phase:"serve", hand:{player:[],enemy:[]}, deck:{player:[],enemy:[]}, usedNames:[], selectedCard:null };
 
 // ------------------------------
 // カード生成
@@ -166,13 +152,10 @@ function closePopup(){ document.getElementById("popup").style.display="none"; }
 // ------------------------------
 // デッキ初期化
 function initDecks(){
-    const playerDeck = [...deckData];
-    const enemyDeck = [...deckData];
-    shuffle(playerDeck);
-    shuffle(enemyDeck);
-    gameState.deck.player = playerDeck;
-    gameState.deck.enemy = enemyDeck;
-    document.getElementById("deckCount").innerText = "デッキ残枚: "+playerDeck.length;
+    shuffle(deckData);
+    gameState.deck.player = [...deckData];
+    gameState.deck.enemy = [...deckData];
+    document.getElementById("deckCount").innerText = "デッキ残枚: "+gameState.deck.player.length;
 }
 
 // ------------------------------
