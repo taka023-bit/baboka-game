@@ -54,48 +54,149 @@ let gameState = {
     mulliganSelected: [],
     field: {player: {}, cpu: {}},
     diceRolls: {player:0, cpu:0}
-// ----- キャラクター作成 -----
-        function createCharacters(){ let chars = []; for(let i=1;i<=40;i++){ chars.push({name:'キャラ'+i,serve:Math.floor(Math.random()*3),block:Math.floor(Math.random()*3),receive:Math.floor(Math.random()*6),toss:Math.floor(Math.random()*3),attack:Math.floor(Math.random()*4),skill:[]}); } return chars; }
+<script>
+// キャラクター作成（初期40キャラ）
+const characters = [];
+for (let i = 1; i <= 40; i++) {
+    characters.push({
+        name: "キャラ" + i,
+        serve: Math.floor(Math.random() * 3),
+        block: Math.floor(Math.random() * 3),
+        receive: Math.floor(Math.random() * 6),
+        toss: Math.floor(Math.random() * 3),
+        attack: Math.floor(Math.random() * 4),
+        skill: []
+    });
+}
 
-// ----- シャッフル ----
-    function shuffle(deck){ for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } }
+// ゲーム状態初期化
+let gameState = {
+    turnPlayer: null,
+    phase: null,
+    turnCount: 1,
+    deck: [...characters], // プレイヤー用デッキ
+    hand: {
+        player: [],
+        enemy: []
+    },
+    usedNames: [],
+    selectedCard: null,
+    startChoice: null
+};
 
-// ----- デッキ初期化 -----
-    function initDecks(){ gameState.deck.player=createCharacters(); gameState.deck.cpu=createCharacters(); shuffle(gameState.deck.player); shuffle(gameState.deck.cpu); }
+// デッキシャッフル関数
+function shuffleDeck() {
+    for (let i = gameState.deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [gameState.deck[i], gameState.deck[j]] = [gameState.deck[j], gameState.deck[i]];
+    }
+}
 
-// ----- デッキ残数表示 -----
-    function updateDeckCount(){ document.getElementById('deckCount').innerText = あなた: ${gameState.deck.player.length} CPU: ${gameState.deck.cpu.length}; }
+// 初期シャッフル
+shuffleDeck();
 
-// ----- 手札描画 -----
-    function createCardElement(card, owner){ const div=document.createElement('div'); div.classList.add('card'); div.innerText=card.name; div.dataset.name=card.name; div.dataset.owner=owner; div.onmouseover=()=>showCardDetail(div,card); div.onmouseout=()=>hideCardDetail(div); if(owner==='player'){ div.onclick=()=>toggleMulligan(card,div); document.getElementById('hand').appendChild(div); } } function showCardDetail(div,card){ let detail=div.querySelector('.card-detail'); if(!detail){ detail=document.createElement('div'); detail.classList.add('card-detail'); detail.innerHTML=Serve:${card.serve} Block:${card.block} Receive:${card.receive} Toss:${card.toss} Attack:${card.attack}; div.appendChild(detail); } detail.style.display='block'; } function hideCardDetail(div){ const detail=div.querySelector('.card-detail'); if(detail) detail.style.display='none'; }
+// カードを引く関数
+function drawCard(owner) {
+    if (gameState.deck.length > 0) {
+        const c = gameState.deck.shift();
+        gameState.hand[owner].push(c);
+        if (owner === 'player') {
+            createCardElement(c, owner);
+        }
+    }
+}
 
-// ----- マリガン選択 -----
-    function toggleMulligan(card, div){ const idx = gameState.mulliganSelected.indexOf(card); if(idx===-1){ gameState.mulliganSelected.push(card); div.style.border='2px solid yellow'; }else{ gameState.mulliganSelected.splice(idx,1); div.style.border=''; } }
+// 手札にカードを作成
+function createCardElement(card, owner) {
+    const div = document.createElement('div');
+    div.classList.add('card');
+    div.innerText = card.name;
+    div.dataset.name = card.name;
+    div.dataset.owner = owner;
 
-function confirmMulligan(){ //
-    戻すカードをデッキに戻してシャッフル gameState.mulliganSelected.forEach(card=>{ gameState.deck.player.push(card); const idx=gameState.hand.player.indexOf(card); if(idx>=0) gameState.hand.player.splice(idx,1); }); shuffle(gameState.deck.player);
-    // 引き直し 
-    while(gameState.hand.player.length<6){ const c=gameState.deck.player.shift(); gameState.hand.player.push(c); } renderHand(); document.getElementById('setUpUI').innerHTML='マリガン完了'; setTimeout(startDiceRoll,500); }
+    div.onmouseover = () => showCardDetail(div, card);
+    div.onmouseout = () => hideCardDetail(div);
+    div.onclick = () => {
+        gameState.selectedCard = card;
+    };
 
-function renderHand(){ const handDiv=document.getElementById('hand'); handDiv.innerHTML=''; gameState.hand.player.forEach(card=>createCardElement(card,'player')); }
+    if (owner === 'player') {
+        document.getElementById('hand').appendChild(div);
+    }
+    return div;
+}
 
-// ----- サイコロで先攻決定 ----- 
-    function startDiceRoll(){ document.getElementById('phaseDisplay').innerText='フェイズ: 先攻決定'; const ui=document.getElementById('setUpUI'); ui.innerHTML='サイコロを振って先攻決定'; const btn=document.createElement('button'); btn.innerText='振る'; btn.onclick=()=>{ const playerRoll=Math.floor(Math.random()*6)+1; const cpuRoll=Math.floor(Math.random()*6)+1; alert(あなた:${playerRoll} CPU:${cpuRoll}); if(playerRoll===cpuRoll){ alert('同点です。再度振ります'); return; } gameState.turnPlayer=(playerRoll>cpuRoll)?'player':'cpu'; alert(${gameState.turnPlayer}が先攻); ui.innerHTML=''; gameState.phase='serve'; updateDeckCount(); startPhase(); }; ui.appendChild(btn); }
+// カード詳細表示
+function showCardDetail(div, card) {
+    let detail = div.querySelector('.card-detail');
+    if (!detail) {
+        detail = document.createElement('div');
+        detail.classList.add('card-detail');
+        detail.innerHTML =
+            `Serve: ${card.serve}<br>` +
+            `Block: ${card.block}<br>` +
+            `Receive: ${card.receive}<br>` +
+            `Toss: ${card.toss}<br>` +
+            `Attack: ${card.attack}`;
+        div.appendChild(detail);
+    }
+    detail.style.display = 'block';
+}
 
-// ----- フェイズ処理（最初のサーブ～以降） ----- 
-    function startPhase(){ document.getElementById('phaseDisplay').innerText='フェイズ: '+gameState.phase; // 実際のフェイズごとのカード置き処理などはここに追加 }
+// カード詳細非表示
+function hideCardDetail(div) {
+    const detail = div.querySelector('.card-detail');
+    if (detail) detail.style.display = 'none';
+}
 
-// ----- ゲーム初期化 ----- 
-                          function startGame(){ initDecks();
-                                               // 両者6枚手札
-                                               for(let i=0;i<6;i++){ gameState.hand.player.push(gameState.deck.player.shift()); gameState.hand.cpu.push(gameState.deck.cpu.shift()); } renderHand(); 
-                                               // CPUフィールド描画 
-                                               renderField('playerField'); renderField('cpuField'); // 
-                                               マリガンUI表示 const ui=document.getElementById('setUpUI'); ui.innerHTML='マリガン: 戻すカードを選択後「確定」'; const btn=document.createElement('button'); btn.innerText='確定'; btn.onclick=confirmMulligan; ui.appendChild(btn); }
+// マリガンUI表示
+function showMulligan() {
+    const ui = document.getElementById("setUpUI");
+    ui.innerHTML = 'マリガンで戻すカードをクリック、確定で次へ';
+    const btn = document.createElement('button');
+    btn.innerText = '確定';
+    btn.onclick = () => {
+        ui.innerHTML = '';
+        startDiceRoll();
+    };
+    ui.appendChild(btn);
+}
 
-function renderField(id){ const fieldDiv=document.getElementById(id); fieldDiv.innerHTML=''; const areas=['set-top','side-l','center','side-r','deck','receive','toss','attack','drop','set-bottom','serve','event']; areas.forEach(a=>{ const div=document.createElement('div'); div.className='area '+a; div.innerText=a; fieldDiv.appendChild(div); }); }
+// サイコロで先攻決定
+function startDiceRoll() {
+    const ui = document.getElementById('setUpUI');
+    ui.innerHTML = 'サイコロを振って先攻決定';
+    const rollBtn = document.createElement('button');
+    rollBtn.innerText = '振る';
+    rollBtn.onclick = () => {
+        let playerRoll = Math.floor(Math.random() * 6) + 1;
+        let enemyRoll = Math.floor(Math.random() * 6) + 1;
 
-startGame(); </script>
+        while (playerRoll === enemyRoll) {
+            playerRoll = Math.floor(Math.random() * 6) + 1;
+            enemyRoll = Math.floor(Math.random() * 6) + 1;
+        }
+
+        alert('あなた: ' + playerRoll + ' CPU: ' + enemyRoll);
+        gameState.turnPlayer = (playerRoll >= enemyRoll) ? 'player' : 'enemy';
+        ui.innerHTML = '';
+        alert(gameState.turnPlayer + 'が先攻');
+
+        gameState.phase = 'serve';
+        document.getElementById('phaseDisplay').innerText = 'フェイズ: ' + gameState.phase;
+    };
+    ui.appendChild(rollBtn);
+}
+
+// ゲーム開始
+function startGame() {
+    for (let i = 0; i < 6; i++) drawCard('player');
+    for (let i = 0; i < 6; i++) drawCard('enemy');
+    showMulligan();
+}
+
+startGame();
+</script>
 
 </body>
 </html>
