@@ -32,12 +32,71 @@ shuffle();
 
 function updateDeck(){document.querySelectorAll('.deck').forEach(d=>d.innerText="デッキ\n"+gameState.deck.length);}
 
-function draw(){let c=gameState.deck.shift();gameState.hand.push(c);let div=document.createElement('div');div.className='card';div.innerText=c.name;div.onclick=()=>{div.style.border=div.style.border?"":"2px solid red";};document.getElementById('hand').appendChild(div);updateDeck();}
+function draw(){
+    let c=gameState.deck.shift();
+    gameState.hand.push(c);
 
-function mulliganUI(){let ui=document.getElementById('setUpUI');ui.innerHTML='マリガンして確定';let b=document.createElement('button');b.innerText='確定';b.onclick=()=>startDice();ui.appendChild(b);}
+    let div=document.createElement('div');
+    div.className='card';
+    div.innerText=c.name;
+
+    // 詳細表示
+    let detail=document.createElement('div');
+    detail.style.position='absolute';
+    detail.style.top='-60px';
+    detail.style.background='#333';
+    detail.style.padding='4px';
+    detail.style.fontSize='10px';
+    detail.style.display='none';
+    detail.innerText='(仮) パラメータ表示';
+
+    div.appendChild(detail);
+
+    div.onmouseover=()=>detail.style.display='block';
+    div.onmouseout=()=>detail.style.display='none';
+
+    // マリガン選択
+    div.onclick=()=>{
+        div.style.border=div.style.border?"":"2px solid red";
+    };
+
+    document.getElementById('hand').appendChild(div);
+    updateDeck();
+}
+
+function mulliganUI(){
+    let ui=document.getElementById('setUpUI');
+    ui.innerHTML='マリガン：戻すカード選択 → 確定';
+
+    const btn=document.createElement('button');
+    btn.innerText='確定';
+
+    btn.onclick=()=>{
+        startDice();
+    };
+
+    ui.appendChild(btn);
+}
 
 function startDice(){let ui=document.getElementById('setUpUI');ui.innerHTML='サイコロ';let b=document.createElement('button');b.innerText='振る';b.onclick=()=>{alert('開始');ui.innerHTML='';document.getElementById('phaseDisplay').innerText='フェイズ: サーブ';};ui.appendChild(b);}
 
-window.onload=()=>{for(let i=0;i<6;i++)draw();mulliganUI();};
+window.onload=()=>{
+    for(let i=0;i<6;i++) draw();
+    updateDeck();
+
+    // まずサイコロ
+    let ui=document.getElementById('setUpUI');
+    ui.innerHTML='サイコロで先攻決定';
+
+    let btn=document.createElement('button');
+    btn.innerText='振る';
+
+    btn.onclick=()=>{
+        alert('サイコロ完了');
+        mulliganUI();
+    };
+
+    ui.appendChild(btn);
+};
 </script></body>
 </html>
