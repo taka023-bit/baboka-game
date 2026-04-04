@@ -13,94 +13,200 @@ body {
     text-align: center;
 }
 
+/* フィールド全体 */
 .field {
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
-    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
     padding: 10px;
 }
 
-.row {
-    display: contents;
-}
-
+/* 共通エリア */
 .area {
     border: 2px solid #fff;
     border-radius: 10px;
-    padding: 15px;
-    min-height: 60px;
-    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 12px;
+}
+
+/* カード */
+.card {
+    width: 60px;
+    height: 90px;
+    background: white;
+    color: black;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2px;
+    cursor: pointer;
 }
 
 /* 上段 */
-.top-left { grid-column: 1; }
-.top-center { grid-column: 2; display: flex; justify-content: space-around; }
-.top-right { grid-column: 3; }
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+/* セット（小さめ） */
+.set {
+    width: 70px;
+    height: 100px;
+    background: purple;
+}
+
+/* ブロック */
+.block-area {
+    display: flex;
+    gap: 10px;
+}
+
+.side {
+    width: 80px;
+    height: 100px;
+    background: #ccc;
+    color: black;
+}
+
+.center {
+    width: 80px;
+    height: 100px;
+    background: #666;
+}
+
+/* デッキ＆ドロップ */
+.deck-area {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.deck, .drop {
+    width: 60px;
+    height: 80px;
+    background: orange;
+    color: black;
+}
 
 /* 中段 */
 .middle {
-    grid-column: 1 / span 3;
     display: flex;
     justify-content: space-around;
 }
 
+.receive {
+    width: 100px;
+    height: 80px;
+    background: blue;
+}
+
+.toss {
+    width: 100px;
+    height: 80px;
+    background: green;
+}
+
+.attack {
+    width: 100px;
+    height: 80px;
+    background: red;
+}
+
 /* 下段 */
 .bottom {
-    grid-column: 1 / span 3;
     display: flex;
     justify-content: center;
     gap: 20px;
 }
 
-/* ブロック3枠 */
-.block {
-    width: 30%;
+/* サーブ */
+.serve {
+    width: 80px;
+    height: 100px;
+    background: yellow;
+    color: black;
 }
 
-/* デッキ＆ドロップ縦 */
-.deck-area {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+/* イベント */
+.event {
+    width: 100px;
+    height: 80px;
+    background: white;
+    color: black;
 }
-
 </style>
 </head>
 
 <body>
 
-<h1>バボカBREAK</h1>
+<h1>バボカBREAK v3</h1>
+
+<button onclick="createCard()">カード出す</button>
 
 <div class="field">
 
     <!-- 上段 -->
-    <div class="area top-left">セット</div>
+    <div class="top">
 
-    <div class="top-center">
-        <div class="area block">サイド</div>
-        <div class="area block">センター</div>
-        <div class="area block">サイド</div>
-    </div>
+        <div class="area set">セット</div>
 
-    <div class="deck-area top-right">
-        <div class="area">デッキ</div>
-        <div class="area">ドロップ</div>
+        <div class="block-area">
+            <div class="area side">サイド</div>
+            <div class="area center">センター</div>
+            <div class="area side">サイド</div>
+        </div>
+
+        <div class="deck-area">
+            <div class="area deck">デッキ</div>
+            <div class="area drop">ドロップ</div>
+        </div>
+
     </div>
 
     <!-- 中段 -->
     <div class="middle">
-        <div class="area">レシーブ</div>
-        <div class="area">トス</div>
-        <div class="area">アタック</div>
+        <div class="area receive">レシーブ</div>
+        <div class="area toss">トス</div>
+        <div class="area attack">アタック</div>
     </div>
 
     <!-- 下段 -->
     <div class="bottom">
-        <div class="area">サーブ</div>
-        <div class="area">イベント</div>
+        <div class="area serve">サーブ</div>
+        <div class="area event">イベント</div>
     </div>
 
 </div>
+
+<script>
+let selectedCard = null;
+
+function createCard() {
+    const card = document.createElement("div");
+    card.innerText = "カード";
+    card.classList.add("card");
+
+    card.onclick = () => {
+        selectedCard = card;
+    };
+
+    document.body.appendChild(card);
+}
+
+document.querySelectorAll(".area").forEach(area => {
+    area.onclick = () => {
+        if (selectedCard) {
+            area.appendChild(selectedCard);
+            selectedCard = null;
+        }
+    };
+});
+</script>
 
 </body>
 </html>
