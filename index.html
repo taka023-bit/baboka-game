@@ -12,7 +12,7 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
 </head>
 <body>
 <div class="container">
-<div id="phaseDisplay">フェイズ: サーブ前</div>
+<div id="phaseDisplay">フェイズ: 初期化</div>
 <div id="setUpUI"></div><div class="field-wrapper"><div class="field enemy">
 <div class="area set-top">セット</div><div class="area side-l">サイド</div><div class="area center">センター</div><div class="area side-r">サイド</div><div class="area deck">デッキ</div>
 <div class="area receive">レシーブ</div><div class="area toss">トス</div><div class="area attack">アタック</div><div class="area drop">ドロップ</div>
@@ -20,119 +20,104 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
 </div></div><div class="field-wrapper"><div class="field">
 <div class="area set-top">セット</div><div class="area side-l">サイド</div><div class="area center">センター</div><div class="area side-r">サイド</div><div class="area deck">デッキ</div>
 <div class="area receive">レシーブ</div><div class="area toss">トス</div><div class="area attack">アタック</div><div class="area drop">ドロップ</div>
-<div class="area set-bottom">セット</div><div class="area serve" id="playerServe">サーブ</div><div class="area event">イベント</div>
+<div class="area set-bottom">セット</div><div class="area serve">サーブ</div><div class="area event">イベント</div>
 </div></div><div id="hand"></div>
 </div><script>
-let gameState={deck:[],hand:[],phase:null,turnPlayer:null,selected:null};
+const phases=["serve","draw","receive","toss","attack","start"];
+let game={phaseIndex:0,turn:"player"};
 
-// カード生成（パラメータ付き）
-for(let i=1;i<=40;i++){
-    gameState.deck.push({
-        name:"キャラ"+i,
-        serve:Math.floor(Math.random()*3),
-        receive:Math.floor(Math.random()*5),
-        toss:Math.floor(Math.random()*3),
-        attack:Math.floor(Math.random()*4),
-        block:Math.floor(Math.random()*3)
-    });
+function setPhase(index){
+    game.phaseIndex=index;
+    let p=phases[index];
+    document.getElementById('phaseDisplay').innerText="フェイズ: "+p;
+    handlePhase(p);
 }
 
-function shuffle(){for(let i=gameState.deck.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[gameState.deck[i],gameState.deck[j]]=[gameState.deck[j],gameState.deck[i]];}}
-shuffle();
-
-function updateDeck(){document.querySelectorAll('.deck').forEach(d=>d.innerText="デッキ\n"+gameState.deck.length);}
-
-function createCard(c){
-    let div=document.createElement('div');
-    div.className='card';
-    div.innerText=c.name;
-
-    let detail=document.createElement('div');
-    detail.style.position='absolute';
-    detail.style.top='-70px';
-    detail.style.background='#333';
-    detail.style.fontSize='9px';
-    detail.style.display='none';
-    detail.innerText=`S:${c.serve} R:${c.receive} T:${c.toss} A:${c.attack} B:${c.block}`;
-
-    div.appendChild(detail);
-    div.onmouseover=()=>detail.style.display='block';
-    div.onmouseout=()=>detail.style.display='none';
-
-    div.onclick=()=>{
-        gameState.selected=c;
-    };
-
-    document.getElementById('hand').appendChild(div);
+function nextPhase(){
+    let next=game.phaseIndex+1;
+    if(next>=phases.length) next=0;
+    setPhase(next);
 }
 
-function draw(){let c=gameState.deck.shift();gameState.hand.push(c);createCard(c);updateDeck();}
-
-// サイコロ
-function startDice(){
+function handlePhase(p){
     let ui=document.getElementById('setUpUI');
-    ui.innerHTML='サイコロを振る';
+    ui.innerHTML="";
 
-    let btn=document.createElement('button');
-    btn.innerText='振る';
+    if(p==="serve"){
+        ui.innerText="サーブフェイズ";
+        let btn=document.createElement('button');
+        btn.innerText="次へ";
+        btn.onclick=nextPhase;
+        ui.appendChild(document.createElement('br'));
+        ui.appendChild(btn);
+    }
 
-    btn.onclick=()=>{
-        let p=Math.floor(Math.random()*6)+1;
-        let e=Math.floor(Math.random()*6)+1;
+    if(p==="draw"){
+        ui.innerText="ドローフェイズ";
+        let btn=document.createElement('button');
+        btn.innerText="次へ";
+        btn.onclick=nextPhase;
+        ui.appendChild(document.createElement('br'));
+        ui.appendChild(btn);
+    }
 
-        ui.innerHTML=`あなた:${p} CPU:${e}`;
+    if(p==="receive"){
+        ui.innerText="レシーブフェイズ";
+        let btn=document.createElement('button');
+        btn.innerText="次へ";
+        btn.onclick=nextPhase;
+        ui.appendChild(document.createElement('br'));
+        ui.appendChild(btn);
+    }
 
-        let win=(p>=e)?'player':'enemy';
+    if(p==="toss"){
+        ui.innerText="トスフェイズ";
+        let btn=document.createElement('button');
+        btn.innerText="次へ";
+        btn.onclick=nextPhase;
+        ui.appendChild(document.createElement('br'));
+        ui.appendChild(btn);
+    }
 
-        if(win==='player'){
-            let s=document.createElement('button');
-            s.innerText='サーブ';
-            s.onclick=()=>startServe('player');
+    if(p==="attack"){
+        ui.innerText="アタックフェイズ";
+        let btn=document.createElement('button');
+        btn.innerText="次へ";
+        btn.onclick=nextPhase;
+        ui.appendChild(document.createElement('br'));
+        ui.appendChild(btn);
+    }
 
-            let r=document.createElement('button');
-            r.innerText='レシーブ';
-            r.onclick=()=>startServe('enemy');
+    if(p==="start"){
+        ui.innerText="スタートフェイズ：選択";
 
-            ui.appendChild(document.createElement('br'));
-            ui.appendChild(s);
-            ui.appendChild(r);
-        }else{
-            let cpuChoice=Math.random()>0.5?'player':'enemy';
-            startServe(cpuChoice);
-        }
-    };
+        let receiveBtn=document.createElement('button');
+        receiveBtn.innerText="レシーブ";
+        receiveBtn.onclick=()=>{
+            setPhase(0);
+        };
 
-    ui.appendChild(btn);
+        let blockBtn=document.createElement('button');
+        blockBtn.innerText="ブロック";
+        blockBtn.onclick=()=>{
+            let success=Math.random()>0.5;
+            if(success){
+                ui.innerHTML="ブロック成功 → 相手ドロー";
+                setTimeout(()=>setPhase(1),1000);
+            }else{
+                ui.innerHTML="ブロック失敗 → ロスト（インターバル）";
+                setTimeout(()=>setPhase(0),1000);
+            }
+        };
+
+        ui.appendChild(document.createElement('br'));
+        ui.appendChild(receiveBtn);
+        ui.appendChild(blockBtn);
+    }
 }
-
-function startServe(server){
-    gameState.turnPlayer=server;
-    gameState.phase='serve';
-    document.getElementById('phaseDisplay').innerText='フェイズ: サーブ（'+server+'）';
-    document.getElementById('setUpUI').innerHTML='';
-}
-
-// 配置（まずサーブだけ）
-document.getElementById('playerServe').onclick=()=>{
-    if(gameState.phase!=='serve') return;
-    if(gameState.turnPlayer!=='player') return;
-    if(!gameState.selected) return;
-
-    let area=document.getElementById('playerServe');
-    let cardDiv=document.createElement('div');
-    cardDiv.className='card';
-    cardDiv.innerText=gameState.selected.name;
-
-    area.appendChild(cardDiv);
-
-    gameState.phase='draw';
-    document.getElementById('phaseDisplay').innerText='フェイズ: ドロー';
-};
 
 window.onload=()=>{
-    for(let i=0;i<6;i++) draw();
-    updateDeck();
-    startDice();
+    setPhase(0);
 };
 </script></body>
 </html>
