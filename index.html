@@ -72,8 +72,8 @@ button { padding:4px 8px; margin:2px; font-size:12px;}
 const phases1 = ["serve","draw","receive","toss","attack"];
 const phases2 = ["start","draw","receive","attack"];
 let gameState = {
-    turnPlayer:"player",
-    phase:"serve",
+    turnPlayer:null,
+    phase:null,
     turnCount:1,
     deck:[],
     hand:{player:[],enemy:[]},
@@ -137,19 +137,17 @@ function showMulligan(){
     ui.innerHTML='マリガンで戻すカードをクリック、確定で次へ';
     const btn = document.createElement('button');
     btn.innerText='確定';
-    btn.onclick=()=>{ ui.innerHTML=''; startFirstTurn(); };
+    btn.onclick=()=>{ ui.innerHTML=''; startDiceRoll(); };
     ui.appendChild(btn);
 }
 
-function startFirstTurn(){
+function startGame(){
     for(let i=0;i<6;i++) drawCard('player');
     for(let i=0;i<6;i++) drawCard('enemy');
-    gameState.phase='serve';
-    document.getElementById('phaseDisplay').innerText='フェイズ: '+gameState.phase;
-    showDiceRoll();
+    showMulligan();
 }
 
-function showDiceRoll(){
+function startDiceRoll(){
     const ui = document.getElementById('setUpUI');
     ui.innerHTML='サイコロを振って先攻決定';
     const rollBtn = document.createElement('button');
@@ -161,22 +159,12 @@ function showDiceRoll(){
         gameState.turnPlayer=(playerRoll>=enemyRoll)?'player':'enemy';
         ui.innerHTML='';
         alert(gameState.turnPlayer+'が先攻');
-        nextPhase();
+        gameState.phase='serve';
+        document.getElementById('phaseDisplay').innerText='フェイズ: '+gameState.phase;
     };
     ui.appendChild(rollBtn);
 }
 
-function nextPhase(){
-    let phaseList=(gameState.turnCount===1)?phases1:phases2;
-    const idx=phaseList.indexOf(gameState.phase);
-    if(idx+1>=phaseList.length){
-        gameState.turnPlayer=(gameState.turnPlayer==='player')?'enemy':'player';
-        gameState.turnCount++;
-        gameState.phase=(gameState.turnCount===1)?'serve':'start';
-    }else gameState.phase=phaseList[idx+1];
-    document.getElementById('phaseDisplay').innerText='フェイズ: '+gameState.phase;
-}
-
-startFirstTurn();
+startGame();
 </script></body>
 </html>
