@@ -2,32 +2,62 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>バボカBREAK 完全版</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バボカBREAK</title>
 
 <style>
 body {
     background:#1a1a1a;
     color:white;
     text-align:center;
+    font-family:sans-serif;
 }
 
-/* グリッド */
+/* フィールド */
 .field{
     display:grid;
     grid-template-columns: 80px 100px 100px 100px 80px;
     grid-template-rows: 110px 110px 110px;
     gap:10px;
     justify-content:center;
+    margin-top:20px;
 }
 
-/* 共通 */
+/* エリア共通 */
 .area{
     border:2px solid #fff;
     border-radius:10px;
     display:flex;
-    align-items:center;
     justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    font-size:12px;
 }
+
+/* カード */
+.card{
+    width:60px;
+    height:90px;
+    background:white;
+    color:black;
+    border-radius:8px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:2px;
+    cursor:pointer;
+}
+
+/* 手札（横並び） */
+#hand{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin:20px;
+    flex-wrap:wrap;
+}
+
+/* ===== 配置 ===== */
 
 /* 上段 */
 .set-top{grid-column:1;grid-row:1;background:purple;}
@@ -38,7 +68,7 @@ body {
 .deck{grid-column:5;grid-row:1;background:orange;color:black;}
 .drop{grid-column:5;grid-row:2;background:orange;color:black;}
 
-/* 中段（横長） */
+/* 中段 */
 .receive{grid-column:2;grid-row:2;background:blue;}
 .toss{grid-column:3;grid-row:2;background:green;}
 .attack{grid-column:4;grid-row:2;background:red;}
@@ -46,7 +76,6 @@ body {
 /* 下段 */
 .set-bottom{grid-column:1;grid-row:3;background:purple;}
 
-/* サーブ横長 */
 .serve{
     grid-column:2 / span 2;
     grid-row:3;
@@ -54,19 +83,24 @@ body {
     color:black;
 }
 
-/* イベント */
 .event{
     grid-column:4 / span 2;
     grid-row:3;
     background:white;
     color:black;
 }
+
 </style>
 </head>
 
 <body>
 
-<h2>バボカBREAK（公式寄せ）</h2>
+<h2>バボカBREAK</h2>
+
+<button onclick="createCard()">カード出す</button>
+
+<!-- 手札エリア -->
+<div id="hand"></div>
 
 <div class="field">
 
@@ -86,6 +120,33 @@ body {
 <div class="area event">イベント</div>
 
 </div>
+
+<script>
+let selectedCard = null;
+
+// カード生成（手札に横並び）
+function createCard(){
+    const card = document.createElement("div");
+    card.innerText = "カード";
+    card.classList.add("card");
+
+    card.onclick = () => {
+        selectedCard = card;
+    };
+
+    document.getElementById("hand").appendChild(card);
+}
+
+// フィールドに配置
+document.querySelectorAll(".area").forEach(area=>{
+    area.onclick = ()=>{
+        if(selectedCard){
+            area.appendChild(selectedCard);
+            selectedCard = null;
+        }
+    }
+});
+</script>
 
 </body>
 </html>
