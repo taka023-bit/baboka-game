@@ -2,7 +2,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>バボカBREAK CPU対戦 - フィールド修正版</title><style>
+<title>バボカBREAK CPU対戦 - フィールド間隔調整</title><style>
 html, body {
     margin:0;
     padding:0;
@@ -15,14 +15,17 @@ html, body {
 .container {
     display:flex;
     flex-direction:column;
+    justify-content:space-between;
     height:100dvh;
+    padding:10px 0;
 }
 
 .field-wrapper {
     display:flex;
     justify-content:center;
     align-items:center;
-    flex:1;
+    flex:0 0 auto;
+    margin:5px 0;
 }
 
 .field {
@@ -65,9 +68,9 @@ html, body {
 .event { grid-column:4; grid-row:3; background:white; color:black; }
 
 </style></head>
-<body><div class="container"><!-- CPUフィールド（逆さま） --><div class="field-wrapper">
+<body><div class="container"><!-- CPUフィールド（逆さま） --><div class="field-wrapper" style="margin-top:20px;">
     <div class="field enemy" id="cpuField"></div>
-</div><!-- プレイヤーフィールド（正常向き） --><div class="field-wrapper">
+</div><!-- プレイヤーフィールド（正常向き） --><div class="field-wrapper" style="margin-bottom:20px;">
     <div class="field" id="playerField"></div>
 </div><script>
 function renderField(id){
