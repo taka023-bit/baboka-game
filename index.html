@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="ja">
+<!DOCTYPE html>
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,7 +42,9 @@ button { padding:4px 8px; margin:2px; font-size:12px;}
 <body>
 <div class="container">
     <div id="phaseDisplay" style="text-align:center; margin:5px;">フェイズ: ゲーム進行前</div>
-    <div id="setUpUI"></div><div class="field-wrapper">
+    <div id="setUpUI"></div>
+
+<div class="field-wrapper">
     <div class="field enemy" id="enemyField">
         <div class="area set-top">セット</div>
         <div class="area side-l">サイド</div>
@@ -56,7 +59,9 @@ button { padding:4px 8px; margin:2px; font-size:12px;}
         <div class="area serve">サーブ</div>
         <div class="area event">イベント</div>
     </div>
-</div><div class="field-wrapper">
+</div>
+
+<div class="field-wrapper">
     <div class="field" id="playerField">
         <div class="area set-top">セット</div>
         <div class="area side-l">サイド</div>
@@ -71,7 +76,9 @@ button { padding:4px 8px; margin:2px; font-size:12px;}
         <div class="area serve">サーブ</div>
         <div class="area event">イベント</div>
     </div>
-</div><div id="hand"></div>
+</div>
+
+<div id="hand"></div>
 </div>
 <script>
 let gameState = {
@@ -81,25 +88,117 @@ let gameState = {
     deck:[],
     hand:{player:[],enemy:[]},
     selectedCard:null
-};const characters = []; for(let i=1;i<=40;i++){ characters.push({name:"キャラ"+i,serve:Math.floor(Math.random()*3),block:Math.floor(Math.random()*3),receive:Math.floor(Math.random()*6),toss:Math.floor(Math.random()*3),attack:Math.floor(Math.random()*4),skill:[]}); } gameState.deck = [...characters];
+};
 
-function shuffleDeck(){ for(let i=gameState.deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [gameState.deck[i],gameState.deck[j]]=[gameState.deck[j],gameState.deck[i]]; } } shuffleDeck();
+const characters = [];
+for(let i=1;i<=40;i++){
+    characters.push({name:"キャラ"+i,serve:Math.floor(Math.random()*3),block:Math.floor(Math.random()*3),receive:Math.floor(Math.random()*6),toss:Math.floor(Math.random()*3),attack:Math.floor(Math.random()*4),skill:[]});
+}
+gameState.deck = [...characters];
 
-function drawCard(owner){ if(gameState.deck.length>0){ const c=gameState.deck.shift(); gameState.hand[owner].push(c); if(owner==='player') createCardElement(c,owner); updateDeckCount(); } }
+function shuffleDeck(){
+    for(let i=gameState.deck.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [gameState.deck[i],gameState.deck[j]]=[gameState.deck[j],gameState.deck[i]];
+    }
+}
+shuffleDeck();
 
-function updateDeckCount(){ document.getElementById('playerDeckCount').innerText=gameState.deck.length; document.getElementById('enemyDeckCount').innerText=gameState.deck.length; }
+function drawCard(owner){
+    if(gameState.deck.length>0){
+        const c=gameState.deck.shift();
+        gameState.hand[owner].push(c);
+        if(owner==='player') createCardElement(c,owner);
+        updateDeckCount();
+    }
+}
 
-function createCardElement(card,owner){ const div=document.createElement('div'); div.classList.add('card'); div.innerText=card.name; div.dataset.name=card.name; div.dataset.owner=owner; div.onmouseover=()=>showCardDetail(div,card); div.onmouseout=()=>hideCardDetail(div); div.onclick=()=>{ gameState.selectedCard=card; div.classList.toggle('selected'); }; if(owner==='player') document.getElementById('hand').appendChild(div); }
+function updateDeckCount(){
+    document.getElementById('playerDeckCount').innerText=gameState.deck.length;
+    document.getElementById('enemyDeckCount').innerText=gameState.deck.length;
+}
 
-function showCardDetail(div,card){ let detail=div.querySelector('.card-detail'); if(!detail){ detail=document.createElement('div'); detail.classList.add('card-detail'); detail.innerHTML=Serve:${card.serve} Block:${card.block} Receive:${card.receive} Toss:${card.toss} Attack:${card.attack}; div.appendChild(detail); } detail.style.display='block'; } function hideCardDetail(div){ const detail=div.querySelector('.card-detail'); if(detail) detail.style.display='none'; }
+function createCardElement(card,owner){
+    const div=document.createElement('div');
+    div.classList.add('card');
+    div.innerText=card.name;
+    div.dataset.name=card.name;
+    div.dataset.owner=owner;
+    div.onmouseover=()=>showCardDetail(div,card);
+    div.onmouseout=()=>hideCardDetail(div);
+    div.onclick=()=>{ gameState.selectedCard=card; div.classList.toggle('selected'); };
+    if(owner==='player') document.getElementById('hand').appendChild(div);
+}
 
-function startGame(){ for(let i=0;i<6;i++) drawCard('player'); for(let i=0;i<6;i++) drawCard('enemy'); startDiceRoll(); }
+function showCardDetail(div,card){
+    let detail=div.querySelector('.card-detail');
+    if(!detail){
+        detail=document.createElement('div');
+        detail.classList.add('card-detail');
+        detail.innerHTML=`Serve:${card.serve} Block:${card.block} Receive:${card.receive} Toss:${card.toss} Attack:${card.attack}`;
+        div.appendChild(detail);
+    }
+    detail.style.display='block';
+}
+function hideCardDetail(div){
+    const detail=div.querySelector('.card-detail');
+    if(detail) detail.style.display='none';
+}
 
-function startDiceRoll(){ const ui=document.getElementById('setUpUI'); ui.innerHTML='サイコロを振って先攻決定'; const rollBtn=document.createElement('button'); rollBtn.innerText='振る'; rollBtn.onclick=()=>{ let playerRoll=Math.floor(Math.random()*6)+1; let enemyRoll=Math.floor(Math.random()*6)+1; if(playerRoll===enemyRoll){ alert('同じ出目、もう一度振ります'); return; } alert('あなた: '+playerRoll+' CPU: '+enemyRoll); gameState.turnPlayer=(playerRoll>enemyRoll)?'player':'enemy'; ui.innerHTML='先攻: '+gameState.turnPlayer+' です。次にマリガンを行います'; showMulligan(); }; ui.appendChild(rollBtn); }
+function startGame(){
+    for(let i=0;i<6;i++) drawCard('player');
+    for(let i=0;i<6;i++) drawCard('enemy');
+    startDiceRoll();
+}
 
-function showMulligan(){ const ui=document.getElementById('setUpUI'); ui.innerHTML='マリガンするカードを選んで確定'; const btn=document.createElement('button'); btn.innerText='確定'; btn.onclick=()=>{ // 選択されたカードをデッキに戻す const handDiv=document.getElementById('hand'); const toReturn=[]; Array.from(handDiv.children).forEach(div=>{ if(div.classList.contains('selected')){ const name=div.dataset.name; const idx=gameState.hand.player.findIndex(c=>c.name===name); if(idx>=0){ const card=gameState.hand.player.splice(idx,1)[0]; gameState.deck.push(card); div.remove(); } } }); shuffleDeck(); // 足りない枚数を引き直す while(gameState.hand.player.length<6) drawCard('player'); ui.innerHTML='マリガン完了。ゲーム開始'; gameState.phase='serve'; document.getElementById('phaseDisplay').innerText='フェイズ: サーブ'; }; ui.appendChild(btn); }
+function startDiceRoll(){
+    const ui=document.getElementById('setUpUI');
+    ui.innerHTML='サイコロを振って先攻決定';
+    const rollBtn=document.createElement('button');
+    rollBtn.innerText='振る';
+    rollBtn.onclick=()=>{
+        let playerRoll=Math.floor(Math.random()*6)+1;
+        let enemyRoll=Math.floor(Math.random()*6)+1;
+        if(playerRoll===enemyRoll){ alert('同じ出目、もう一度振ります'); return; }
+        alert('あなた: '+playerRoll+' CPU: '+enemyRoll);
+        gameState.turnPlayer=(playerRoll>enemyRoll)?'player':'enemy';
+        ui.innerHTML='先攻: '+gameState.turnPlayer+' です。次にマリガンを行います';
+        showMulligan();
+    };
+    ui.appendChild(rollBtn);
+}
 
-startGame(); </script>
+function showMulligan(){
+    const ui=document.getElementById('setUpUI');
+    ui.innerHTML='マリガンするカードを選んで確定';
+    const btn=document.createElement('button');
+    btn.innerText='確定';
+    btn.onclick=()=>{
+        // 選択されたカードをデッキに戻す
+        const handDiv=document.getElementById('hand');
+        const toReturn=[];
+        Array.from(handDiv.children).forEach(div=>{
+            if(div.classList.contains('selected')){
+                const name=div.dataset.name;
+                const idx=gameState.hand.player.findIndex(c=>c.name===name);
+                if(idx>=0){
+                    const card=gameState.hand.player.splice(idx,1)[0];
+                    gameState.deck.push(card);
+                    div.remove();
+                }
+            }
+        });
+        shuffleDeck();
+        // 足りない枚数を引き直す
+        while(gameState.hand.player.length<6) drawCard('player');
+        ui.innerHTML='マリガン完了。ゲーム開始';
+        gameState.phase='serve';
+        document.getElementById('phaseDisplay').innerText='フェイズ: サーブ';
+    };
+    ui.appendChild(btn);
+}
 
+startGame();
+</script>
 </body>
 </html>
