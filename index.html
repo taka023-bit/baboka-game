@@ -12,39 +12,61 @@ color:white;
 font-family:sans-serif;
 }
 
+/* フィールド */
 .field{
 display:grid;
 grid-template-columns:repeat(5,1fr);
-grid-template-rows:repeat(3,80px);
 gap:8px;
 padding:10px;
 }
 
-/* 配置（←これが重要） */
-.set-top { grid-column:1; grid-row:1; background:purple; }
-.side-l { grid-column:2; grid-row:1; background:#ccc; color:black;}
-.center { grid-column:3; grid-row:1; background:#666;}
-.side-r { grid-column:4; grid-row:1; background:#ccc; color:black;}
-.deck { grid-column:5; grid-row:1; background:orange; color:black;}
+/* 各エリア */
+.area{
+border:2px solid white;
+border-radius:8px;
+min-height:70px;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:flex-start;
+font-size:12px;
+padding:3px;
+}
 
-.receive { grid-column:2; grid-row:2; background:blue;}
-.toss { grid-column:3; grid-row:2; background:green;}
-.attack { grid-column:4; grid-row:2; background:red;}
-.drop { grid-column:5; grid-row:2; background:orange; color:black;}
+.label{
+font-size:10px;
+opacity:0.7;
+}
 
-.set-bottom { grid-column:1; grid-row:3; background:purple;}
+/* 色 */
+.receive{background:#2563eb;}
+.toss{background:#16a34a;}
+.attack{background:#dc2626;}
+.block{background:#9333ea;}
+.serve{background:#facc15;color:black;}
+.event{background:#e5e7eb;color:black;}
 
-.serve { grid-column:2 / span 2; grid-row:3; background:yellow; color:black;}
-.event { grid-column:4 / span 2; grid-row:3; background:white; color:black;}
+/* カード */
+.card{
+background:white;
+color:black;
+width:40px;
+height:55px;
+margin:2px;
+font-size:9px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
 
-
-
+/* 手札 */
 #hand{
 display:flex;
 justify-content:center;
 padding:10px;
 }
 
+/* ボタン */
 #choice{
 display:flex;
 justify-content:center;
@@ -69,10 +91,7 @@ padding:10px;
 <div class="area toss"><div class="label">トス</div></div>
 <div class="area attack"><div class="label">アタック</div></div>
 
-<!-- 👇ここだけ復活（位置はそのまま） -->
 <div class="area block"><div class="label">ブロック</div></div>
-
-<div></div>
 <div class="area serve"><div class="label">サーブ</div></div>
 <div class="area event"><div class="label">イベント</div></div>
 </div>
@@ -84,7 +103,7 @@ padding:10px;
 let selected=null;
 let phase="serve";
 
-/* カード生成 */
+/* カード */
 function createCard(){
 const c=document.createElement("div");
 c.className="card";
@@ -103,7 +122,7 @@ hand.appendChild(c);
 
 for(let i=0;i<5;i++) createCard();
 
-/* CPU攻撃 */
+/* CPU */
 function cpuAttack(){
 ["receive","toss","attack"].forEach(p=>{
 const area=document.querySelector("#enemy ."+p);
@@ -128,19 +147,19 @@ showChoice();
 /* 選択 */
 function showChoice(){
 choice.innerHTML=`
-<button onclick="setReceive()">レシーブ</button>
 <button onclick="setBlock()">ブロック</button>
+<button onclick="setReceive()">レシーブ</button>
 `;
+}
+
+function setBlock(){
+phase="block";
+choice.innerText="ブロック（3枚まで）";
 }
 
 function setReceive(){
 phase="receive";
 choice.innerText="レシーブ選択";
-}
-
-function setBlock(){
-phase="block";
-choice.innerText="ブロック選択";
 }
 
 /* 判定 */
@@ -149,16 +168,16 @@ const atk=document.querySelector("#enemy .attack .card");
 
 let total=0;
 
+document.querySelectorAll("#player .block .card")
+.forEach(c=> total+=Number(c.dataset.def));
+
 const recv=document.querySelector("#player .receive .card");
 if(recv) total+=Number(recv.dataset.def);
-
-const block=document.querySelector("#player .block .card");
-if(block) total+=Number(block.dataset.def);
 
 if(atk.dataset.atk > total){
 alert("失点");
 }else{
-alert("防いだ🔥");
+alert("成功🔥");
 }
 
 reset();
@@ -166,9 +185,12 @@ reset();
 
 /* リセット */
 function reset(){
-document.querySelectorAll(".area").forEach(a=>{
-const name=a.classList[1];
-a.innerHTML='<div class="label">'+name+'</div>';
+document.querySelectorAll("#enemy .area").forEach(a=>{
+a.innerHTML='<div class="label">'+a.classList[1]+'</div>';
+});
+
+document.querySelectorAll("#player .area").forEach(a=>{
+a.innerHTML='<div class="label">'+a.classList[1]+'</div>';
 });
 
 choice.innerHTML="";
@@ -189,15 +211,15 @@ phase="enemy";
 cpuAttack();
 }
 
-/* レシーブ */
-else if(phase==="receive" && area.classList.contains("receive")){
-area.appendChild(selected);
-selected=null;
-judge();
-}
-
 /* ブロック */
 else if(phase==="block" && area.classList.contains("block")){
+if(area.children.length>3) return;
+area.appendChild(selected);
+selected=null;
+}
+
+/* レシーブ */
+else if(phase==="receive" && area.classList.contains("receive")){
 area.appendChild(selected);
 selected=null;
 judge();
