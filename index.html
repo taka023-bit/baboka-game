@@ -21,7 +21,7 @@ html, body {
     height: 100dvh;
 }
 
-/* フィールド全体を中央寄せ */
+/* フィールド中央寄せ */
 .field-wrapper {
     display: flex;
     justify-content: center;
@@ -29,7 +29,6 @@ html, body {
     flex: 1;
 }
 
-/* フィールド */
 .field {
     display: grid;
     grid-template-columns: 50px 70px 70px 70px 50px;
@@ -40,6 +39,7 @@ html, body {
 /* 相手 */
 .enemy {
     transform: rotate(180deg);
+    pointer-events: none; /* ← 触れない */
 }
 .enemy .area {
     transform: rotate(180deg);
@@ -54,6 +54,11 @@ html, body {
     align-items: center;
     flex-wrap: wrap;
     font-size: 9px;
+}
+
+/* 置ける場所ハイライト */
+.active {
+    border: 3px solid yellow;
 }
 
 /* カード */
@@ -77,38 +82,34 @@ html, body {
     gap: 5px;
     height: 80px;
     flex-shrink: 0;
-    margin-top: 5px;
 }
 
 /* ===== 配置 ===== */
 
-/* 上段 */
 .set-top { grid-column:1; grid-row:1; background:purple; }
 .side-l { grid-column:2; grid-row:1; background:#ccc; color:black;}
 .center { grid-column:3; grid-row:1; background:#666;}
 .side-r { grid-column:4; grid-row:1; background:#ccc; color:black;}
 .deck { grid-column:5; grid-row:1; background:orange; color:black;}
 
-/* 中段 */
 .receive { grid-column:2; grid-row:2; background:blue;}
 .toss { grid-column:3; grid-row:2; background:green;}
 .attack { grid-column:4; grid-row:2; background:red;}
 .drop { grid-column:5; grid-row:2; background:orange; color:black;}
 
-/* 下段（変更ポイント🔥） */
 .set-bottom { grid-column:1; grid-row:3; background:purple;}
 
-/* サーブ → トスの下 */
+/* 🔥 サーブ（トスの下・横長） */
 .serve {
-    grid-column:3;
+    grid-column:2 / span 2;
     grid-row:3;
     background:yellow;
     color:black;
 }
 
-/* イベント → アタックの下 */
+/* 🔥 イベント（アタックの下・横長） */
 .event {
-    grid-column:4;
+    grid-column:4 / span 2;
     grid-row:3;
     background:white;
     color:black;
@@ -123,7 +124,6 @@ html, body {
     <!-- 相手 -->
     <div class="field-wrapper">
         <div class="field enemy">
-
             <div class="area set-top">セット</div>
             <div class="area side-l">サイド</div>
             <div class="area center">センター</div>
@@ -138,14 +138,12 @@ html, body {
             <div class="area set-bottom">セット</div>
             <div class="area serve">サーブ</div>
             <div class="area event">イベント</div>
-
         </div>
     </div>
 
     <!-- 自分 -->
     <div class="field-wrapper">
-        <div class="field">
-
+        <div class="field" id="playerField">
             <div class="area set-top">セット</div>
             <div class="area side-l">サイド</div>
             <div class="area center">センター</div>
@@ -160,11 +158,9 @@ html, body {
             <div class="area set-bottom">セット</div>
             <div class="area serve">サーブ</div>
             <div class="area event">イベント</div>
-
         </div>
     </div>
 
-    <!-- 手札 -->
     <div id="hand"></div>
 
 </div>
@@ -172,6 +168,11 @@ html, body {
 <script>
 let selectedCard = null;
 
+/* ターン管理 */
+const phases = ["serve", "receive", "toss", "attack"];
+let currentPhase = 0;
+
+/* 手札生成 */
 function createCard(){
     const card = document.createElement("div");
     card.innerText = "カード";
@@ -184,18 +185,47 @@ function createCard(){
     document.getElementById("hand").appendChild(card);
 }
 
-/* 初期手札 */
 for(let i=0;i<3;i++){
     createCard();
 }
 
-document.querySelectorAll(".area").forEach(area=>{
+/* ハイライト更新 */
+function updatePhase(){
+    document.querySelectorAll(".area").forEach(a=>a.classList.remove("active"));
+
+    const phase = phases[currentPhase];
+    document.querySelectorAll(`#playerField .${phase}`).forEach(a=>{
+        a.classList.add("active");
+    });
+
+    console.log("今のフェーズ:", phase);
+}
+
+updatePhase();
+
+/* 配置処理 */
+document.querySelectorAll("#playerField .area").forEach(area=>{
     area.onclick = ()=>{
-        if(selectedCard){
-            area.appendChild(selectedCard);
-            selectedCard = null;
+        if(!selectedCard) return;
+
+        const phase = phases[currentPhase];
+
+        if(!area.classList.contains(phase)){
+            alert("今はここに出せない！");
+            return;
         }
-    }
+
+        area.appendChild(selectedCard);
+        selectedCard = null;
+
+        /* 次フェーズ */
+        currentPhase++;
+        if(currentPhase >= phases.length){
+            currentPhase = 0;
+        }
+
+        updatePhase();
+    };
 });
 </script>
 
