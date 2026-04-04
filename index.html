@@ -1,75 +1,97 @@
+<!DOCTYPE html><html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>バボカBREAK CPU対戦</title>
 <style>
-.field {
-  display: grid;
-  grid-template-columns: repeat(5, 70px);
-  grid-template-rows: repeat(6, 70px);
-  gap: 6px;
-  justify-content: center;
-}
+html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:white; font-family:sans-serif;}
+.container { display:flex; flex-direction:column; height:100dvh;}/* フィールド（固定レイアウト） */ .field { display: grid; grid-template-columns: repeat(5, 70px); grid-template-rows: repeat(6, 70px); gap: 6px; justify-content: center; }
 
-/* 上（相手） */
-.set-top { grid-column:1; grid-row:1; background:purple; }
-.side-l-top { grid-column:2; grid-row:1; background:#ccc; color:black;}
-.center-top { grid-column:3; grid-row:1; background:#666;}
-.side-r-top { grid-column:4; grid-row:1; background:#ccc; color:black;}
-.deck-top { grid-column:5; grid-row:1; background:orange; color:black;}
+/* 上（相手） */ .set-top { grid-column:1; grid-row:1; background:purple; } .side-l-top { grid-column:2; grid-row:1; background:#ccc; color:black;} .center-top { grid-column:3; grid-row:1; background:#666;} .side-r-top { grid-column:4; grid-row:1; background:#ccc; color:black;} .deck-top { grid-column:5; grid-row:1; background:orange; color:black;}
 
-.receive-top { grid-column:2; grid-row:2; background:blue;}
-.toss-top { grid-column:3; grid-row:2; background:green;}
-.attack-top { grid-column:4; grid-row:2; background:red;}
-.drop-top { grid-column:5; grid-row:2; background:darkorange; color:black;}
+.receive-top { grid-column:2; grid-row:2; background:blue;} .toss-top { grid-column:3; grid-row:2; background:green;} .attack-top { grid-column:4; grid-row:2; background:red;} .drop-top { grid-column:5; grid-row:2; background:darkorange; color:black;}
 
-/* 下（自分） */
-.set-bottom { grid-column:1; grid-row:6; background:purple; }
-.side-l { grid-column:2; grid-row:6; background:#ccc; color:black;}
-.center { grid-column:3; grid-row:6; background:#666;}
-.side-r { grid-column:4; grid-row:6; background:#ccc; color:black;}
-.deck { grid-column:5; grid-row:6; background:orange; color:black;}
+/* 下（自分） */ .set-bottom { grid-column:1; grid-row:6; background:purple; } .side-l { grid-column:2; grid-row:6; background:#ccc; color:black;} .center { grid-column:3; grid-row:6; background:#666;} .side-r { grid-column:4; grid-row:6; background:#ccc; color:black;} .deck { grid-column:5; grid-row:6; background:orange; color:black;}
 
-.receive { grid-column:2; grid-row:5; background:blue;}
-.toss { grid-column:3; grid-row:5; background:green;}
-.attack { grid-column:4; grid-row:5; background:red;}
-.drop { grid-column:5; grid-row:5; background:darkorange; color:black;}
+.receive { grid-column:2; grid-row:5; background:blue;} .toss { grid-column:3; grid-row:5; background:green;} .attack { grid-column:4; grid-row:5; background:red;} .drop { grid-column:5; grid-row:5; background:darkorange; color:black;}
 
 .serve { grid-column:3; grid-row:4; background:yellow; color:black;}
 
-.area {
-  border:2px solid white;
-  border-radius:8px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:10px;
-}
-</style>
+.area { border:2px solid white; border-radius:8px; display:flex; justify-content:center; align-items:center; font-size:10px; }
 
-<div class="field">
+.card { width:40px;height:60px;background:white;color:black;border-radius:6px;font-size:9px;display:flex;justify-content:center;align-items:center;margin:2px;cursor:pointer;position:relative;} .selected { outline:2px solid yellow;} .detail { position:absolute; top:-80px; background:#333; border:1px solid #fff; padding:3px; display:none; font-size:10px;} #hand { display:flex;justify-content:center;height:80px;} </style>
 
-<!-- 相手 -->
-<div class="area set-top">セット</div>
+</head>
+<body>
+<div class="container"><div id="phase">フェイズ:開始前</div>
+<div id="ui"></div><!-- フィールド（ここ置き換え済み） --><div class="field"><!-- 相手 --><div class="area set-top">セット</div>
 <div class="area side-l-top">サイド</div>
 <div class="area center-top">センター</div>
 <div class="area side-r-top">サイド</div>
-<div class="area deck-top">デッキ</div>
-
-<div class="area receive-top">レシーブ</div>
-<div class="area toss-top">トス</div>
-<div class="area attack-top">アタック</div>
-<div class="area drop-top">ドロップ</div>
-
-<!-- 中央 -->
-<div class="area serve">サーブ</div>
-
-<!-- 自分 -->
-<div class="area receive">レシーブ</div>
-<div class="area toss">トス</div>
-<div class="area attack">アタック</div>
-<div class="area drop">ドロップ</div>
-
-<div class="area set-bottom">セット</div>
+<div class="area deck-top">デッキ</div><div class="area receive-top" id="cpu_receive">レシーブ</div>
+<div class="area toss-top" id="cpu_toss">トス</div>
+<div class="area attack-top" id="cpu_attack">アタック</div>
+<div class="area drop-top" id="cpu_drop">ドロップ</div><!-- 中央 --><div class="area serve" id="serveArea">サーブ</div><!-- 自分 --><div class="area receive" id="receiveArea">レシーブ</div>
+<div class="area toss" id="tossArea">トス</div>
+<div class="area attack" id="attackArea">アタック</div>
+<div class="area drop" id="dropArea">ドロップ</div><div class="area set-bottom">セット</div>
 <div class="area side-l">サイド</div>
 <div class="area center">センター</div>
 <div class="area side-r">サイド</div>
-<div class="area deck">デッキ</div>
+<div class="area deck">デッキ</div></div><div id="hand"></div>
+</div><script>
+let game={hand:[],deck:[],selected:null,started:false,phase:"start",placed:false};
 
-</div>
+for(let i=0;i<40;i++){game.deck.push({name:"カード"+i});}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+shuffle(game.deck);
+
+function draw(n=1){for(let i=0;i<n;i++){if(game.deck.length===0)return;game.hand.push(game.deck.shift());}}
+
+function renderHand(){
+ let h=document.getElementById('hand');h.innerHTML="";
+ game.hand.forEach(c=>{
+  let d=document.createElement('div');
+  d.className='card'+(c.sel?' selected':'');
+  d.innerText=c.name;
+
+  let det=document.createElement('div');
+  det.className='detail';
+  det.innerText=c.name;
+  d.appendChild(det);
+
+  d.onclick=()=>{
+    c.sel=!c.sel;
+    det.style.display=c.sel?'block':'none';
+    renderHand();
+  };
+
+  h.appendChild(d);
+ });
+}
+
+function place(areaId){
+ if(game.placed)return;
+ let idx=game.hand.findIndex(c=>c.sel);
+ if(idx<0)return;
+
+ let area=document.getElementById(areaId);
+ let card=game.hand[idx];
+
+ let d=document.createElement('div');
+ d.className='card';
+ d.innerText=card.name;
+
+ area.appendChild(d);
+ game.hand.splice(idx,1);
+ game.placed=true;
+ renderHand();
+}
+
+window.onload=()=>{
+ draw(6);
+ renderHand();
+};
+</script></body>
+</html>
