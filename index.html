@@ -12,7 +12,6 @@ html, body {
     overflow: hidden;
     background: #1a1a1a;
     color: white;
-    font-family: sans-serif;
 }
 
 .container {
@@ -30,7 +29,7 @@ html, body {
 
 .field {
     display: grid;
-    grid-template-columns: 50px 70px 70px 70px 50px;
+    grid-template-columns: 60px 70px 70px 70px 60px;
     grid-template-rows: 70px 70px 70px;
     gap: 6px;
 }
@@ -39,61 +38,53 @@ html, body {
     transform: rotate(180deg);
     pointer-events: none;
 }
-.enemy .area {
-    transform: rotate(180deg);
-}
+.enemy .area { transform: rotate(180deg); }
 
 .area {
-    border: 2px solid #fff;
-    border-radius: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    font-size: 9px;
-}
-
-.active {
-    border: 3px solid yellow;
+    border: 2px solid white;
+    border-radius: 6px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    font-size:10px;
 }
 
 .card {
-    width: 40px;
-    height: 60px;
-    background: white;
-    color: black;
-    border-radius: 6px;
-    font-size: 8px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 2px;
+    width:40px;
+    height:60px;
+    background:white;
+    color:black;
+    font-size:9px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    margin:2px;
 }
 
+/* 手札 */
 #hand {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    height: 80px;
+    display:flex;
+    justify-content:center;
+    height:80px;
 }
 
-/* 配置 */
-.set-top { grid-column:1; grid-row:1; background:purple; }
-.side-l { grid-column:2; grid-row:1; background:#ccc; color:black;}
-.center { grid-column:3; grid-row:1; background:#666;}
-.side-r { grid-column:4; grid-row:1; background:#ccc; color:black;}
-.deck { grid-column:5; grid-row:1; background:orange; color:black;}
+/* ボタン */
+#choice {
+    display:flex;
+    justify-content:center;
+    gap:10px;
+}
 
-.receive { grid-column:2; grid-row:2; background:blue;}
-.toss { grid-column:3; grid-row:2; background:green;}
-.attack { grid-column:4; grid-row:2; background:red;}
-.drop { grid-column:5; grid-row:2; background:orange; color:black;}
+/* ===== 配置 ===== */
+.receive {grid-column:2; grid-row:2; background:blue;}
+.toss {grid-column:3; grid-row:2; background:green;}
+.attack {grid-column:4; grid-row:2; background:red;}
 
-.set-bottom { grid-column:1; grid-row:3; background:purple;}
-
-.serve { grid-column:2 / span 2; grid-row:3; background:yellow; color:black;}
-.event { grid-column:4 / span 2; grid-row:3; background:white; color:black;}
+.block {grid-column:2; grid-row:3; background:purple;}
+.serve {grid-column:3; grid-row:3; background:yellow; color:black;}
+.event {grid-column:4; grid-row:3; background:white; color:black;}
 
 </style>
 </head>
@@ -102,122 +93,139 @@ html, body {
 
 <div class="container">
 
-    <!-- 相手 -->
-    <div class="field-wrapper">
-        <div class="field enemy" id="enemyField">
-            <div class="area receive"></div>
-            <div class="area toss"></div>
-            <div class="area attack"></div>
-        </div>
-    </div>
+<!-- 相手 -->
+<div class="field-wrapper">
+<div class="field enemy" id="enemyField">
+    <div class="area receive"></div>
+    <div class="area toss"></div>
+    <div class="area attack"></div>
+</div>
+</div>
 
-    <!-- 自分 -->
-    <div class="field-wrapper">
-        <div class="field" id="playerField">
-            <div class="area receive"></div>
-            <div class="area toss"></div>
-            <div class="area attack"></div>
-        </div>
-    </div>
+<!-- 自分 -->
+<div class="field-wrapper">
+<div class="field" id="playerField">
+    <div class="area receive"></div>
+    <div class="area toss"></div>
+    <div class="area attack"></div>
 
-    <div id="hand"></div>
+    <div class="area block"></div>
+    <div class="area serve"></div>
+    <div class="area event"></div>
+</div>
+</div>
+
+<div id="hand"></div>
+
+<div id="choice"></div>
 
 </div>
 
 <script>
-let selectedCard = null;
+let selectedCard=null;
+let mode="serve"; // 現在状態
 
-const phases = ["serve","receive","toss","attack"];
-let currentPhase = 0;
-
-/* カード生成（能力付き） */
 function createCard(){
-    const card = document.createElement("div");
-    card.classList.add("card");
+    const card=document.createElement("div");
+    card.className="card";
 
-    const atk = Math.floor(Math.random()*5)+1;
-    const def = Math.floor(Math.random()*5)+1;
+    const atk=Math.floor(Math.random()*5)+1;
+    const def=Math.floor(Math.random()*5)+1;
 
-    card.dataset.atk = atk;
-    card.dataset.def = def;
+    card.dataset.atk=atk;
+    card.dataset.def=def;
 
-    card.innerHTML = `
-        <div>A:${atk}</div>
-        <div>D:${def}</div>
-    `;
+    card.innerHTML=`A:${atk}<br>D:${def}`;
 
-    card.onclick = () => selectedCard = card;
+    card.onclick=()=>selectedCard=card;
 
-    document.getElementById("hand").appendChild(card);
+    hand.appendChild(card);
 }
 
-for(let i=0;i<3;i++) createCard();
+for(let i=0;i<5;i++) createCard();
 
-/* CPU行動 */
-function cpuPlay(phase){
-    const area = document.querySelector(`#enemyField .${phase}`);
-    if(!area) return;
+/* CPU攻撃 */
+function cpuTurn(){
+    ["receive","toss","attack"].forEach(p=>{
+        const area=document.querySelector("#enemyField ."+p);
+        const card=document.createElement("div");
+        card.className="card";
 
-    const card = document.createElement("div");
-    card.classList.add("card");
+        const atk=Math.floor(Math.random()*5)+1;
+        const def=Math.floor(Math.random()*5)+1;
 
-    const atk = Math.floor(Math.random()*5)+1;
-    const def = Math.floor(Math.random()*5)+1;
+        card.dataset.atk=atk;
+        card.dataset.def=def;
+        card.innerHTML=`A:${atk}<br>D:${def}`;
 
-    card.dataset.atk = atk;
-    card.dataset.def = def;
+        area.appendChild(card);
+    });
 
-    card.innerHTML = `
-        <div>A:${atk}</div>
-        <div>D:${def}</div>
-    `;
-
-    area.appendChild(card);
+    showChoice();
 }
 
-/* 勝敗 */
+/* 選択 */
+function showChoice(){
+    choice.innerHTML=`
+        <button onclick="block()">ブロック</button>
+        <button onclick="receive()">レシーブ</button>
+    `;
+}
+
+/* ブロック */
+function block(){
+    mode="block";
+    choice.innerHTML="ブロック（最大3枚）";
+}
+
+/* レシーブ */
+function receive(){
+    mode="receive";
+    choice.innerHTML="レシーブ";
+}
+
+/* 判定 */
 function battle(){
-    const pAtk = document.querySelector("#playerField .attack .card");
-    const eDef = document.querySelector("#enemyField .receive .card");
+    const atk=document.querySelector("#enemyField .attack .card");
+    const blocks=document.querySelectorAll("#playerField .block .card");
 
-    if(!pAtk || !eDef) return;
+    let totalDef=0;
+    blocks.forEach(c=>totalDef+=Number(c.dataset.def));
 
-    const atk = Number(pAtk.dataset.atk);
-    const def = Number(eDef.dataset.def);
-
-    if(atk > def){
-        alert("得点！！🔥");
-    } else {
-        alert("ブロックされた…");
+    if(atk && atk.dataset.atk > totalDef){
+        alert("失点…");
+    }else{
+        alert("防いだ🔥");
     }
+
+    location.reload();
 }
 
 /* 配置 */
 document.querySelectorAll("#playerField .area").forEach(area=>{
-    area.onclick = ()=>{
+    area.onclick=()=>{
         if(!selectedCard) return;
 
-        const phase = phases[currentPhase];
-
-        if(!area.classList.contains(phase)){
-            alert("今はここに出せない");
-            return;
+        if(mode==="serve" && area.classList.contains("serve")){
+            area.appendChild(selectedCard);
+            selectedCard=null;
+            mode="enemy";
+            cpuTurn();
         }
 
-        area.appendChild(selectedCard);
-        selectedCard = null;
+        else if(mode==="block" && area.classList.contains("block")){
+            if(area.children.length>=3){
+                alert("3枚まで！");
+                return;
+            }
+            area.appendChild(selectedCard);
+            selectedCard=null;
+        }
 
-        /* CPU動く */
-        cpuPlay(phase);
-
-        /* 最後ならバトル */
-        if(phase === "attack"){
+        else if(mode==="receive" && area.classList.contains("receive")){
+            area.appendChild(selectedCard);
+            selectedCard=null;
             battle();
-        }
-
-        currentPhase++;
-        if(currentPhase >= phases.length){
-            currentPhase = 0;
         }
     };
 });
