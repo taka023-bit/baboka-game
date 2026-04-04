@@ -65,25 +65,25 @@ html, body {
 .event { grid-column:4; grid-row:3; background:white; color:black; }
 
 </style></head>
-<body><div class="container"><div class="field-wrapper">
-    <div class="field" id="playerField"></div>
-</div><div class="field-wrapper">
+<body><div class="container"><!-- CPUフィールド（逆さま） --><div class="field-wrapper">
     <div class="field enemy" id="cpuField"></div>
+</div><!-- プレイヤーフィールド（正常向き） --><div class="field-wrapper">
+    <div class="field" id="playerField"></div>
 </div><script>
 function renderField(id){
     const field=document.getElementById(id);
     field.innerHTML='';
 
-    const areas=[
-        'set-top','side-l','center','side-r','deck',
-        'receive','toss','attack','drop',
-        'set-bottom','serve','event'
-    ];
-
     const names=[
         'セット上','サイド左','センター','サイド右','デッキ',
         'レシーブ','トス','アタック','ドロップ',
         'セット下','サーブ','イベント'
+    ];
+
+    const areas=[
+        'set-top','side-l','center','side-r','deck',
+        'receive','toss','attack','drop',
+        'set-bottom','serve','event'
     ];
 
     areas.forEach((a,i)=>{
