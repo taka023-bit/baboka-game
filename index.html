@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="ja">
+<!DOCTYPE html><html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,7 +42,8 @@ button { padding:4px 8px;margin:2px;}
 <div class="area set-bottom">セット</div><div class="area serve" id="serveArea">サーブ</div><div class="area event">イベント</div>
 </div></div><div id="hand"></div>
 </div><script>
-let game={hand:[],deck:[],selected:null};
+let game={hand:[],deck:[],selected:null,started:false,phase:0,placed:false};
+const phases=["serve","draw","receive","toss","attack"];
 
 for(let i=1;i<=40;i++){game.deck.push({name:"C"+i});}
 
@@ -63,71 +63,101 @@ function renderHand(){
  });
 }
 
-// ===== サイコロ先 =====
+function place(areaId){
+ if(game.selected==null)return;
+ let area=document.getElementById(areaId);
+ if(area.children.length>0){alert("ここには置けない");return;}
+ let card=game.hand[game.selected];
+ let d=document.createElement('div');
+ d.className='card';
+ d.innerText=card.name;
+ area.appendChild(d);
+ game.hand.splice(game.selected,1);
+ game.selected=null;
+ game.placed=true;
+ renderHand();
+}
+
+// ===== サイコロ =====
 function startDice(){
  let ui=document.getElementById('setUpUI');
- ui.innerHTML="サイコロを振る";
+ ui.innerHTML="サイコロ";
  let btn=document.createElement('button');btn.innerText="振る";
  btn.onclick=()=>{
   let p=Math.floor(Math.random()*6)+1;
   let e=Math.floor(Math.random()*6)+1;
-
-  if(p===e){
-    ui.innerHTML=`あなた:${p} CPU:${e}<br>引き分け！もう一度`;
-    setTimeout(startDice,1000);
-    return;
-  }
-
+  if(p===e){ui.innerHTML=`${p}-${e} 引き分け`;setTimeout(startDice,1000);return;}
   ui.innerHTML=`あなた:${p} CPU:${e}`;
-
-  let choose=document.createElement('div');
-  choose.innerHTML="サーブかレシーブ選択";
-
   let s=document.createElement('button');s.innerText="サーブ";
   let r=document.createElement('button');r.innerText="レシーブ";
-
-  s.onclick=()=>startMulligan();
-  r.onclick=()=>startMulligan();
-
+  s.onclick=startMulligan; r.onclick=startMulligan;
   ui.appendChild(document.createElement('br'));
-  ui.appendChild(choose);
-  ui.appendChild(s);
-  ui.appendChild(r);
+  ui.appendChild(s); ui.appendChild(r);
  };
  ui.appendChild(document.createElement('br'));
  ui.appendChild(btn);
 }
 
-// ===== 選択マリガン =====
+// ===== マリガン =====
 function startMulligan(){
  let ui=document.getElementById('setUpUI');
- ui.innerHTML="交換したいカードを選択";
-
+ ui.innerHTML="交換したいカード選択";
  renderHand();
-
- let btn=document.createElement('button');
- btn.innerText="交換";
+ let btn=document.createElement('button');btn.innerText="交換";
  btn.onclick=()=>{
-   let keep=[];
-   let back=[];
-
-   game.hand.forEach(c=>{
-     if(c.sel) back.push(c);
-     else keep.push(c);
-   });
-
-   game.deck=game.deck.concat(back);
-   shuffle();
-
-   game.hand=keep;
-   draw(back.length);
-
-   renderHand();
-   ui.innerHTML="マリガン完了";
+  let keep=[],back=[];
+  game.hand.forEach(c=>{if(c.sel) back.push(c); else keep.push(c);});
+  game.deck=game.deck.concat(back);
+  shuffle();
+  game.hand=keep;
+  draw(back.length);
+  renderHand();
+  ui.innerHTML="マリガン完了";
+  setTimeout(startGame,800);
  };
-
  ui.appendChild(document.createElement('br'));
  ui.appendChild(btn);
+}
+
+// ===== ゲーム開始 =====
+function startGame(){
+ game.started=true;
+ setPhase(0);
+}
+
+function setPhase(i){
+ game.phase=i;
+ game.placed=false;
+ let p=phases[i];
+ document.getElementById('phaseDisplay').innerText="フェイズ: "+p;
+ handlePhase(p);
+}
+
+function nextPhase(){
+ if(!game.placed){alert("カード置いて");return;}
+ let i=game.phase+1;
+ if(i>=phases.length)i=0;
+ setPhase(i);
+}
+
+function handlePhase(p){
+ let ui=document.getElementById('setUpUI');
+ ui.innerHTML="";
+
+ if(p==="serve"){document.getElementById('serveArea').onclick=()=>{game.selected=findSelected();place('serveArea');};}
+ if(p==="receive"){document.getElementById('receiveArea').onclick=()=>{game.selected=findSelected();place('receiveArea');};}
+ if(p==="toss"){document.getElementById('tossArea').onclick=()=>{game.selected=findSelected();place('tossArea');};}
+ if(p==="attack"){document.getElementById('attackArea').onclick=()=>{game.selected=findSelected();place('attackArea');};}
+
+ if(p==="draw"){draw();renderHand();setTimeout(()=>setPhase(2),500);return;}
+
+ let btn=document.createElement('button');btn.innerText="次へ";
+ btn.onclick=nextPhase;
+ ui.appendChild(btn);
+}
+
+function findSelected(){
+ return game.hand.findIndex(c=>c.sel);
 }
 
 window.onload=()=>{
