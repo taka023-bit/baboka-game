@@ -11,17 +11,7 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
 .field { display:grid; grid-template-columns:50px 70px 70px 70px 50px; grid-template-rows:70px 70px 70px; gap:6px;}
 .enemy { transform:rotate(180deg);}
 .enemy .area { transform:rotate(180deg);}
-.area {
-    border:2px solid #fff;
-    border-radius:8px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    flex-wrap:wrap;
-    font-size:9px;
-    position: relative;
-    text-align:center;
-}
+.area { border:2px solid #fff; border-radius:8px; display:flex; justify-content:center; align-items:center; flex-wrap:wrap; font-size:9px; position: relative; text-align:center;}
 .card { width:40px; height:60px; background:white; color:black; border-radius:6px; font-size:9px; display:flex; justify-content:center; align-items:center; margin:2px; cursor:pointer;}
 #hand { display:flex; justify-content:center; gap:5px; height:80px; flex-shrink:0; margin-top:5px;}
 .set-top { grid-column:1; grid-row:1; background:purple; }
@@ -101,26 +91,25 @@ button { padding:4px 8px; margin:2px; font-size:12px;}
 
 <script>
 // ------------------------------
-// デッキ定義（サンプル）
+// デッキ定義（サンプル40枚）
 const deckData = [
-    {name:"田中",serve:5,block:3,receive:4,toss:2,attack:6,skill:"レシーブ2ガッツで+1"}, 
-    {name:"佐藤",serve:4,block:5,receive:3,toss:6,attack:3,skill:"トス2ガッツで+1"}, 
-    {name:"鈴木",serve:6,block:2,receive:5,toss:3,attack:4,skill:"アタック3ガッツで+1"},
-    {name:"高橋",serve:3,block:6,receive:2,toss:5,attack:4,skill:""},
-    // ガッツスキルキャラ
-    {name:"中村",serve:4,block:3,receive:5,toss:4,attack:4,skill:"レシーブ2ガッツでドロー"},
-    {name:"小林",serve:5,block:4,receive:3,toss:5,attack:5,skill:"トス3ガッツでイベントカード1枚手札"},
-    {name:"山田",serve:6,block:3,receive:4,toss:3,attack:5,skill:"アタック+2相手レシーブ-1"},
-    {name:"松本",serve:3,block:5,receive:4,toss:5,attack:4,skill:""},
+    {name:"田中",serve:5,block:3,receive:4,toss:2,attack:6,skillArea:"レシーブ", skillEffect:["2ガッツ払えばレシーブポイント+1"]}, 
+    {name:"佐藤",serve:4,block:5,receive:3,toss:6,attack:3,skillArea:"トス", skillEffect:["2ガッツ払えばトスポイント+1","3ガッツ払えばイベントカード1枚手札"]}, 
+    {name:"鈴木",serve:6,block:2,receive:5,toss:3,attack:4,skillArea:"アタック", skillEffect:["3ガッツ払えばアタック+2","相手レシーブ-1"]},
+    {name:"高橋",serve:3,block:6,receive:2,toss:5,attack:4,skillArea:"レシーブ", skillEffect:[]},
+    {name:"中村",serve:4,block:3,receive:5,toss:4,attack:4,skillArea:"レシーブ", skillEffect:["2ガッツ払えばドロー"]},
+    {name:"小林",serve:5,block:4,receive:3,toss:5,attack:5,skillArea:"トス", skillEffect:["3ガッツでイベントカード1枚手札"]},
+    {name:"山田",serve:6,block:3,receive:4,toss:3,attack:5,skillArea:"アタック", skillEffect:["アタック+2 相手レシーブ-1"]},
+    {name:"松本",serve:3,block:5,receive:4,toss:5,attack:4,skillArea:"トス", skillEffect:[]},
     // イベントカード8枚
-    {name:"イベント1",type:"event",effect:"レシーブ+2 1ドロー"}, 
-    {name:"イベント2",type:"event",effect:"レシーブ+1 キャラ〇〇なら+2"}, 
-    {name:"イベント3",type:"event",effect:"トス+1 1ドロー"}, 
-    {name:"イベント4",type:"event",effect:"トス+1 次ターン相手アタック-1"}, 
-    {name:"イベント5",type:"event",effect:"アタック+1 1ドロー"}, 
-    {name:"イベント6",type:"event",effect:"アタック+2 特定キャラで追加効果"}, 
-    {name:"イベント7",type:"event",effect:"パラメータ+1 1ドロー"}, 
-    {name:"イベント8",type:"event",effect:"ガッツ2枚回収可能"}
+    {name:"イベント1",type:"event",skillArea:"イベント", skillEffect:["レシーブ+2 1ドロー"]}, 
+    {name:"イベント2",type:"event",skillArea:"イベント", skillEffect:["レシーブ+1 キャラ〇〇なら+2"]}, 
+    {name:"イベント3",type:"event",skillArea:"イベント", skillEffect:["トス+1 1ドロー"]}, 
+    {name:"イベント4",type:"event",skillArea:"イベント", skillEffect:["トス+1 次ターン相手アタック-1"]}, 
+    {name:"イベント5",type:"event",skillArea:"イベント", skillEffect:["アタック+1 1ドロー"]}, 
+    {name:"イベント6",type:"event",skillArea:"イベント", skillEffect:["アタック+2 特定キャラで追加効果"]}, 
+    {name:"イベント7",type:"event",skillArea:"イベント", skillEffect:["パラメータ+1 1ドロー"]}, 
+    {name:"イベント8",type:"event",skillArea:"イベント", skillEffect:["手札が4枚以下でガッツ2枚回収可能"]}
 ];
 
 // ------------------------------
@@ -147,7 +136,8 @@ function createCard(cardData,owner="player"){
     card.dataset.receive = cardData.receive||0;
     card.dataset.toss = cardData.toss||0;
     card.dataset.attack = cardData.attack||0;
-    card.dataset.skill = cardData.skill||cardData.effect||"";
+    card.dataset.skillArea = cardData.skillArea||"";
+    card.dataset.skillEffect = JSON.stringify(cardData.skillEffect||[]);
     card.onclick = ()=>showCardInfo(cardData);
     if(owner==="player") document.getElementById("hand").appendChild(card);
     return card;
@@ -164,7 +154,11 @@ function showCardInfo(card){
     if(card.toss!==undefined) stats+=`トス:${card.toss} `;
     if(card.attack!==undefined) stats+=`アタック:${card.attack} `;
     document.getElementById("popupStats").innerText = stats;
-    document.getElementById("popupSkill").innerText = card.skill||"";
+    let skillText = `【登場】${card.skillArea}エリア\n`;
+    if(card.skillEffect && card.skillEffect.length>0){
+        for(let s of card.skillEffect) skillText += `- ${s}\n`;
+    } else skillText += "- なし";
+    document.getElementById("popupSkill").innerText = skillText;
     document.getElementById("popup").style.display="block";
 }
 function closePopup(){ document.getElementById("popup").style.display="none"; }
