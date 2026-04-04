@@ -1,133 +1,106 @@
-<!DOCTYPE html><html lang="ja">
+<!DOCTYPE html>
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>バボカBREAK 簡易ゲーム</title>
+<title>バボカBREAK</title>
+
 <style>
-body { font-family: sans-serif; background:#0f172a; color:white; text-align:center; }
-button { padding:10px 20px; margin:5px; border-radius:10px; border:none; }
-.card { background:#1e293b; padding:10px; margin:5px; border-radius:10px; display:inline-block; }
+body {
+    background: #1a1a1a;
+    color: white;
+    font-family: sans-serif;
+    text-align: center;
+}
+
+.field {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 10px;
+    padding: 10px;
+}
+
+.row {
+    display: contents;
+}
+
+.area {
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 15px;
+    min-height: 60px;
+    font-size: 14px;
+}
+
+/* 上段 */
+.top-left { grid-column: 1; }
+.top-center { grid-column: 2; display: flex; justify-content: space-around; }
+.top-right { grid-column: 3; }
+
+/* 中段 */
+.middle {
+    grid-column: 1 / span 3;
+    display: flex;
+    justify-content: space-around;
+}
+
+/* 下段 */
+.bottom {
+    grid-column: 1 / span 3;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* ブロック3枠 */
+.block {
+    width: 30%;
+}
+
+/* デッキ＆ドロップ縦 */
+.deck-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
 </style>
 </head>
+
 <body>
-<h1>🏐 バボカ!! BREAK</h1>
-<div id="log"></div>
-<div id="actions"></div><script>
-let playerHP = 3;
-let cpuHP = 3;
 
-function log(text){
-  document.getElementById("log").innerHTML += "<p>"+text+"</p>";
-}
+<h1>バボカBREAK</h1>
 
-function randomPoint(){
-  return Math.floor(Math.random()*10)+1;
-}
+<div class="field">
 
-function startTurn(){
-  document.getElementById("actions").innerHTML = "";
-  let serve = randomPoint();
-  log("あなたのサーブ: " + serve);
+    <!-- 上段 -->
+    <div class="area top-left">セット</div>
 
-  createButton("レシーブ", ()=>receive(serve));
-  createButton("ブロック", ()=>block(serve));
-}
+    <div class="top-center">
+        <div class="area block">サイド</div>
+        <div class="area block">センター</div>
+        <div class="area block">サイド</div>
+    </div>
 
-function createButton(name, func){
-  let btn = document.createElement("button");
-  btn.innerText = name;
-  btn.onclick = func;
-  document.getElementById("actions").appendChild(btn);
-}
+    <div class="deck-area top-right">
+        <div class="area">デッキ</div>
+        <div class="area">ドロップ</div>
+    </div>
 
-function receive(attack){
-  let receive = randomPoint();
-  log("あなたのレシーブ: " + receive);
+    <!-- 中段 -->
+    <div class="middle">
+        <div class="area">レシーブ</div>
+        <div class="area">トス</div>
+        <div class="area">アタック</div>
+    </div>
 
-  if(receive >= attack){
-    log("レシーブ成功！トスへ");
-    toss();
-  } else {
-    losePoint("あなた");
-  }
-}
+    <!-- 下段 -->
+    <div class="bottom">
+        <div class="area">サーブ</div>
+        <div class="area">イベント</div>
+    </div>
 
-function toss(){
-  let toss = randomPoint();
-  let attack = randomPoint();
-  let total = toss + attack;
-  log("トス+アタック: " + total);
+</div>
 
-  cpuDefense(total);
-}
-
-function block(attack){
-  let block = randomPoint() + randomPoint();
-  log("あなたのブロック: " + block);
-
-  if(block >= attack){
-    log("ブロック成功！");
-    startTurn();
-  } else {
-    losePoint("あなた");
-  }
-}
-
-function cpuDefense(attack){
-  let choice = Math.random() > 0.5 ? "receive" : "block";
-
-  if(choice === "receive"){
-    let cpu = randomPoint();
-    log("CPUレシーブ: " + cpu);
-
-    if(cpu >= attack){
-      log("CPU成功！反撃");
-      cpuAttack();
-    } else {
-      losePoint("CPU");
-    }
-  } else {
-    let cpu = randomPoint()+randomPoint();
-    log("CPUブロック: " + cpu);
-
-    if(cpu >= attack){
-      log("CPUブロック成功");
-      cpuAttack();
-    } else {
-      losePoint("CPU");
-    }
-  }
-}
-
-function cpuAttack(){
-  let attack = randomPoint();
-  log("CPU攻撃: " + attack);
-
-  createButton("レシーブ", ()=>receive(attack));
-  createButton("ブロック", ()=>block(attack));
-}
-
-function losePoint(who){
-  if(who === "あなた"){
-    playerHP--;
-    log("あなた失点！ 残り: " + playerHP);
-  } else {
-    cpuHP--;
-    log("CPU失点！ 残り: " + cpuHP);
-  }
-
-  if(playerHP <= 0){
-    log("あなたの負け");
-    return;
-  }
-  if(cpuHP <= 0){
-    log("あなたの勝ち");
-    return;
-  }
-
-  startTurn();
-}
-
-startTurn();
-</script></body>
+</body>
 </html>
