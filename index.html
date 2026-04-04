@@ -12,7 +12,6 @@ color:white;
 font-family:sans-serif;
 }
 
-/* フィールド（←ここ絶対変更なし） */
 .field{
 display:grid;
 grid-template-columns:repeat(5,1fr);
@@ -20,7 +19,6 @@ gap:8px;
 padding:10px;
 }
 
-/* エリア */
 .area{
 border:2px solid white;
 border-radius:8px;
@@ -42,14 +40,13 @@ opacity:0.7;
 pointer-events:none;
 }
 
-/* 色 */
 .receive{background:#2563eb;}
 .toss{background:#16a34a;}
 .attack{background:#dc2626;}
+.block{background:#7c3aed;} /* ←復活 */
 .serve{background:#facc15;color:black;}
 .event{background:#e5e7eb;color:black;}
 
-/* カード */
 .card{
 background:white;
 color:black;
@@ -63,14 +60,12 @@ justify-content:center;
 cursor:pointer;
 }
 
-/* 手札 */
 #hand{
 display:flex;
 justify-content:center;
 padding:10px;
 }
 
-/* ボタン */
 #choice{
 display:flex;
 justify-content:center;
@@ -84,26 +79,23 @@ padding:10px;
 
 <!-- 相手 -->
 <div class="field" id="enemy">
-<div></div>
 <div class="area receive"><div class="label">レシーブ</div></div>
 <div class="area toss"><div class="label">トス</div></div>
 <div class="area attack"><div class="label">アタック</div></div>
-<div></div>
 </div>
 
 <!-- 自分 -->
 <div class="field" id="player">
-<div></div>
 <div class="area receive"><div class="label">レシーブ</div></div>
 <div class="area toss"><div class="label">トス</div></div>
 <div class="area attack"><div class="label">アタック</div></div>
-<div></div>
 
-<div></div>
+<!-- 👇ここだけ復活（位置はそのまま） -->
+<div class="area block"><div class="label">ブロック</div></div>
+
 <div></div>
 <div class="area serve"><div class="label">サーブ</div></div>
 <div class="area event"><div class="label">イベント</div></div>
-<div></div>
 </div>
 
 <div id="hand"></div>
@@ -158,12 +150,18 @@ showChoice();
 function showChoice(){
 choice.innerHTML=`
 <button onclick="setReceive()">レシーブ</button>
+<button onclick="setBlock()">ブロック</button>
 `;
 }
 
 function setReceive(){
 phase="receive";
 choice.innerText="レシーブ選択";
+}
+
+function setBlock(){
+phase="block";
+choice.innerText="ブロック選択";
 }
 
 /* 判定 */
@@ -174,6 +172,9 @@ let total=0;
 
 const recv=document.querySelector("#player .receive .card");
 if(recv) total+=Number(recv.dataset.def);
+
+const block=document.querySelector("#player .block .card");
+if(block) total+=Number(block.dataset.def);
 
 if(atk.dataset.atk > total){
 alert("失点");
@@ -195,7 +196,7 @@ choice.innerHTML="";
 phase="serve";
 }
 
-/* クリック処理 */
+/* クリック */
 document.querySelectorAll("#player .area").forEach(area=>{
 area.onclick=()=>{
 if(!selected) return;
@@ -211,6 +212,13 @@ cpuAttack();
 
 /* レシーブ */
 else if(phase==="receive" && area.classList.contains("receive")){
+area.appendChild(selected);
+selected=null;
+judge();
+}
+
+/* ブロック */
+else if(phase==="block" && area.classList.contains("block")){
 area.appendChild(selected);
 selected=null;
 judge();
