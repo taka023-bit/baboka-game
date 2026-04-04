@@ -1,19 +1,45 @@
-<!DOCTYPE html><html lang="ja">
+<!DOCTYPE html>
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>バボカBREAK CPU対戦</title>
 <style>
 html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:white; font-family:sans-serif;}
-.container { display:flex; flex-direction:column; height:100dvh;}/* ===== フィールド見た目（絶対変更しない）===== */ .field-wrapper { display: flex; justify-content: center; align-items: center; flex: 1; } .field { display: grid; grid-template-columns: 50px 70px 70px 70px 50px; grid-template-rows: 70px 70px 70px; gap: 6px; } .enemy { transform: rotate(180deg); } .enemy .area { transform: rotate(180deg); } .area { border: 2px solid #fff; border-radius: 8px; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; font-size: 9px; position: relative; text-align: center; } .set-top { grid-column:1; grid-row:1; background:purple; } .side-l { grid-column:2; grid-row:1; background:#ccc; color:black;} .center { grid-column:3; grid-row:1; background:#666;} .side-r { grid-column:4; grid-row:1; background:#ccc; color:black;} .deck { grid-column:5; grid-row:1; background:orange; color:black;} .receive { grid-column:2; grid-row:2; background:blue;} .toss { grid-column:3; grid-row:2; background:green;} .attack { grid-column:4; grid-row:2; background:red;} .drop { grid-column:5; grid-row:2; background:orange; color:black;} .set-bottom { grid-column:1; grid-row:3; background:purple;} .serve { grid-column:3; grid-row:3; background:yellow; color:black;} .event { grid-column:4; grid-row:3; background:white; color:black;}
+.container { display:flex; flex-direction:column; height:100dvh;}
 
-.card { width:40px; height:60px; background:white; color:black; border-radius:6px; font-size:9px; display:flex; justify-content:center; align-items:center; margin:2px; cursor:pointer;} #hand { display:flex; justify-content:center; gap:5px; height:80px; flex-shrink:0; margin-top:5px;} #setUpUI { text-align:center; margin:5px;} button { padding:4px 8px; margin:2px; font-size:12px;} .card-detail { position:absolute; top:-150px; left:0; width:150px; background:#333; border:1px solid #fff; border-radius:6px; padding:4px; display:none; font-size:10px; z-index:10;} </style>
+/* ===== フィールド見た目（絶対変更しない）===== */
+.field-wrapper { display: flex; justify-content: center; align-items: center; flex: 1; }
+.field { display: grid; grid-template-columns: 50px 70px 70px 70px 50px; grid-template-rows: 70px 70px 70px; gap: 6px; }
+.enemy { transform: rotate(180deg); }
+.enemy .area { transform: rotate(180deg); }
+.area { border: 2px solid #fff; border-radius: 8px; display: flex; justify-content: center; align-items: center; flex-wrap: wrap; font-size: 9px; position: relative; text-align: center; }
+.set-top { grid-column:1; grid-row:1; background:purple; }
+.side-l { grid-column:2; grid-row:1; background:#ccc; color:black;}
+.center { grid-column:3; grid-row:1; background:#666;}
+.side-r { grid-column:4; grid-row:1; background:#ccc; color:black;}
+.deck { grid-column:5; grid-row:1; background:orange; color:black;}
+.receive { grid-column:2; grid-row:2; background:blue;}
+.toss { grid-column:3; grid-row:2; background:green;}
+.attack { grid-column:4; grid-row:2; background:red;}
+.drop { grid-column:5; grid-row:2; background:orange; color:black;}
+.set-bottom { grid-column:1; grid-row:3; background:purple;}
+.serve { grid-column:3; grid-row:3; background:yellow; color:black;}
+.event { grid-column:4; grid-row:3; background:white; color:black;}
 
+.card { width:40px; height:60px; background:white; color:black; border-radius:6px; font-size:9px; display:flex; justify-content:center; align-items:center; margin:2px; cursor:pointer;}
+#hand { display:flex; justify-content:center; gap:5px; height:80px; flex-shrink:0; margin-top:5px;}
+#setUpUI { text-align:center; margin:5px;}
+button { padding:4px 8px; margin:2px; font-size:12px;}
+.card-detail { position:absolute; top:-150px; left:0; width:150px; background:#333; border:1px solid #fff; border-radius:6px; padding:4px; display:none; font-size:10px; z-index:10;}
+</style>
 </head>
 <body>
 <div class="container">
 <div id="phaseDisplay" style="text-align:center; margin:5px;">フェイズ: ゲーム進行前</div>
-<div id="setUpUI"></div><div class="field-wrapper">
+<div id="setUpUI"></div>
+
+<div class="field-wrapper">
 <div class="field enemy">
 <div class="area set-top">セット</div>
 <div class="area side-l">サイド</div>
@@ -28,7 +54,9 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
 <div class="area serve">サーブ</div>
 <div class="area event">イベント</div>
 </div>
-</div><div class="field-wrapper">
+</div>
+
+<div class="field-wrapper">
 <div class="field">
 <div class="area set-top">セット</div>
 <div class="area side-l">サイド</div>
@@ -43,7 +71,9 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
 <div class="area serve">サーブ</div>
 <div class="area event">イベント</div>
 </div>
-</div><div id="hand"></div>
+</div>
+
+<div id="hand"></div>
 </div>
 <script>
 let gameState = {
@@ -52,23 +82,98 @@ let gameState = {
     deck: [],
     hand: {player: [], enemy: []},
     selectedCard: null
-};// キャラクター生成（名前だけで仮） for(let i=1;i<=40;i++){ gameState.deck.push({name:'キャラ'+i, serve:Math.floor(Math.random()*3), block:Math.floor(Math.random()*3), receive:Math.floor(Math.random()*6), toss:Math.floor(Math.random()*3), attack:Math.floor(Math.random()*4), skill:[]}); }
+};
 
-// シャッフル function shuffleDeck(){ for(let i=gameState.deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [gameState.deck[i], gameState.deck[j]]=[gameState.deck[j], gameState.deck[i]]; } } shuffleDeck();
+// キャラクター生成（名前だけで仮）
+for(let i=1;i<=40;i++){
+    gameState.deck.push({name:'キャラ'+i, serve:Math.floor(Math.random()*3), block:Math.floor(Math.random()*3), receive:Math.floor(Math.random()*6), toss:Math.floor(Math.random()*3), attack:Math.floor(Math.random()*4), skill:[]});
+}
 
-// カード描画 function drawCard(owner){ if(gameState.deck.length>0){ const c = gameState.deck.shift(); gameState.hand[owner].push(c); if(owner==='player') createCardElement(c); } }
+// シャッフル
+function shuffleDeck(){
+    for(let i=gameState.deck.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [gameState.deck[i], gameState.deck[j]]=[gameState.deck[j], gameState.deck[i]];
+    }
+}
+shuffleDeck();
 
-function createCardElement(card){ const div=document.createElement('div'); div.classList.add('card'); div.innerText=card.name; div.onmouseover=()=>showCardDetail(div,card); div.onmouseout=()=>hideCardDetail(div); div.onclick=()=>{ gameState.selectedCard=card; }; document.getElementById('hand').appendChild(div); }
+// カード描画
+function drawCard(owner){
+    if(gameState.deck.length>0){
+        const c = gameState.deck.shift();
+        gameState.hand[owner].push(c);
+        if(owner==='player') createCardElement(c);
+    }
+}
 
-function showCardDetail(div,card){ let detail = div.querySelector('.card-detail'); if(!detail){ detail = document.createElement('div'); detail.classList.add('card-detail'); detail.innerHTML=Serve:${card.serve} Block:${card.block} Receive:${card.receive} Toss:${card.toss} Attack:${card.attack}; div.appendChild(detail); } detail.style.display='block'; } function hideCardDetail(div){ const detail = div.querySelector('.card-detail'); if(detail) detail.style.display='none'; }
+function createCardElement(card){
+    const div=document.createElement('div');
+    div.classList.add('card');
+    div.innerText=card.name;
+    div.onmouseover=()=>showCardDetail(div,card);
+    div.onmouseout=()=>hideCardDetail(div);
+    div.onclick=()=>{ gameState.selectedCard=card; };
+    document.getElementById('hand').appendChild(div);
+}
 
-// ゲーム開始 function startGame(){ // 手札6枚ずつ for(let i=0;i<6;i++){ drawCard('player'); drawCard('enemy'); } showDiceUI(); }
+function showCardDetail(div,card){
+    let detail = div.querySelector('.card-detail');
+    if(!detail){
+        detail = document.createElement('div');
+        detail.classList.add('card-detail');
+        detail.innerHTML=`Serve:${card.serve} Block:${card.block} Receive:${card.receive} Toss:${card.toss} Attack:${card.attack}`;
+        div.appendChild(detail);
+    }
+    detail.style.display='block';
+}
+function hideCardDetail(div){
+    const detail = div.querySelector('.card-detail');
+    if(detail) detail.style.display='none';
+}
 
-function showDiceUI(){ const ui=document.getElementById('setUpUI'); ui.innerHTML='サイコロを振って先攻決定'; const btn=document.createElement('button'); btn.innerText='振る'; btn.onclick=()=>{ let playerRoll, enemyRoll; do{ playerRoll=Math.floor(Math.random()*6)+1; enemyRoll=Math.floor(Math.random()*6)+1; }while(playerRoll===enemyRoll); alert('あなた:'+playerRoll+' CPU:'+enemyRoll); gameState.turnPlayer=(playerRoll>enemyRoll)?'player':'enemy'; alert(gameState.turnPlayer+'が先攻'); ui.innerHTML=''; gameState.phase='mulligan'; showMulligan(); }; ui.appendChild(btn); }
+// ゲーム開始
+function startGame(){
+    // 手札6枚ずつ
+    for(let i=0;i<6;i++){ drawCard('player'); drawCard('enemy'); }
+    showDiceUI();
+}
 
-function showMulligan(){ const ui=document.getElementById('setUpUI'); ui.innerHTML='マリガンで戻したいカードをクリック（簡易版：全選択可能）<br>'; const btn=document.createElement('button'); btn.innerText='マリガン完了'; btn.onclick=()=>{ ui.innerHTML='マリガン完了'; gameState.phase='serve'; document.getElementById('phaseDisplay').innerText='フェイズ: サーブ前'; }; ui.appendChild(btn); }
+function showDiceUI(){
+    const ui=document.getElementById('setUpUI');
+    ui.innerHTML='サイコロを振って先攻決定';
+    const btn=document.createElement('button');
+    btn.innerText='振る';
+    btn.onclick=()=>{
+        let playerRoll, enemyRoll;
+        do{
+            playerRoll=Math.floor(Math.random()*6)+1;
+            enemyRoll=Math.floor(Math.random()*6)+1;
+        }while(playerRoll===enemyRoll);
+        alert('あなた:'+playerRoll+' CPU:'+enemyRoll);
+        gameState.turnPlayer=(playerRoll>enemyRoll)?'player':'enemy';
+        alert(gameState.turnPlayer+'が先攻');
+        ui.innerHTML='';
+        gameState.phase='mulligan';
+        showMulligan();
+    };
+    ui.appendChild(btn);
+}
 
-startGame(); </script>
+function showMulligan(){
+    const ui=document.getElementById('setUpUI');
+    ui.innerHTML='マリガンで戻したいカードをクリック（簡易版：全選択可能）<br>';
+    const btn=document.createElement('button');
+    btn.innerText='マリガン完了';
+    btn.onclick=()=>{
+        ui.innerHTML='マリガン完了';
+        gameState.phase='serve';
+        document.getElementById('phaseDisplay').innerText='フェイズ: サーブ前';
+    };
+    ui.appendChild(btn);
+}
 
+startGame();
+</script>
 </body>
 </html>
