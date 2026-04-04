@@ -16,11 +16,13 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
     border-radius:8px;
     display:flex;
     justify-content:center;
-    align-items:center;
+    align-items:flex-start;
+    flex-direction:column;
     flex-wrap:wrap;
     font-size:9px;
     position: relative;
     text-align:center;
+    padding:2px;
 }
 .card { width:40px; height:60px; background:white; color:black; border-radius:6px; font-size:9px; display:flex; justify-content:center; align-items:center; margin:2px; cursor:pointer;}
 #hand { display:flex; justify-content:center; gap:5px; height:80px; flex-shrink:0; margin-top:5px;}
@@ -37,14 +39,16 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
 .serve { grid-column:3; grid-row:3; background:yellow; color:black;}
 .event { grid-column:4; grid-row:3; background:white; color:black;}
 button { padding:4px 8px; margin:2px; font-size:12px; cursor:pointer;}
-#attackEndOptions { margin:5px; text-align:center; display:none;}
-#cardInfoPopup { position:absolute; background:#333; border:2px solid #fff; border-radius:8px; padding:5px; display:none; z-index:100; font-size:10px; max-width:150px;}
+.phase-button { margin:4px; background:#444; color:white; border:none; border-radius:4px;}
+.card-info { position:absolute; top:-120px; left:50%; transform:translateX(-50%); background:#222; padding:4px; border:1px solid #fff; border-radius:6px; font-size:10px; display:none; z-index:10;}
+.guts-count { font-size:8px; color:#ff0;}
 </style>
 </head>
 <body>
 
 <div class="container">
     <div id="phaseDisplay" style="text-align:center; margin:5px;">フェイズ: サーブ前</div>
+    <div id="deckDisplay" style="text-align:center; margin:2px;">デッキ残数: 40</div>
 
     <!-- 相手 -->
     <div class="field-wrapper">
@@ -82,72 +86,144 @@ button { padding:4px 8px; margin:2px; font-size:12px; cursor:pointer;}
         </div>
     </div>
 
-    <!-- 手札 -->
     <div id="hand"></div>
-
-    <!-- アタック後選択ボタン -->
-    <div id="attackEndOptions">
-        <button id="chooseBlock">ブロックフェイズ</button>
-        <button id="chooseReceive">レシーブフェイズ</button>
-    </div>
-
-    <!-- カード情報ポップアップ -->
-    <div id="cardInfoPopup"></div>
-
+    <div id="actionButtons" style="text-align:center;"></div>
 </div>
 
 <script>
-// デッキサンプル（キャラクター名・スキル入り）
-const deck = [
-    // アタックキャラ10枚
-    {name:"スパイク翔", type:"attack", attack:3, toss:0, receive:0, guts:0, skills:["【登場】アタックエリア 2ガッツ払えばアタック+1"]},
-    {name:"スマッシュ健", type:"attack", attack:2, toss:0, receive:0, guts:0, skills:["【登場】アタックエリア 2ガッツ払えばアタック+1"]},
-    {name:"ジャンプ太郎", type:"attack", attack:3, toss:0, receive:0, guts:0, skills:[]},
-    {name:"アタック花子", type:"attack", attack:1, toss:0, receive:0, guts:0, skills:[]},
-    {name:"スパイク美咲", type:"attack", attack:2, toss:0, receive:0, guts:0, skills:[]},
-    {name:"サーブ翔", type:"attack", attack:3, toss:0, receive:0, guts:0, skills:[]},
-    {name:"アタック真", type:"attack", attack:1, toss:0, receive:0, guts:0, skills:[]},
-    {name:"スパイク優", type:"attack", attack:3, toss:0, receive:0, guts:0, skills:[]},
-    {name:"アタック光", type:"attack", attack:2, toss:0, receive:0, guts:0, skills:[]},
-    {name:"スマッシュ彩", type:"attack", attack:1, toss:0, receive:0, guts:0, skills:[]},
-    // トスキャラ10枚
-    {name:"トス太郎", type:"toss", attack:2, toss:1, receive:0, guts:0, skills:["【登場】トスエリア 2ガッツ払えばトス+1"]},
-    {name:"トス花子", type:"toss", attack:2, toss:1, receive:0, guts:0, skills:[]},
-    {name:"トス健", type:"toss", attack:3, toss:2, receive:0, guts:0, skills:[]},
-    {name:"トス美咲", type:"toss", attack:2, toss:2, receive:0, guts:0, skills:[]},
-    {name:"トス翔", type:"toss", attack:3, toss:1, receive:0, guts:0, skills:[]},
-    {name:"トス優", type:"toss", attack:2, toss:2, receive:0, guts:0, skills:[]},
-    {name:"トス光", type:"toss", attack:2, toss:1, receive:0, guts:0, skills:[]},
-    {name:"トス真", type:"toss", attack:3, toss:2, receive:0, guts:0, skills:[]},
-    {name:"トス彩", type:"toss", attack:2, toss:2, receive:0, guts:0, skills:[]},
-    {name:"トス健二", type:"toss", attack:3, toss:1, receive:0, guts:0, skills:[]},
-    // レシーブキャラ10枚
-    {name:"レシーブ健", type:"receive", attack:0, toss:0, receive:6, guts:0, skills:["【登場】レシーブエリア 2ガッツ払えばレシーブ+1"]},
-    {name:"レシーブ翔", type:"receive", attack:0, toss:0, receive:6, guts:0, skills:[]},
-    {name:"レシーブ花子", type:"receive", attack:0, toss:0, receive:5, guts:0, skills:["【登場】レシーブエリア 2ガッツ払えばドロー1"]},
-    {name:"レシーブ美咲", type:"receive", attack:0, toss:0, receive:5, guts:0, skills:[]},
-    {name:"レシーブ太郎", type:"receive", attack:0, toss:0, receive:6, guts:0, skills:[]},
-    {name:"レシーブ優", type:"receive", attack:0, toss:0, receive:5, guts:0, skills:[]},
-    {name:"レシーブ光", type:"receive", attack:0, toss:0, receive:6, guts:0, skills:[]},
-    {name:"レシーブ真", type:"receive", attack:0, toss:0, receive:5, guts:0, skills:[]},
-    {name:"レシーブ彩", type:"receive", attack:0, toss:0, receive:6, guts:0, skills:[]},
-    {name:"レシーブ太一", type:"receive", attack:0, toss:0, receive:5, guts:0, skills:[]},
-    // イベントカード8枚＋特殊2枚（名前をわかりやすく）
-    {name:"フルカバー守備", type:"event", attack:0, toss:0, receive:0, guts:0, skills:["レシーブフェイズのみ レシーブ+2してドロー1"]},
-    {name:"パワートス強化", type:"event", attack:0, toss:0, receive:0, guts:0, skills:["トスフェイズのみ トス+1してドロー1"]},
-    {name:"アタック強化", type:"event", attack:0, toss:0, receive:0, guts:0, skills:["アタックフェイズのみ アタック+1してドロー1"]},
-    {name:"カバー追加", type:"event", attack:0, toss:0, receive:0, guts:0, skills:["ドローフェイズとレシーブフェイズのみ ガッツから2枚手札に加える"]},
-    {name:"トスドロー", type:"event", attack:0, toss:0, receive:0, guts:0, skills:["トスフェイズとアタックフェイズのみ トス+1してドロー1"]},
-    {name:"アタックドロー", type:"event", attack:0, toss:0, receive:0, guts:0, skills:["アタック+1して1ドロー"]},
-    {name:"防御集中", type:"event", attack:0, toss:0, receive:0, guts:0, skills:["レシーブ+1してドロー1 レシーブキャラが翔ならさらに+2"]},
-    {name:"サーブ援護", type:"event", attack:0, toss:0, receive:0, guts:0, skills:["サーブフェイズ専用 サーブ+1"]},
-    {name:"特殊1", type:"event", attack:0, toss:0, receive:0, guts:0, skills:["特殊効果1"]},
-    {name:"特殊2", type:"event", attack:0, toss:0, receive:0, guts:0, skills:["特殊効果2"]}
-];
+// --- デッキとカード定義 ---
+const deckData = [];
+// 例として名前とパラメータを簡略化
+for(let i=1;i<=10;i++) deckData.push({name:"アタック"+i,serve:0,block:0,receive:0,toss:0,attack:Math.min(3,i%4),skill:"【登場】アタックエリア / 2ガッツ払えばアタック+1"});
+for(let i=1;i<=10;i++) deckData.push({name:"トス"+i,serve:0,block:0,receive:(i<=2?1:i%3+3),toss:(i<=2?1:i%5),attack:(i<=2?2:i%3),skill:"【登場】トスエリア / 2ガッツ払えばトス+1"});
+for(let i=1;i<=10;i++) deckData.push({name:"レシーブ"+i,serve:0,block:0,receive:(i<=6?6:5),toss:0,attack:0,skill:"【登場】レシーブエリア / 2ガッツ払えばレシーブ+1"});
+deckData.push({name:"スペシャル1",serve:0,block:0,receive:3,toss:2,attack:2,skill:"【登場】任意 / 2ガッツ払えば任意ポイント+1"});
+deckData.push({name:"スペシャル2",serve:0,block:0,receive:2,toss:3,attack:3,skill:"【登場】任意 / 2ガッツ払えば任意ポイント+1"});
+// イベント8枚
+for(let i=1;i<=8;i++) deckData.push({name:"イベント"+i,skill:"【使用可能】フェイズ限定 / 効果発動",event:true});
 
-// ここからゲーム状態や初期化処理は前回までの方式を踏襲して、
-// マリガン・手札6枚・フェイズトリガー・アタック後選択ボタン・ポップアップ・CPU行動を組み込む
-// （コード長いため省略。次ステップで完全JSを統合して提示可能）
+let gameState = {
+    turnPlayer:"player",
+    phase:"サーブ前",
+    hand:[],
+    deck:[],
+    usedNames:[],
+    areaGuts:{player:{receive:[],toss:[],attack:[]},enemy:{receive:[],toss:[],attack:[]}},
+    selectedCard:null
+};
+
+// --- デッキシャッフル ---
+function shuffle(array){return array.sort(()=>Math.random()-0.5);}
+gameState.deck=shuffle([...deckData]);
+
+// --- 初期手札6枚 ---
+function drawInitialHand(){
+    gameState.hand=[];
+    for(let i=0;i<6;i++) gameState.hand.push(gameState.deck.shift());
+    updateDeckDisplay();
+    renderHand();
+}
+
+// --- 手札表示 ---
+function renderHand(){
+    const handDiv=document.getElementById("hand");
+    handDiv.innerHTML="";
+    gameState.hand.forEach((c,i)=>{
+        const card=document.createElement("div");
+        card.classList.add("card");
+        card.innerText=c.name;
+        card.onclick=()=>selectCard(c,card);
+        // カード情報ポップアップ
+        const info=document.createElement("div");
+        info.classList.add("card-info");
+        info.innerHTML=`<b>${c.name}</b><br>${c.skill || ""}`;
+        card.appendChild(info);
+        card.onmouseenter=()=>info.style.display="block";
+        card.onmouseleave=()=>info.style.display="none";
+        handDiv.appendChild(card);
+    });
+}
+
+// --- デッキ残枚数表示 ---
+function updateDeckDisplay(){
+    document.getElementById("deckDisplay").innerText="デッキ残数: "+gameState.deck.length;
+}
+
+// --- カード選択 ---
+function selectCard(cardObj,cardElem){
+    gameState.selectedCard=cardObj;
+}
+
+// --- フィールドクリック ---
+document.querySelectorAll(".area").forEach(area=>{
+    area.onclick=()=>{
+        if(!gameState.selectedCard) return;
+        const card=gameState.selectedCard;
+        // イベントカードはイベントエリア専用
+        if(card.event && !area.classList.contains("event")){
+            alert("イベントカードはイベントエリア専用です");
+            return;
+        }
+        // 同名チェック
+        if(gameState.usedNames.includes(card.name)){
+            alert("同名カードはこのターン中に連続使用不可");
+            return;
+        }
+        // 配置
+        const cardDiv=document.createElement("div");
+        cardDiv.classList.add("card");
+        cardDiv.innerText=card.name;
+        area.appendChild(cardDiv);
+        // ガッツ追加（エリアに置かれた下のカードはガッツ）
+        if(["receive","toss","attack"].includes(area.classList[1])){
+            gameState.areaGuts.player[area.classList[1]].push(card);
+        }
+        // 使用済み登録
+        gameState.usedNames.push(card.name);
+        // 手札から削除
+        gameState.hand=gameState.hand.filter(c=>c!==card);
+        renderHand();
+        gameState.selectedCard=null;
+        nextPhase(area.classList[1]);
+    }
+});
+
+// --- フェイズ進行 ---
+function nextPhase(lastArea){
+    // サンプル簡易進行
+    if(gameState.phase=="サーブ前"){gameState.phase="ドロー";}
+    else if(gameState.phase=="ドロー"){
+        if(lastArea=="receive") gameState.phase="レシーブ";
+        else if(lastArea=="attack") gameState.phase="ブロック";
+        else gameState.phase="レシーブ";
+    } else if(gameState.phase=="レシーブ") gameState.phase="トス";
+    else if(gameState.phase=="トス") gameState.phase="アタック";
+    else if(gameState.phase=="アタック"){
+        gameState.phase="レシーブ選択";
+        showBlockOrReceiveChoice();
+    } else if(gameState.phase=="レシーブ選択") gameState.phase="ドロー";
+    document.getElementById("phaseDisplay").innerText="フェイズ: "+gameState.phase;
+}
+
+// --- アタック後ブロック or レシーブ選択 ---
+function showBlockOrReceiveChoice(){
+    const container=document.getElementById("actionButtons");
+    container.innerHTML="";
+    ["レシーブ","ブロック"].forEach(p=>{
+        const btn=document.createElement("button");
+        btn.classList.add("phase-button");
+        btn.innerText=p;
+        btn.onclick=()=>{
+            gameState.phase=p;
+            container.innerHTML="";
+            document.getElementById("phaseDisplay").innerText="フェイズ: "+gameState.phase;
+        }
+        container.appendChild(btn);
+    });
+}
+
+// --- 初期処理 ---
+drawInitialHand();
 </script>
 
 </body>
