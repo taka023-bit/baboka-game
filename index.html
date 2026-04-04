@@ -3,172 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>バボカBREAK</title>
 
 <style>
-html,body{
+body{
 margin:0;
-padding:0;
-overflow:hidden;
-background:#1a1a1a;
+background:#0f172a;
 color:white;
 font-family:sans-serif;
-}
-
-.container{
-display:flex;
-flex-direction:column;
-height:100dvh;
-}
-
-.field-wrap{
-flex:1;
-display:flex;
-justify-content:center;
-align-items:center;
 }
 
 /* フィールド */
 .field{
 display:grid;
-grid-template-columns:50px 70px 70px 70px 50px;
-grid-template-rows:70px 70px 70px;
-gap:6px;
+grid-template-columns:repeat(5,1fr);
+gap:8px;
+padding:10px;
 }
 
-/* 相手 */
-.enemy{
-transform:rotate(180deg);
-pointer-events:none;
-}
-.enemy .area{
-transform:rotate(180deg);
-}
-
-/* マス */
+/* 各エリア */
 .area{
-border:2px solid #fff;
+border:2px solid white;
 border-radius:8px;
+min-height:70px;
 display:flex;
-justify-content:center;
+flex-direction:column;
 align-items:center;
-flex-wrap:wrap;
-font-size:9px;
+justify-content:flex-start;
+font-size:12px;
+padding:3px;
 }
+
+.label{
+font-size:10px;
+opacity:0.7;
+}
+
+/* 色 */
+.receive{background:#2563eb;}
+.toss{background:#16a34a;}
+.attack{background:#dc2626;}
+.block{background:#9333ea;}
+.serve{background:#facc15;color:black;}
+.event{background:#e5e7eb;color:black;}
 
 /* カード */
 .card{
-width:40px;
-height:60px;
 background:white;
 color:black;
-border-radius:6px;
+width:40px;
+height:55px;
+margin:2px;
 font-size:9px;
 display:flex;
-flex-direction:column;
-justify-content:center;
 align-items:center;
-margin:2px;
+justify-content:center;
 }
 
 /* 手札 */
 #hand{
 display:flex;
 justify-content:center;
-gap:5px;
-height:80px;
+padding:10px;
 }
 
-/* 選択 */
+/* ボタン */
 #choice{
 display:flex;
 justify-content:center;
 gap:10px;
-height:50px;
+padding:10px;
 }
-
-/* ===== 配置（元の見やすい配置） ===== */
-
-.set-top { grid-column:1; grid-row:1; background:purple; }
-.side-l { grid-column:2; grid-row:1; background:#ccc; color:black;}
-.center { grid-column:3; grid-row:1; background:#666;}
-.side-r { grid-column:4; grid-row:1; background:#ccc; color:black;}
-.deck { grid-column:5; grid-row:1; background:orange; color:black;}
-
-.receive { grid-column:2; grid-row:2; background:blue;}
-.toss { grid-column:3; grid-row:2; background:green;}
-.attack { grid-column:4; grid-row:2; background:red;}
-.drop { grid-column:5; grid-row:2; background:orange; color:black;}
-
-.set-bottom { grid-column:1; grid-row:3; background:purple;}
-
-/* 修正済み */
-.block { grid-column:2; grid-row:3; background:purple;}
-.serve { grid-column:3; grid-row:3; background:yellow; color:black;}
-.event { grid-column:4; grid-row:3; background:white; color:black;}
-
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
 <!-- 相手 -->
-<div class="field-wrap">
-<div class="field enemy" id="enemyField">
-
-<div class="area set-top">セット</div>
-<div class="area side-l">サイド</div>
-<div class="area center">センター</div>
-<div class="area side-r">サイド</div>
-<div class="area deck">デッキ</div>
-
-<div class="area receive">レシーブ</div>
-<div class="area toss">トス</div>
-<div class="area attack">アタック</div>
-<div class="area drop">ドロップ</div>
-
-<div class="area set-bottom">セット</div>
-<div class="area block">ブロック</div>
-<div class="area event">イベント</div>
-
-</div>
+<div class="field" id="enemy">
+<div class="area receive"><div class="label">レシーブ</div></div>
+<div class="area toss"><div class="label">トス</div></div>
+<div class="area attack"><div class="label">アタック</div></div>
 </div>
 
 <!-- 自分 -->
-<div class="field-wrap">
-<div class="field" id="playerField">
+<div class="field" id="player">
+<div class="area receive"><div class="label">レシーブ</div></div>
+<div class="area toss"><div class="label">トス</div></div>
+<div class="area attack"><div class="label">アタック</div></div>
 
-<div class="area set-top">セット</div>
-<div class="area side-l">サイド</div>
-<div class="area center">センター</div>
-<div class="area side-r">サイド</div>
-<div class="area deck">デッキ</div>
-
-<div class="area receive">レシーブ</div>
-<div class="area toss">トス</div>
-<div class="area attack">アタック</div>
-<div class="area drop">ドロップ</div>
-
-<div class="area set-bottom">セット</div>
-<div class="area block">ブロック</div>
-<div class="area serve">サーブ</div>
-<div class="area event">イベント</div>
-
-</div>
+<div class="area block"><div class="label">ブロック</div></div>
+<div class="area serve"><div class="label">サーブ</div></div>
+<div class="area event"><div class="label">イベント</div></div>
 </div>
 
 <div id="hand"></div>
 <div id="choice"></div>
 
-</div>
-
 <script>
 let selected=null;
 let phase="serve";
 
-/* カード生成 */
+/* カード */
 function createCard(){
 const c=document.createElement("div");
 c.className="card";
@@ -178,7 +113,7 @@ const def=Math.floor(Math.random()*5)+1;
 
 c.dataset.atk=atk;
 c.dataset.def=def;
-c.innerHTML=`A:${atk}<br>D:${def}`;
+c.innerHTML=`A${atk}/D${def}`;
 
 c.onclick=()=>selected=c;
 
@@ -187,11 +122,11 @@ hand.appendChild(c);
 
 for(let i=0;i<5;i++) createCard();
 
-/* CPU攻撃 */
+/* CPU */
 function cpuAttack(){
 ["receive","toss","attack"].forEach(p=>{
-const area=document.querySelector("#enemyField ."+p);
-area.innerHTML="";
+const area=document.querySelector("#enemy ."+p);
+area.innerHTML='<div class="label">'+p+'</div>';
 
 const c=document.createElement("div");
 c.className="card";
@@ -201,7 +136,7 @@ const def=Math.floor(Math.random()*5)+1;
 
 c.dataset.atk=atk;
 c.dataset.def=def;
-c.innerHTML=`A:${atk}<br>D:${def}`;
+c.innerHTML=`A${atk}/D${def}`;
 
 area.appendChild(c);
 });
@@ -219,32 +154,30 @@ choice.innerHTML=`
 
 function setBlock(){
 phase="block";
-choice.innerText="ブロック（最大3枚）";
+choice.innerText="ブロック（3枚まで）";
 }
 
 function setReceive(){
 phase="receive";
-choice.innerText="レシーブ（1枚）";
+choice.innerText="レシーブ選択";
 }
 
 /* 判定 */
 function judge(){
-const atk=document.querySelector("#enemyField .attack .card");
+const atk=document.querySelector("#enemy .attack .card");
 
 let total=0;
 
-document.querySelectorAll("#playerField .block .card")
+document.querySelectorAll("#player .block .card")
 .forEach(c=> total+=Number(c.dataset.def));
 
-const recv=document.querySelector("#playerField .receive .card");
-if(recv){
-total+=Number(recv.dataset.def);
-}
+const recv=document.querySelector("#player .receive .card");
+if(recv) total+=Number(recv.dataset.def);
 
 if(atk.dataset.atk > total){
-alert("失点…");
+alert("失点");
 }else{
-alert("防いだ🔥");
+alert("成功🔥");
 }
 
 reset();
@@ -252,15 +185,20 @@ reset();
 
 /* リセット */
 function reset(){
-document.querySelectorAll("#playerField .area").forEach(a=>a.innerHTML=a.innerText);
-document.querySelectorAll("#enemyField .area").forEach(a=>a.innerHTML=a.innerText);
+document.querySelectorAll("#enemy .area").forEach(a=>{
+a.innerHTML='<div class="label">'+a.classList[1]+'</div>';
+});
 
-phase="serve";
+document.querySelectorAll("#player .area").forEach(a=>{
+a.innerHTML='<div class="label">'+a.classList[1]+'</div>';
+});
+
 choice.innerHTML="";
+phase="serve";
 }
 
 /* クリック */
-document.querySelectorAll("#playerField .area").forEach(area=>{
+document.querySelectorAll("#player .area").forEach(area=>{
 area.onclick=()=>{
 if(!selected) return;
 
@@ -268,15 +206,14 @@ if(!selected) return;
 if(phase==="serve" && area.classList.contains("serve")){
 area.appendChild(selected);
 selected=null;
+
+phase="enemy";
 cpuAttack();
 }
 
 /* ブロック */
 else if(phase==="block" && area.classList.contains("block")){
-if(area.children.length>=3){
-alert("3枚まで！");
-return;
-}
+if(area.children.length>3) return;
 area.appendChild(selected);
 selected=null;
 }
