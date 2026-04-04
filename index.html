@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
+<!DOCTYPE html><html lang="ja"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>バボカBREAK CPU対戦</title>
@@ -92,7 +90,6 @@ for(let i=1;i<=40;i++){
     gameState.deck.push({name:"キャラ"+i});
 }
 
-// シャッフル
 function shuffle(deck){
     for(let i=deck.length-1;i>0;i--){
         const j=Math.floor(Math.random()*(i+1));
@@ -101,7 +98,6 @@ function shuffle(deck){
 }
 shuffle(gameState.deck);
 
-// デッキ表示
 function updateDeck(){
     document.querySelectorAll('.deck').forEach(d=>{
         d.innerText = "デッキ
@@ -109,7 +105,6 @@ function updateDeck(){
     });
 }
 
-// カード生成
 function createCard(card){
     const div=document.createElement('div');
     div.className='card';
@@ -129,7 +124,6 @@ function createCard(card){
     document.getElementById('hand').appendChild(div);
 }
 
-// ドロー
 function draw(owner){
     if(gameState.deck.length===0) return;
     const c=gameState.deck.shift();
@@ -138,10 +132,9 @@ function draw(owner){
     updateDeck();
 }
 
-// マリガン
 function showMulligan(){
     const ui=document.getElementById('setUpUI');
-    ui.innerHTML='戻すカード選択 → 確定';
+    ui.innerHTML='マリガン：戻すカードを選択 → 確定';
 
     const btn=document.createElement('button');
     btn.innerText='確定';
@@ -156,6 +149,8 @@ function showMulligan(){
         let n=gameState.mulliganSelected.length;
         for(let i=0;i<n;i++) draw('player');
 
+        gameState.mulliganSelected=[];
+
         ui.innerHTML='';
         startDice();
     };
@@ -163,7 +158,6 @@ function showMulligan(){
     ui.appendChild(btn);
 }
 
-// サイコロ
 function startDice(){
     const ui=document.getElementById('setUpUI');
     ui.innerHTML='サイコロで先攻決定';
@@ -180,7 +174,7 @@ function startDice(){
         const winner = (p>=e)?'player':'enemy';
 
         if(winner==='player'){
-            ui.innerHTML='選択';
+            ui.innerHTML='どちらにする？';
 
             const s=document.createElement('button');
             s.innerText='サーブ';
@@ -194,6 +188,7 @@ function startDice(){
             ui.appendChild(r);
         }else{
             const cpuChoice = Math.random()>0.5?'player':'enemy';
+            alert('CPUは'+(cpuChoice==='player'?'レシーブ':'サーブ')+'を選択');
             startServe(cpuChoice);
         }
     };
@@ -201,7 +196,6 @@ function startDice(){
     ui.appendChild(btn);
 }
 
-// サーブ開始
 function startServe(server){
     gameState.turnPlayer=server;
     gameState.phase='serve';
@@ -212,14 +206,18 @@ function startServe(server){
     document.getElementById('setUpUI').innerHTML='';
 }
 
-// 初期処理
 function startGame(){
+    document.getElementById('hand').innerHTML='';
+
     for(let i=0;i<6;i++) draw('player');
     for(let i=0;i<6;i++) draw('enemy');
+
     updateDeck();
     showMulligan();
 }
 
-startGame();
+window.onload = ()=>{
+    startGame();
+};
 </script></body>
 </html>
