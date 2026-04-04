@@ -1,9 +1,8 @@
-<!DOCTYPE html>
-<html lang="ja">
+<!DOCTYPE html><html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>バボカBREAK CPU対戦</title>
+<title>バボカBREAK CPU対戦 修正版</title>
 <style>
 html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:white; font-family:sans-serif;}
 .container { display:flex; flex-direction:column; height:100dvh;}
@@ -11,17 +10,7 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
 .field { display:grid; grid-template-columns:50px 70px 70px 70px 50px; grid-template-rows:70px 70px 70px; gap:6px;}
 .enemy { transform:rotate(180deg);}
 .enemy .area { transform:rotate(180deg);}
-.area {
-    border:2px solid #fff;
-    border-radius:8px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    flex-wrap:wrap;
-    font-size:9px;
-    position: relative;
-    text-align:center;
-}
+.area { border:2px solid #fff; border-radius:8px; display:flex; justify-content:center; align-items:center; flex-wrap:wrap; font-size:9px; position: relative; text-align:center;}
 .card { width:40px; height:60px; background:white; color:black; border-radius:6px; font-size:9px; display:flex; justify-content:center; align-items:center; margin:2px; cursor:pointer;}
 #hand { display:flex; justify-content:center; gap:5px; height:80px; flex-shrink:0; margin-top:5px;}
 .set-top { grid-column:1; grid-row:1; background:purple; }
@@ -36,175 +25,162 @@ html, body { margin:0; padding:0; overflow:hidden; background:#1a1a1a; color:whi
 .set-bottom { grid-column:1; grid-row:3; background:purple;}
 .serve { grid-column:3; grid-row:3; background:yellow; color:black;}
 .event { grid-column:4; grid-row:3; background:white; color:black;}
-button { padding:4px 8px; margin:2px; font-size:12px; cursor:pointer;}
-#phaseButtons { text-align:center; margin:5px;}
-#cardInfo { position:absolute; top:10px; right:10px; background:#222; color:white; padding:10px; border-radius:8px; display:none; width:180px;}
+button { padding:4px 8px; margin:2px; font-size:12px;}
+.card-info { position:absolute; bottom:65px; background:#222; padding:4px; border-radius:4px; display:none; font-size:8px; z-index:100;}
 </style>
 </head>
 <body>
-
 <div class="container">
-    <div id="phaseDisplay" style="text-align:center; margin:5px;">フェイズ: サーブ</div>
-
-    <div id="phaseButtons"></div>
-
-    <!-- 相手 -->
-    <div class="field-wrapper">
-        <div class="field enemy">
-            <div class="area set-top">セット</div>
-            <div class="area side-l">サイド</div>
-            <div class="area center">センター</div>
-            <div class="area side-r">サイド</div>
-            <div class="area deck">デッキ</div>
-            <div class="area receive">レシーブ</div>
-            <div class="area toss">トス</div>
-            <div class="area attack">アタック</div>
-            <div class="area drop">ドロップ</div>
-            <div class="area set-bottom">セット</div>
-            <div class="area serve">サーブ</div>
-            <div class="area event">イベント</div>
-        </div>
+    <div id="phaseDisplay" style="text-align:center; margin:5px;">フェイズ: サーブ前</div><div class="field-wrapper">
+    <div class="field enemy">
+        <div class="area set-top">セット</div>
+        <div class="area side-l">サイド</div>
+        <div class="area center">センター</div>
+        <div class="area side-r">サイド</div>
+        <div class="area deck">デッキ</div>
+        <div class="area receive">レシーブ</div>
+        <div class="area toss">トス</div>
+        <div class="area attack">アタック</div>
+        <div class="area drop">ドロップ</div>
+        <div class="area set-bottom">セット</div>
+        <div class="area serve">サーブ</div>
+        <div class="area event">イベント</div>
     </div>
-
-    <!-- 自分 -->
-    <div class="field-wrapper">
-        <div class="field">
-            <div class="area set-top">セット</div>
-            <div class="area side-l">サイド</div>
-            <div class="area center">センター</div>
-            <div class="area side-r">サイド</div>
-            <div class="area deck">デッキ</div>
-            <div class="area receive">レシーブ</div>
-            <div class="area toss">トス</div>
-            <div class="area attack">アタック</div>
-            <div class="area drop">ドロップ</div>
-            <div class="area set-bottom">セット</div>
-            <div class="area serve">サーブ</div>
-            <div class="area event">イベント</div>
-        </div>
-    </div>
-
-    <div id="hand"></div>
 </div>
 
-<div id="cardInfo"></div>
+<div class="field-wrapper">
+    <div class="field">
+        <div class="area set-top">セット</div>
+        <div class="area side-l">サイド</div>
+        <div class="area center">センター</div>
+        <div class="area side-r">サイド</div>
+        <div class="area deck">デッキ</div>
+        <div class="area receive">レシーブ</div>
+        <div class="area toss">トス</div>
+        <div class="area attack">アタック</div>
+        <div class="area drop">ドロップ</div>
+        <div class="area set-bottom">セット</div>
+        <div class="area serve">サーブ</div>
+        <div class="area event">イベント</div>
+    </div>
+</div>
 
-<script>
-// ===================
-// ゲーム状態
-// ===================
+<div id="hand"></div>
+
+</div><script>
+// フェイズ順と対応エリア
+const phases = [
+  {name:"serve", area:"serve"},
+  {name:"start", area:null},
+  {name:"draw", area:null},
+  {name:"toss", area:"toss"},
+  {name:"attack", area:"attack"},
+  {name:"receive", area:"receive"}
+];
+
 let gameState = {
     turnPlayer:"player",
-    phase:"serve",
+    phaseIndex:0,
     usedNames:[],
-    hand:{player:[],enemy:[]},
-    dropArea:{player:[],enemy:[]},
-    gutsArea:{player:{receive:[],toss:[],attack:[],serve:[],center:[]},enemy:{receive:[],toss:[],attack:[],serve:[],center:[]}},
+    hand:[],
     deck:[],
-    discard:[],
+    cpuHand:[],
 };
 
-// ===================
-// デッキ作成
-// ===================
-const characters = [];
-for(let i=1;i<=10;i++) characters.push({name:`アタック${i}`,serve:0,block:0,receive:0,toss:0,attack:Math.min(i,3),skill:"アタックエリア / 3ガッツ払えばアタック+1"});
-for(let i=1;i<=10;i++) characters.push({name:`トス${i}`,serve:0,block:0,receive:i<=2?i:Math.floor(Math.random()*3+3),toss:i<=2?1:i<=2?1:i%2+2,attack:i<=2?i:2,skill:"トスエリア / 2ガッツ払えばトス+1"});
-for(let i=1;i<=10;i++) characters.push({name:`レシーブ${i}`,serve:0,block:0,receive:5,toss:0,attack:0,skill:"レシーブエリア / 2ガッツ払えばレシーブ+1"});
-for(let i=1;i<=10;i++) characters.push({name:`レシーブスキル${i}`,serve:0,block:0,receive:i<=2?1:5,toss:i<=2?1:0,attack:0,skill:"レシーブエリア / 2ガッツ払えばドロー1"});
-characters.push({name:"特殊1",serve:1,block:1,receive:1,toss:1,attack:1,skill:"イベント専用"});
-characters.push({name:"特殊2",serve:2,block:2,receive:2,toss:2,attack:2,skill:"イベント専用"});
+// サンプル40枚デッキ
+for(let i=1;i<=40;i++){
+    gameState.deck.push({
+        name:"キャラ"+i,
+        serve:Math.floor(Math.random()*3),
+        block:Math.floor(Math.random()*3),
+        receive:Math.floor(Math.random()*6),
+        toss:Math.floor(Math.random()*3),
+        attack:Math.floor(Math.random()*4),
+        skill:"なし"
+    });
+}
 
-gameState.deck = [...characters];
+function shuffle(array){
+    for(let i=array.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [array[i],array[j]]=[array[j],array[i]];
+    }
+}
+
 shuffle(gameState.deck);
 
-// ===================
-// ユーティリティ
-// ===================
-function shuffle(array){ for(let i=array.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [array[i],array[j]]=[array[j],array[i]]; } }
-function draw(player,n=1){ for(let i=0;i<n;i++){ if(gameState.deck.length===0) break; const c=gameState.deck.shift(); gameState.hand[player].push(c); createCardElement(c,player); } updateDeckDisplay(); }
-function updateDeckDisplay(){ document.querySelectorAll(".deck").forEach(d=>d.innerText=`デッキ残数: ${gameState.deck.length}`); }
-function showCardInfo(cardData){ const info=document.getElementById("cardInfo"); info.innerHTML=`<b>${cardData.name}</b><br>Serve:${cardData.serve} Block:${cardData.block} Receive:${cardData.receive} Toss:${cardData.toss} Attack:${cardData.attack}<br>Skill:${cardData.skill}`; info.style.display="block"; }
-function hideCardInfo(){ document.getElementById("cardInfo").style.display="none"; }
-
-// ===================
-// カード作成
-// ===================
-let selectedCard = null;
-function createCardElement(cardData,owner="player"){
-    const card = document.createElement("div");
-    card.classList.add("card");
-    card.innerText = cardData.name;
-    card.onclick = ()=>{
-        selectedCard = cardData;
-        showCardInfo(cardData);
-    };
-    card.onmouseleave = hideCardInfo;
-    if(owner==="player") document.getElementById("hand").appendChild(card);
-}
-
-// ===================
-// 初期手札
-// ===================
-draw("player",6);
-
-// ===================
-// フェイズ管理
-// ===================
-let phases = ["serve","start","draw","toss","attack"];
-function nextPhase(){
-    const i = phases.indexOf(gameState.phase);
-    if(i+1>=phases.length){
-        endTurn();
-    }else{
-        gameState.phase = phases[i+1];
-        document.getElementById("phaseDisplay").innerText="フェイズ: "+gameState.phase;
-        if(gameState.phase==="start" && gameState.turnPlayer==="player"){
-            showStartButtons();
-        }else if(gameState.phase==="draw" && gameState.turnPlayer==="player"){
-            draw("player",1);
+// 手札初期化
+function drawCards(n){
+    for(let i=0;i<n;i++){
+        if(gameState.deck.length>0){
+            const c = gameState.deck.shift();
+            gameState.hand.push(c);
+            createCardElement(c,"player");
         }
     }
+    updateDeckDisplay();
 }
 
-// ===================
-// ターン終了
-// ===================
-function endTurn(){
-    gameState.turnPlayer = gameState.turnPlayer==="player"?"enemy":"player";
-    gameState.phase="serve";
-    gameState.usedNames=[];
-    document.getElementById("phaseDisplay").innerText="フェイズ: "+gameState.phase;
+drawCards(6); // 初期手札6枚
+
+function updateDeckDisplay(){
+    document.querySelectorAll('.deck').forEach(d=>d.innerText='デッキ\n残:'+gameState.deck.length);
 }
 
-// ===================
-// スタートフェイズボタン
-// ===================
-function showStartButtons(){
-    const container = document.getElementById("phaseButtons");
-    container.innerHTML="";
-    const rb = document.createElement("button");
-    rb.innerText="レシーブ";
-    rb.onclick=()=>{ alert("レシーブ選択"); container.innerHTML=""; nextPhase(); };
-    const bb = document.createElement("button");
-    bb.innerText="ブロック";
-    bb.onclick=()=>{ alert("ブロック選択"); container.innerHTML=""; nextPhase(); };
-    container.appendChild(rb);
-    container.appendChild(bb);
+let selectedCard = null;
+function createCardElement(card,owner){
+    const div = document.createElement('div');
+    div.classList.add('card');
+    div.innerText=card.name;
+    div.dataset.owner=owner;
+    div.dataset.name=card.name;
+    div.dataset.serve=card.serve;
+    div.dataset.block=card.block;
+    div.dataset.receive=card.receive;
+    div.dataset.toss=card.toss;
+    div.dataset.attack=card.attack;
+    div.dataset.skill=card.skill;
+
+    const info = document.createElement('div');
+    info.classList.add('card-info');
+    info.innerHTML=`S:${card.serve} B:${card.block} R:${card.receive} T:${card.toss} A:${card.attack}<br>Skill:${card.skill}`;
+    div.appendChild(info);
+
+    div.onmouseenter=()=>info.style.display='block';
+    div.onmouseleave=()=>info.style.display='none';
+
+    div.onclick=()=>{selectedCard=card;};
+
+    if(owner==='player') document.getElementById('hand').appendChild(div);
+    return div;
 }
 
-// ===================
 // エリアクリック
-// ===================
-document.querySelectorAll(".area").forEach(area=>{
+document.querySelectorAll('.area').forEach(area=>{
     area.onclick=()=>{
-        if(selectedCard && gameState.turnPlayer==="player"){
-            area.appendChild(document.createElement("div")).innerText=selectedCard.name;
+        if(!selectedCard) return;
+        const phase = phases[gameState.phaseIndex];
+        if(phase.area && area.classList.contains(phase.area)){
+            const cardName = selectedCard.name;
+            if(gameState.usedNames.includes(cardName)){alert('同名カードはこのターン中使用不可'); return;}
+            area.appendChild(document.querySelector(`.card[data-name='${cardName}']`));
+            gameState.usedNames.push(cardName);
             selectedCard=null;
             nextPhase();
+        }else{
+            alert('このフェイズではこのエリアに置けません');
         }
-    }
+    };
 });
-</script>
-</body>
+
+function nextPhase(){
+    gameState.phaseIndex=(gameState.phaseIndex+1)%phases.length;
+    const phase = phases[gameState.phaseIndex];
+    document.getElementById('phaseDisplay').innerText='フェイズ: '+phase.name;
+
+    // ドローフェイズなら自動でカード引き
+    if(phase.name==='draw'){ drawCards(1); nextPhase(); }
+    // CPUのターン処理はここに追加可能
+}
+</script></body>
 </html>
