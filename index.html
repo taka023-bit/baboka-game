@@ -25,6 +25,7 @@ body{
  align-items:center;
  justify-content:center;
  font-size:10px;
+ flex-wrap:wrap;
 }
 
 /* 配置 */
@@ -33,7 +34,6 @@ body{
 
 .pl-serve{grid-column:3;grid-row:7;background:yellow;color:black;}
 
-/* 最低限の他エリア */
 .cpu-receive{grid-column:2;grid-row:2;background:blue;}
 .pl-receive{grid-column:2;grid-row:6;background:blue;}
 
@@ -44,6 +44,8 @@ body{
  display:flex;
  align-items:center;
  justify-content:center;
+ font-size:9px;
+ cursor:pointer;
 }
 
 .selected{outline:2px solid yellow;}
@@ -62,7 +64,7 @@ body{
 <div class="area ui-row" id="ui"></div>
 
 <div class="area pl-receive" id="receiveArea">レシーブ</div>
-<div class="area pl-serve">自分サーブ</div>
+<div class="area pl-serve" id="serveArea">サーブ</div>
 </div>
 
 <div id="hand"></div>
@@ -88,10 +90,12 @@ function renderHand(){
   let d=document.createElement("div");
   d.className="card"+(game.selected===i?" selected":"");
   d.innerText=c.name;
+
   d.onclick=()=>{
-   game.selected=(game.selected===i?null:i);
+   game.selected = (game.selected===i ? null : i);
    renderHand();
   };
+
   h.appendChild(d);
  });
 }
@@ -101,6 +105,24 @@ function draw(n){
  for(let i=0;i<n;i++){
   if(game.deck.length) game.hand.push(game.deck.shift());
  }
+ renderHand();
+}
+
+// 配置（重要）
+function place(areaId){
+ if(game.selected===null) return;
+
+ let area=document.getElementById(areaId);
+ let card=game.hand[game.selected];
+
+ let d=document.createElement("div");
+ d.className="card";
+ d.innerText=card.name;
+
+ area.appendChild(d);
+
+ game.hand.splice(game.selected,1);
+ game.selected=null;
  renderHand();
 }
 
@@ -127,6 +149,10 @@ function startGame(){
 window.onload=()=>{
  document.getElementById("ui").innerHTML=
  '<button onclick="rollDice()">サイコロ</button>';
+
+ // フィールドクリック
+ document.getElementById("serveArea").onclick=()=>place("serveArea");
+ document.getElementById("receiveArea").onclick=()=>place("receiveArea");
 };
 </script>
 
