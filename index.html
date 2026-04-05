@@ -11,24 +11,32 @@
     padding: 0;
     background: #f5f5f5;
     font-family: sans-serif;
+    overflow: hidden; /* 余白を消す */
   }
 
-  /* 全体をスマホ幅にフィット */
   #game {
     width: 100%;
-    max-width: 480px;
-    margin: 0 auto;
+    height: 100vh; /* 画面全体にフィット */
+    display: flex;
+    flex-direction: column;
   }
 
-  /* フィールド1枚（3段×5列） */
+  /* ===== フィールド（3段×5列） ===== */
   .field {
+    flex: 1; /* 上下フィールドを均等に */
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(3, 60px);
+    grid-template-columns: 0.6fr 1fr 1fr 1fr 0.6fr; /* SET/DECK/ DROP を細く */
+    grid-template-rows: 1fr 1fr 1fr; /* 3段 */
     gap: 4px;
-    width: 100%;
+    padding: 4px;
   }
 
+  /* 上のフィールドを180度回転（上下左右反転） */
+  .opponent {
+    transform: rotate(180deg);
+  }
+
+  /* ===== エリア共通 ===== */
   .area {
     background: #ffffff;
     border: 2px solid #333;
@@ -36,7 +44,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 12px;
+    font-size: 14px;
+  }
+
+  /* ===== コート部分を大きく見せる色 ===== */
+  .side, .center, .receive, .toss, .attack, .serve, .event {
+    background: #ffe8a3;
+    font-weight: bold;
   }
 
   /* 空白マス */
@@ -45,21 +59,8 @@
     border: none;
   }
 
-  /* ブロックエリア（色を変える） */
-  .side, .center {
-    background: #ffe8a3;
-  }
-
-  /* 上下フィールドの間の隙間をゼロに */
-  #divider {
-    height: 0;
-    margin: 0;
-    padding: 0;
-  }
-
   /* 手札 */
   #hand {
-    width: 100%;
     height: 80px;
     background: #ddd;
     border-top: 3px solid #333;
@@ -74,7 +75,7 @@
 
 <div id="game">
 
-  <!-- ▼ 相手フィールド（上） -->
+  <!-- ▼ 相手フィールド（180度回転） -->
   <div class="field opponent">
 
     <!-- 1段目 -->
@@ -86,22 +87,19 @@
 
     <!-- 2段目 -->
     <div class="empty"></div>
-    <div class="area">RECEIVE</div>
-    <div class="area">TOSS</div>
-    <div class="area">ATTACK</div>
+    <div class="area receive">RECEIVE</div>
+    <div class="area toss">TOSS</div>
+    <div class="area attack">ATTACK</div>
     <div class="area">DROP</div>
 
     <!-- 3段目 -->
     <div class="empty"></div>
     <div class="empty"></div>
-    <div class="area">SERVE</div>
-    <div class="area">EVENT</div>
+    <div class="area serve">SERVE</div>
+    <div class="area event">EVENT</div>
     <div class="empty"></div>
 
   </div>
-
-  <!-- ▼ フィールド同士をくっつける（隙間ゼロ） -->
-  <div id="divider"></div>
 
   <!-- ▼ 自分フィールド（下） -->
   <div class="field player">
@@ -115,16 +113,16 @@
 
     <!-- 2段目 -->
     <div class="empty"></div>
-    <div class="area">RECEIVE</div>
-    <div class="area">TOSS</div>
-    <div class="area">ATTACK</div>
+    <div class="area receive">RECEIVE</div>
+    <div class="area toss">TOSS</div>
+    <div class="area attack">ATTACK</div>
     <div class="area">DROP</div>
 
     <!-- 3段目 -->
     <div class="empty"></div>
     <div class="empty"></div>
-    <div class="area">SERVE</div>
-    <div class="area">EVENT</div>
+    <div class="area serve">SERVE</div>
+    <div class="area event">EVENT</div>
     <div class="empty"></div>
 
   </div>
