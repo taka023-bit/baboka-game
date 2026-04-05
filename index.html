@@ -58,13 +58,15 @@ body{
 <h3 id="phase">開始前</h3>
 
 <div class="field">
-<div class="area cpu-serve">CPUサーブ</div>
-<div class="area cpu-receive">CPUレシーブ</div>
+
+<div class="area cpu-serve" id="cpuServe">CPUサーブ</div>
+<div class="area cpu-receive" id="cpuReceive">CPUレシーブ</div>
 
 <div class="area ui-row" id="ui"></div>
 
 <div class="area pl-receive" id="receiveArea">レシーブ</div>
 <div class="area pl-serve" id="serveArea">サーブ</div>
+
 </div>
 
 <div id="hand"></div>
@@ -108,11 +110,14 @@ function draw(n){
  renderHand();
 }
 
-// 配置（重要）
+// 配置
 function place(areaId){
+ if(!areaId) return;
  if(game.selected===null) return;
 
  let area=document.getElementById(areaId);
+ if(!area) return;
+
  let card=game.hand[game.selected];
 
  let d=document.createElement("div");
@@ -150,9 +155,10 @@ window.onload=()=>{
  document.getElementById("ui").innerHTML=
  '<button onclick="rollDice()">サイコロ</button>';
 
- // フィールドクリック
- document.getElementById("serveArea").onclick=()=>place("serveArea");
- document.getElementById("receiveArea").onclick=()=>place("receiveArea");
+ // ここが今回の超重要ポイント👇
+ document.querySelectorAll(".area").forEach(area=>{
+  area.onclick=()=>place(area.id);
+ });
 };
 </script>
 
