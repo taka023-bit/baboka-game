@@ -11,22 +11,26 @@
     padding: 0;
     background: #f5f5f5;
     font-family: sans-serif;
-    overflow: hidden; /* 余白を消す */
+    overflow: hidden;
   }
 
   #game {
     width: 100%;
-    height: 100vh; /* 画面全体にフィット */
+    height: 100vh;
     display: flex;
     flex-direction: column;
   }
 
   /* ===== フィールド（3段×5列） ===== */
   .field {
-    flex: 1; /* 上下フィールドを均等に */
+    flex: 1;
     display: grid;
-    grid-template-columns: 0.6fr 1fr 1fr 1fr 0.6fr; /* SET/DECK/ DROP を細く */
-    grid-template-rows: 1fr 1fr 1fr; /* 3段 */
+
+    /* SET / DECK / DROP を少し太く（1fr） */
+    /* コート部分は現状維持（1.2fr） */
+    grid-template-columns: 1fr 1.2fr 1.2fr 1.2fr 1fr;
+
+    grid-template-rows: repeat(3, 1fr);
     gap: 4px;
     padding: 4px;
   }
@@ -47,7 +51,7 @@
     font-size: 14px;
   }
 
-  /* ===== コート部分を大きく見せる色 ===== */
+  /* ===== コート部分（大きさは現状維持） ===== */
   .side, .center, .receive, .toss, .attack, .serve, .event {
     background: #ffe8a3;
     font-weight: bold;
@@ -59,14 +63,15 @@
     border: none;
   }
 
-  /* 手札 */
+  /* ===== 手札エリア ===== */
   #hand {
-    height: 80px;
+    height: 100px;
     background: #ddd;
     border-top: 3px solid #333;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 18px;
   }
 </style>
 </head>
@@ -79,56 +84,56 @@
   <div class="field opponent">
 
     <!-- 1段目 -->
-    <div class="area">SET</div>
-    <div class="area side">SIDE</div>
-    <div class="area center">CENTER</div>
-    <div class="area side">SIDE</div>
-    <div class="area">DECK</div>
+    <div class="area">セット</div>
+    <div class="area side">サイド</div>
+    <div class="area center">センター</div>
+    <div class="area side">サイド</div>
+    <div class="area">デッキ</div>
 
     <!-- 2段目 -->
     <div class="empty"></div>
-    <div class="area receive">RECEIVE</div>
-    <div class="area toss">TOSS</div>
-    <div class="area attack">ATTACK</div>
-    <div class="area">DROP</div>
+    <div class="area receive">レシーブ</div>
+    <div class="area toss">トス</div>
+    <div class="area attack">アタック</div>
+    <div class="area">ドロップ</div>
 
     <!-- 3段目 -->
     <div class="empty"></div>
     <div class="empty"></div>
-    <div class="area serve">SERVE</div>
-    <div class="area event">EVENT</div>
+    <div class="area serve">サーブ</div>
+    <div class="area event">イベント</div>
     <div class="empty"></div>
 
   </div>
 
-  <!-- ▼ 自分フィールド（下） -->
+  <!-- ▼ 自分フィールド -->
   <div class="field player">
 
     <!-- 1段目 -->
-    <div class="area">SET</div>
-    <div class="area side">SIDE</div>
-    <div class="area center">CENTER</div>
-    <div class="area side">SIDE</div>
-    <div class="area">DECK</div>
+    <div class="area">セット</div>
+    <div class="area side">サイド</div>
+    <div class="area center">センター</div>
+    <div class="area side">サイド</div>
+    <div class="area">デッキ</div>
 
     <!-- 2段目 -->
     <div class="empty"></div>
-    <div class="area receive">RECEIVE</div>
-    <div class="area toss">TOSS</div>
-    <div class="area attack">ATTACK</div>
-    <div class="area">DROP</div>
+    <div class="area receive">レシーブ</div>
+    <div class="area toss">トス</div>
+    <div class="area attack">アタック</div>
+    <div class="area">ドロップ</div>
 
     <!-- 3段目 -->
     <div class="empty"></div>
     <div class="empty"></div>
-    <div class="area serve">SERVE</div>
-    <div class="area event">EVENT</div>
+    <div class="area serve">サーブ</div>
+    <div class="area event">イベント</div>
     <div class="empty"></div>
 
   </div>
 
   <!-- ▼ 手札 -->
-  <div id="hand">HAND</div>
+  <div id="hand">手札</div>
 
 </div>
 
