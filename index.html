@@ -51,10 +51,43 @@
     font-size: 14px;
   }
 
-  /* ===== コート部分（大きさは現状維持） ===== */
-  .side, .center, .receive, .toss, .attack, .serve, .event {
-    background: #ffe8a3;
-    font-weight: bold;
+  /* ===== 色指定 ===== */
+  .center {
+    background: #555; /* ダークグレー */
+    color: white;
+  }
+
+  .side {
+    background: #777; /* 明るめグレー */
+    color: white;
+  }
+
+  .receive {
+    background: #4da3ff; /* 青 */
+    color: white;
+  }
+
+  .toss {
+    background: #6cd96c; /* 緑 */
+    color: white;
+  }
+
+  .attack {
+    background: #ff6b6b; /* 赤 */
+    color: white;
+  }
+
+  .serve {
+    background: #ffe066; /* 黄色 */
+  }
+
+  .event {
+    background: #ffffff; /* 白のまま */
+  }
+
+  .drop {
+    background: #555; /* ダークグレー */
+    color: white;
   }
 
   /* 空白マス */
@@ -95,7 +128,7 @@
     <div class="area receive">レシーブ</div>
     <div class="area toss">トス</div>
     <div class="area attack">アタック</div>
-    <div class="area">ドロップ</div>
+    <div class="area drop">ドロップ</div>
 
     <!-- 3段目 -->
     <div class="empty"></div>
@@ -121,7 +154,7 @@
     <div class="area receive">レシーブ</div>
     <div class="area toss">トス</div>
     <div class="area attack">アタック</div>
-    <div class="area">ドロップ</div>
+    <div class="area drop">ドロップ</div>
 
     <!-- 3段目 -->
     <div class="empty"></div>
@@ -133,9 +166,4 @@
   </div>
 
   <!-- ▼ 手札 -->
-  <div id="hand">手札</div>
-
-</div>
-
-</body>
-</html>
+  <div id="hand">
