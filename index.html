@@ -2,13 +2,20 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<title>バボカBREAK</title>
+
 <style>
-body{background:#1a1a1a;color:white;text-align:center;font-family:sans-serif}
+body{
+ background:#1a1a1a;
+ color:white;
+ text-align:center;
+ font-family:sans-serif;
+}
 
 .field{
  display:grid;
  grid-template-columns:repeat(5,70px);
- grid-template-rows:repeat(6,70px);
+ grid-template-rows:repeat(7,70px);
  gap:6px;
  justify-content:center;
  margin-top:10px;
@@ -23,80 +30,119 @@ body{background:#1a1a1a;color:white;text-align:center;font-family:sans-serif}
  font-size:10px;
 }
 
-/* ===== CPU（上）===== */
-.set-top{grid-column:1;grid-row:1;background:purple;}
-.side-l-top{grid-column:2;grid-row:1;background:#ccc;color:black;}
-.center-top{grid-column:3;grid-row:1;background:#666;}
-.side-r-top{grid-column:4;grid-row:1;background:#ccc;color:black;}
-.deck-top{grid-column:5;grid-row:1;background:orange;color:black;}
+/* CPU後衛 */
+.cpu-serve{grid-column:3;grid-row:1;background:yellow;color:black;}
 
-.receive-top{grid-column:2;grid-row:2;background:blue;}
-.toss-top{grid-column:3;grid-row:2;background:green;}
-.attack-top{grid-column:4;grid-row:2;background:red;}
-.drop-top{grid-column:5;grid-row:2;background:darkorange;color:black;}
+/* CPU前衛 */
+.cpu-drop{grid-column:1;grid-row:2;background:darkorange;color:black;}
+.cpu-receive{grid-column:2;grid-row:2;background:blue;}
+.cpu-toss{grid-column:3;grid-row:2;background:green;}
+.cpu-attack{grid-column:4;grid-row:2;background:red;}
+.cpu-set{grid-column:5;grid-row:2;background:purple;}
 
-/* ===== 中央 ===== */
-.serve{grid-column:3;grid-row:3;background:yellow;color:black;}
+/* CPUブロック */
+.cpu-deck{grid-column:1;grid-row:3;background:orange;color:black;}
+.cpu-side-l{grid-column:2;grid-row:3;background:#ccc;color:black;}
+.cpu-center{grid-column:3;grid-row:3;background:#666;}
+.cpu-side-r{grid-column:4;grid-row:3;background:#ccc;color:black;}
+.cpu-set-back{grid-column:5;grid-row:3;background:purple;}
 
-/* ===== プレイヤー（下）===== */
-.receive{grid-column:2;grid-row:5;background:blue;}
-.toss{grid-column:3;grid-row:5;background:green;}
-.attack{grid-column:4;grid-row:5;background:red;}
-.drop{grid-column:5;grid-row:5;background:darkorange;color:black;}
+/* UI */
+.ui-row{
+ grid-column:1/6;
+ grid-row:4;
+ background:#222;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ gap:10px;
+}
 
-.set-bottom{grid-column:1;grid-row:6;background:purple;}
-.side-l{grid-column:2;grid-row:6;background:#ccc;color:black;}
-.center{grid-column:3;grid-row:6;background:#666;}
-.side-r{grid-column:4;grid-row:6;background:#ccc;color:black;}
-.deck{grid-column:5;grid-row:6;background:orange;color:black;}
+/* プレイヤーブロック */
+.pl-set-back{grid-column:1;grid-row:5;background:purple;}
+.pl-side-l{grid-column:2;grid-row:5;background:#ccc;color:black;}
+.pl-center{grid-column:3;grid-row:5;background:#666;}
+.pl-side-r{grid-column:4;grid-row:5;background:#ccc;color:black;}
+.pl-deck{grid-column:5;grid-row:5;background:orange;color:black;}
+
+/* プレイヤー前衛 */
+.pl-set{grid-column:1;grid-row:6;background:purple;}
+.pl-side-l2{grid-column:2;grid-row:6;background:#ccc;color:black;}
+.pl-center2{grid-column:3;grid-row:6;background:#666;}
+.pl-side-r2{grid-column:4;grid-row:6;background:#ccc;color:black;}
+.pl-deck2{grid-column:5;grid-row:6;background:orange;color:black;}
+
+/* プレイヤー後衛 */
+.pl-serve{grid-column:3;grid-row:7;background:yellow;color:black;}
 
 .card{
- width:40px;height:60px;background:white;color:black;
- border-radius:6px;font-size:9px;
- display:flex;align-items:center;justify-content:center;
- margin:2px;cursor:pointer;
+ width:40px;height:60px;
+ background:white;color:black;
+ border-radius:6px;
+ font-size:9px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ margin:2px;
+ cursor:pointer;
 }
 
 .selected{outline:2px solid yellow;}
 
-#hand{display:flex;justify-content:center;margin-top:10px;}
-button{margin:5px;}
+#hand{
+ display:flex;
+ justify-content:center;
+ margin-top:10px;
+}
+
+button{
+ padding:5px 10px;
+}
 </style>
 </head>
+
 <body>
 
-<div id="phase">開始前</div>
-<div id="ui"></div>
-<div id="dice"></div>
+<h3 id="phase">開始前</h3>
 
 <div class="field">
 
-<!-- CPU -->
-<div class="area set-top">セット</div>
-<div class="area side-l-top">サイド</div>
-<div class="area center-top">センター</div>
-<div class="area side-r-top">サイド</div>
-<div class="area deck-top">デッキ</div>
+<!-- CPU後衛 -->
+<div class="area cpu-serve">サーブ</div>
 
-<div class="area receive-top">レシーブ</div>
-<div class="area toss-top">トス</div>
-<div class="area attack-top">アタック</div>
-<div class="area drop-top">ドロップ</div>
+<!-- CPU前衛 -->
+<div class="area cpu-drop">ドロップ</div>
+<div class="area cpu-receive">レシーブ</div>
+<div class="area cpu-toss">トス</div>
+<div class="area cpu-attack">アタック</div>
+<div class="area cpu-set">セット</div>
 
-<!-- サーブ -->
-<div class="area serve" id="serveArea">サーブ</div>
+<!-- CPUブロック -->
+<div class="area cpu-deck">デッキ</div>
+<div class="area cpu-side-l">サイド</div>
+<div class="area cpu-center">センター</div>
+<div class="area cpu-side-r">サイド</div>
+<div class="area cpu-set-back">セット</div>
 
-<!-- プレイヤー -->
-<div class="area receive" id="receiveArea">レシーブ</div>
-<div class="area toss" id="tossArea">トス</div>
-<div class="area attack" id="attackArea">アタック</div>
-<div class="area drop" id="dropArea">ドロップ</div>
+<!-- UI -->
+<div class="area ui-row" id="ui"></div>
 
-<div class="area set-bottom">セット</div>
-<div class="area side-l">サイド</div>
-<div class="area center">センター</div>
-<div class="area side-r">サイド</div>
-<div class="area deck">デッキ</div>
+<!-- プレイヤーブロック -->
+<div class="area pl-set-back">セット</div>
+<div class="area pl-side-l">サイド</div>
+<div class="area pl-center">センター</div>
+<div class="area pl-side-r">サイド</div>
+<div class="area pl-deck">デッキ</div>
+
+<!-- プレイヤー前衛 -->
+<div class="area pl-set">セット</div>
+<div class="area pl-side-l2">サイド</div>
+<div class="area pl-center2">センター</div>
+<div class="area pl-side-r2">サイド</div>
+<div class="area pl-deck2">デッキ</div>
+
+<!-- プレイヤー後衛 -->
+<div class="area pl-serve">サーブ</div>
 
 </div>
 
@@ -109,20 +155,13 @@ let game={
  selected:null
 };
 
-// デッキ
+// デッキ作成
 for(let i=0;i<40;i++){
  game.deck.push({name:"カード"+i});
 }
 
 // シャッフル
 game.deck.sort(()=>Math.random()-0.5);
-
-// ドロー
-function draw(n){
- for(let i=0;i<n;i++){
-  if(game.deck.length) game.hand.push(game.deck.shift());
- }
-}
 
 // 手札表示
 function renderHand(){
@@ -140,27 +179,20 @@ function renderHand(){
  });
 }
 
-// 配置
-function place(id){
- if(game.selected===null)return;
- let area=document.getElementById(id);
- let c=game.hand[game.selected];
- let d=document.createElement("div");
- d.className="card";
- d.innerText=c.name;
- area.appendChild(d);
-
- game.hand.splice(game.selected,1);
- game.selected=null;
+// ドロー
+function draw(n){
+ for(let i=0;i<n;i++){
+  if(game.deck.length) game.hand.push(game.deck.shift());
+ }
  renderHand();
 }
 
-// ===== サイコロ =====
+// サイコロ
 function rollDice(){
  let p=Math.ceil(Math.random()*6);
  let c=Math.ceil(Math.random()*6);
 
- document.getElementById("dice").innerText =
+ document.getElementById("phase").innerText =
   "あなた:"+p+" / CPU:"+c;
 
  document.getElementById("ui").innerHTML =
@@ -168,37 +200,29 @@ function rollDice(){
   '<button onclick="chooseReceive()">レシーブ</button>';
 }
 
-// ===== 開始 =====
+// 開始
 function start(){
  document.getElementById("phase").innerText="サイコロ";
  document.getElementById("ui").innerHTML=
- '<button onclick="rollDice()">サイコロ振る</button>';
+ '<button onclick="rollDice()">サイコロ</button>';
 }
 
-// ===== 選択後 =====
+// 選択後
 function chooseServe(){
  draw(6);
- renderHand();
  document.getElementById("phase").innerText="サーブフェイズ";
  document.getElementById("ui").innerHTML="";
 }
 
 function chooseReceive(){
  draw(6);
- renderHand();
  document.getElementById("phase").innerText="レシーブ開始";
  document.getElementById("ui").innerHTML="";
 }
 
-// クリック
+// 起動
 window.onload=()=>{
  start();
-
- document.getElementById("serveArea").onclick=()=>place("serveArea");
- document.getElementById("receiveArea").onclick=()=>place("receiveArea");
- document.getElementById("tossArea").onclick=()=>place("tossArea");
- document.getElementById("attackArea").onclick=()=>place("attackArea");
- document.getElementById("dropArea").onclick=()=>place("dropArea");
 };
 </script>
 
