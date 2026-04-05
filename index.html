@@ -6,111 +6,133 @@
 <title>Baboca Field</title>
 
 <style>
-body {
+  body {
     margin: 0;
-    background: #000;
-    display: flex;
-    justify-content: center;
-}
+    padding: 0;
+    background: #f5f5f5;
+    font-family: sans-serif;
+  }
 
-.wrapper {
-    width: 95vw;
+  /* 全体をスマホ幅にフィット */
+  #game {
+    width: 100%;
     max-width: 480px;
-    margin: 10px auto;
-}
+    margin: 0 auto;
+  }
 
-/* 共通エリア */
-.area {
-    border: 2px solid #000;
-    color: #fff;
-    font-weight: bold;
+  /* フィールド1枚（3段×5列） */
+  .field {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(3, 60px);
+    gap: 4px;
+    width: 100%;
+  }
+
+  .area {
+    background: #ffffff;
+    border: 2px solid #333;
+    border-radius: 6px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-sizing: border-box;
-}
+    font-size: 12px;
+  }
 
-/* 色 */
-.set { background:#8e44ad; }
-.side { background:#d0d0d0; color:#000; }
-.center { background:#555; }
-.deck { background:#e67e22; }
-.receive { background:#2980b9; }
-.toss { background:#27ae60; }
-.attack { background:#c0392b; }
-.drop { background:#2c3e50; }
-.serve { background:#f1c40f; color:#000; }
-.event { background:#ecf0f1; color:#000; }
-
-/* グリッド：5列固定 */
-.row5 {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    height: 60px;
-    gap: 6px;
-    margin-bottom: 6px;
-}
-
-/* 空白セル */
-.empty {
+  /* 空白マス */
+  .empty {
     background: transparent;
     border: none;
-}
+  }
+
+  /* ブロックエリア（色を変える） */
+  .side, .center {
+    background: #ffe8a3;
+  }
+
+  /* 上下フィールドの間の隙間をゼロに */
+  #divider {
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 手札 */
+  #hand {
+    width: 100%;
+    height: 80px;
+    background: #ddd;
+    border-top: 3px solid #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 </style>
 </head>
 
 <body>
-<div class="wrapper">
 
-    <!-- ===== CPUフィールド（自分側の180度回転） ===== -->
-    <div class="row5">
-        <div class="area deck">DECK</div>
-        <div class="area side">SIDE</div>
-        <div class="area center">CENTER</div>
-        <div class="area side">SIDE</div>
-        <div class="area set">SET</div>
-    </div>
+<div id="game">
 
-    <div class="row5">
-        <div class="area drop">DROP</div>
-        <div class="area attack">ATTACK</div>
-        <div class="area toss">TOSS</div>
-        <div class="area receive">RECEIVE</div>
-        <div class="empty"></div>
-    </div>
+  <!-- ▼ 相手フィールド（上） -->
+  <div class="field opponent">
 
-    <div class="row5">
-        <div class="empty"></div>
-        <div class="area event">EVENT</div>
-        <div class="area serve">SERVE</div>
-        <div class="area set">SET</div>
-        <div class="empty"></div>
-    </div>
+    <!-- 1段目 -->
+    <div class="area">SET</div>
+    <div class="area side">SIDE</div>
+    <div class="area center">CENTER</div>
+    <div class="area side">SIDE</div>
+    <div class="area">DECK</div>
 
-    <!-- ===== 自分フィールド ===== -->
-    <div class="row5">
-        <div class="area set">SET</div>
-        <div class="area side">SIDE</div>
-        <div class="area center">CENTER</div>
-        <div class="area side">SIDE</div>
-        <div class="area deck">DECK</div>
-    </div>
+    <!-- 2段目 -->
+    <div class="empty"></div>
+    <div class="area">RECEIVE</div>
+    <div class="area">TOSS</div>
+    <div class="area">ATTACK</div>
+    <div class="area">DROP</div>
 
-    <div class="row5">
-        <div class="area receive">RECEIVE</div>
-        <div class="area toss">TOSS</div>
-        <div class="area attack">ATTACK</div>
-        <div class="area drop">DROP</div>
-        <div class="empty"></div>
-    </div>
+    <!-- 3段目 -->
+    <div class="empty"></div>
+    <div class="empty"></div>
+    <div class="area">SERVE</div>
+    <div class="area">EVENT</div>
+    <div class="empty"></div>
 
-    <div class="row5">
-        <div class="area set">SET</div>
-        <div class="area serve">SERVE</div>
-        <div class="area event">EVENT</div>
-        <div class="empty"></div>
-        <div class="empty"></div>
-    </div>
+  </div>
+
+  <!-- ▼ フィールド同士をくっつける（隙間ゼロ） -->
+  <div id="divider"></div>
+
+  <!-- ▼ 自分フィールド（下） -->
+  <div class="field player">
+
+    <!-- 1段目 -->
+    <div class="area">SET</div>
+    <div class="area side">SIDE</div>
+    <div class="area center">CENTER</div>
+    <div class="area side">SIDE</div>
+    <div class="area">DECK</div>
+
+    <!-- 2段目 -->
+    <div class="empty"></div>
+    <div class="area">RECEIVE</div>
+    <div class="area">TOSS</div>
+    <div class="area">ATTACK</div>
+    <div class="area">DROP</div>
+
+    <!-- 3段目 -->
+    <div class="empty"></div>
+    <div class="empty"></div>
+    <div class="area">SERVE</div>
+    <div class="area">EVENT</div>
+    <div class="empty"></div>
+
+  </div>
+
+  <!-- ▼ 手札 -->
+  <div id="hand">HAND</div>
 
 </div>
+
 </body>
+</html>
