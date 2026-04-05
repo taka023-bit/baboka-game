@@ -3,127 +3,119 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Baboca BREAK Field</title>
+<title>Baboca Court Layout</title>
 
 <style>
-  body {
-    background: #f5f5f5;
-    font-family: sans-serif;
+body {
     margin: 0;
-    padding: 0;
-  }
-
-  #game {
+    background: #f0f0f0;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-
-  /* ===== フィールド全体（7列構成） ===== */
-  .field {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-    padding: 6px;
-  }
-
-  /* ===== 各エリアの見た目 ===== */
-  .area {
-    background: #ffffff;
-    border: 2px solid #333;
-    border-radius: 6px;
-    padding: 10px;
-    text-align: center;
-    font-size: 12px;
-  }
-
-  /* ===== ブロックエリア（3枠） ===== */
-  .block-area {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
-  }
-
-  .block {
-    background: #ffe8a3;
-    border: 2px solid #333;
-    border-radius: 6px;
-    padding: 10px;
-    text-align: center;
-    font-size: 12px;
-  }
-
-  /* ===== コート中央ライン ===== */
-  #divider {
-    width: 100%;
-    height: 6px;
-    background: #ffcc00;
-    margin: 6px 0;
-  }
-
-  /* ===== 手札エリア ===== */
-  #hand {
-    width: 100%;
-    height: 80px;
-    background: #ddd;
-    border-top: 3px solid #333;
-    display: flex;
-    align-items: center;
     justify-content: center;
-  }
+}
+
+.court-wrapper {
+    width: 95vw;
+    max-width: 480px;
+    margin: 10px auto;
+}
+
+/* ===== 共通エリア ===== */
+.area {
+    border: 2px solid #000;
+    padding: 10px;
+    color: #fff;
+    font-weight: bold;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* ===== 色設定（画像に合わせた近似色） ===== */
+.block { background: #4a4a4a; }
+.attack { background: #d64545; }
+.toss { background: #4caf50; }
+.receive { background: #3f51b5; }
+.serve { background: #f4d03f; color:#000; }
+.event { background: #bdbdbd; color:#000; }
+.drop { background: #212121; }
+.set { background: #8e44ad; }
+.deck { background: #1e88e5; }
+
+/* ===== レイアウト ===== */
+.field {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+/* ブロックエリアは中央で上下がくっつく */
+.block-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+/* サイドの SET / DECK */
+.side-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.side-row .area {
+    width: 48%;
+}
 </style>
 </head>
 
 <body>
+<div class="court-wrapper">
 
-<div id="game">
-
-  <!-- ▼ 相手フィールド（上） -->
-  <div class="field opponent">
-    <div class="set-area area">SET</div>
-    <div class="receive-area area">RECEIVE</div>
-    <div class="toss-area area">TOSS</div>
-    <div class="attack-area area">ATTACK</div>
-
-    <div class="block-area">
-      <div class="block side">SIDE</div>
-      <div class="block center">CENTER</div>
-      <div class="block side">SIDE</div>
+    <!-- ===== 相手フィールド ===== -->
+    <div class="side-row">
+        <div class="area set">SET</div>
+        <div class="area deck">DECK</div>
     </div>
 
-    <div class="deck-area area">DECK</div>
-    <div class="drop-area area">DROP</div>
-  </div>
-
-  <!-- ▼ コート中央（ブロックエリアが接するライン） -->
-  <div id="divider"></div>
-
-  <!-- ▼ 自分フィールド（下） -->
-  <div class="field player">
-    <div class="set-area area">SET</div>
-    <div class="receive-area area">RECEIVE</div>
-    <div class="toss-area area">TOSS</div>
-    <div class="attack-area area">ATTACK</div>
-
-    <div class="block-area">
-      <div class="block side">SIDE</div>
-      <div class="block center">CENTER</div>
-      <div class="block side">SIDE</div>
+    <div class="field">
+        <div class="area attack">ATTACK</div>
+        <div class="area toss">TOSS</div>
+        <div class="area receive">RECEIVE</div>
     </div>
 
-    <div class="deck-area area">DECK</div>
-    <div class="drop-area area">DROP</div>
+    <div class="block-area">
+        <div class="area block">CENTER BLOCKER</div>
+        <div class="area block">SIDE BLOCKER</div>
+    </div>
 
-    <div class="serve-area area">SERVE</div>
-    <div class="event-area area">EVENT</div>
-  </div>
+    <div class="side-row">
+        <div class="area event">EVENT</div>
+        <div class="area drop">DROP</div>
+    </div>
 
-  <!-- ▼ 手札 -->
-  <div id="hand">HAND</div>
+    <!-- ===== プレイヤーフィールド ===== -->
+    <div class="side-row">
+        <div class="area set">SET</div>
+        <div class="area deck">DECK</div>
+    </div>
+
+    <div class="field">
+        <div class="area attack">ATTACK</div>
+        <div class="area toss">TOSS</div>
+        <div class="area receive">RECEIVE</div>
+    </div>
+
+    <!-- ★ここが相手とプレイヤーのブロックがくっつく中央ライン -->
+    <div class="block-area">
+        <div class="area block">CENTER BLOCKER</div>
+        <div class="area block">SIDE BLOCKER</div>
+    </div>
+
+    <div class="side-row">
+        <div class="area serve">SERVE</div>
+        <div class="area event">EVENT</div>
+    </div>
 
 </div>
-
 </body>
 </html>
