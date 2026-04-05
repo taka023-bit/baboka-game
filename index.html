@@ -9,7 +9,7 @@
   body {
     margin: 0;
     padding: 0;
-    background: #f5f5f5;
+    background: #000; /* 背景黒 */
     font-family: sans-serif;
     overflow: hidden;
   }
@@ -30,7 +30,9 @@
     /* コート部分は現状維持（1.2fr） */
     grid-template-columns: 1fr 1.2fr 1.2fr 1.2fr 1fr;
 
-    grid-template-rows: repeat(3, 1fr);
+    /* 縦幅を少し削る（0.9fr） */
+    grid-template-rows: repeat(3, 0.9fr);
+
     gap: 4px;
     padding: 4px;
   }
@@ -42,52 +44,48 @@
 
   /* ===== エリア共通 ===== */
   .area {
-    background: #ffffff;
-    border: 2px solid #333;
+    background: #111;
+    border: 2px solid #fff; /* 枠線白 */
     border-radius: 6px;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 14px;
+    color: white;
   }
 
-  /* ===== 色指定 ===== */
+  /* ===== 色指定（強めの色） ===== */
   .center {
-    background: #555; /* ダークグレー */
-    color: white;
+    background: #333; /* ダークグレー */
   }
 
   .side {
-    background: #777; /* 明るめグレー */
-    color: white;
+    background: #666; /* 明るめグレー */
   }
 
   .receive {
-    background: #4da3ff; /* 青 */
-    color: white;
+    background: #007bff; /* 濃い青 */
   }
 
   .toss {
-    background: #6cd96c; /* 緑 */
-    color: white;
+    background: #00c853; /* 濃い緑 */
   }
 
   .attack {
-    background: #ff6b6b; /* 赤 */
-    color: white;
+    background: #ff1744; /* 濃い赤 */
   }
 
   .serve {
-    background: #ffe066; /* 黄色 */
-  }
-
-  .event {
-    background: #ffffff; /* 白のまま */
+    background: #ffea00; /* 濃い黄色 */
+    color: #000;
   }
 
   .drop {
-    background: #555; /* ダークグレー */
-    color: white;
+    background: #333; /* ダークグレー */
+  }
+
+  .event {
+    background: #111; /* 白枠のまま黒背景 */
   }
 
   /* 空白マス */
@@ -96,15 +94,16 @@
     border: none;
   }
 
-  /* ===== 手札エリア ===== */
+  /* ===== 手札エリア（広げる） ===== */
   #hand {
-    height: 100px;
-    background: #ddd;
-    border-top: 3px solid #333;
+    height: 120px; /* 少し広げた */
+    background: #222;
+    border-top: 3px solid #fff;
     display: flex;
     justify-content: center;
     align-items: center;
     font-size: 18px;
+    color: white;
   }
 </style>
 </head>
@@ -166,4 +165,9 @@
   </div>
 
   <!-- ▼ 手札 -->
-  <div id="hand">
+  <div id="hand">手札</div>
+
+</div>
+
+</body>
+</html>
