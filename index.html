@@ -2,10 +2,15 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>テスト</title>
+<title>バボカBREAK</title>
 
 <style>
-body{background:black;color:white;text-align:center;}
+body{
+ background:black;
+ color:white;
+ text-align:center;
+}
+
 .field{
  display:grid;
  grid-template-columns:repeat(5,70px);
@@ -13,27 +18,117 @@ body{background:black;color:white;text-align:center;}
  gap:6px;
  justify-content:center;
 }
+
 .area{
  border:2px solid white;
  display:flex;
  align-items:center;
  justify-content:center;
+ font-size:10px;
 }
+
+/* 配置 */
 .cpu-serve{grid-column:3;grid-row:1;background:yellow;color:black;}
-.pl-serve{grid-column:3;grid-row:7;background:yellow;color:black;}
 .ui-row{grid-column:1/6;grid-row:4;background:#333;}
+
+.pl-serve{grid-column:3;grid-row:7;background:yellow;color:black;}
+
+/* 最低限の他エリア */
+.cpu-receive{grid-column:2;grid-row:2;background:blue;}
+.pl-receive{grid-column:2;grid-row:6;background:blue;}
+
+.card{
+ width:40px;height:60px;
+ background:white;color:black;
+ margin:2px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+}
+
+.selected{outline:2px solid yellow;}
+#hand{display:flex;justify-content:center;margin-top:10px;}
 </style>
 </head>
 
 <body>
 
-<h1>表示テスト</h1>
+<h3 id="phase">開始前</h3>
 
 <div class="field">
 <div class="area cpu-serve">CPUサーブ</div>
-<div class="area ui-row">UI</div>
+<div class="area cpu-receive">CPUレシーブ</div>
+
+<div class="area ui-row" id="ui"></div>
+
+<div class="area pl-receive" id="receiveArea">レシーブ</div>
 <div class="area pl-serve">自分サーブ</div>
 </div>
+
+<div id="hand"></div>
+
+<script>
+let game={
+ deck:[],
+ hand:[],
+ selected:null
+};
+
+// デッキ
+for(let i=0;i<40;i++){
+ game.deck.push({name:"カード"+i});
+}
+game.deck.sort(()=>Math.random()-0.5);
+
+// 手札表示
+function renderHand(){
+ let h=document.getElementById("hand");
+ h.innerHTML="";
+ game.hand.forEach((c,i)=>{
+  let d=document.createElement("div");
+  d.className="card"+(game.selected===i?" selected":"");
+  d.innerText=c.name;
+  d.onclick=()=>{
+   game.selected=(game.selected===i?null:i);
+   renderHand();
+  };
+  h.appendChild(d);
+ });
+}
+
+// ドロー
+function draw(n){
+ for(let i=0;i<n;i++){
+  if(game.deck.length) game.hand.push(game.deck.shift());
+ }
+ renderHand();
+}
+
+// サイコロ
+function rollDice(){
+ let p=Math.ceil(Math.random()*6);
+ let c=Math.ceil(Math.random()*6);
+
+ document.getElementById("phase").innerText =
+  "あなた:"+p+" / CPU:"+c;
+
+ document.getElementById("ui").innerHTML =
+  '<button onclick="startGame()">スタート</button>';
+}
+
+// ゲーム開始
+function startGame(){
+ draw(6);
+ document.getElementById("phase").innerText="プレイ中";
+ document.getElementById("ui").innerHTML="";
+}
+
+// 起動
+window.onload=()=>{
+ document.getElementById("ui").innerHTML=
+ '<button onclick="rollDice()">サイコロ</button>';
+};
+</script>
 
 </body>
 </html>
