@@ -27,11 +27,10 @@
     display: grid;
 
     /* SET / DECK / DROP を少し太く（1fr） */
-    /* コート部分は現状維持（1.2fr） */
     grid-template-columns: 1fr 1.2fr 1.2fr 1.2fr 1fr;
 
-    /* 縦幅を少し削る（0.9fr） */
-    grid-template-rows: repeat(3, 0.9fr);
+    /* 縦幅をさらに削る（0.75fr） */
+    grid-template-rows: repeat(3, 0.75fr);
 
     gap: 4px;
     padding: 4px;
@@ -55,38 +54,14 @@
   }
 
   /* ===== 色指定（強めの色） ===== */
-  .center {
-    background: #333; /* ダークグレー */
-  }
-
-  .side {
-    background: #666; /* 明るめグレー */
-  }
-
-  .receive {
-    background: #007bff; /* 濃い青 */
-  }
-
-  .toss {
-    background: #00c853; /* 濃い緑 */
-  }
-
-  .attack {
-    background: #ff1744; /* 濃い赤 */
-  }
-
-  .serve {
-    background: #ffea00; /* 濃い黄色 */
-    color: #000;
-  }
-
-  .drop {
-    background: #333; /* ダークグレー */
-  }
-
-  .event {
-    background: #111; /* 白枠のまま黒背景 */
-  }
+  .center { background: #333; color: white; }
+  .side   { background: #666; color: white; }
+  .receive{ background: #007bff; color: white; }
+  .toss   { background: #00c853; color: white; }
+  .attack { background: #ff1744; color: white; }
+  .serve  { background: #ffea00; color: #000; }
+  .drop   { background: #333; color: white; }
+  .event  { background: #111; color: white; }
 
   /* 空白マス */
   .empty {
@@ -94,9 +69,9 @@
     border: none;
   }
 
-  /* ===== 手札エリア（広げる） ===== */
+  /* ===== 手札エリア（さらに広げる） ===== */
   #hand {
-    height: 120px; /* 少し広げた */
+    height: 150px; /* ← 120 → 150 に拡大 */
     background: #222;
     border-top: 3px solid #fff;
     display: flex;
