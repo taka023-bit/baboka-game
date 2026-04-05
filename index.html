@@ -32,7 +32,6 @@ body {
 }
 
 /* ===== 色設定 ===== */
-.block { background: #4a4a4a; }
 .attack { background: #d64545; }
 .toss { background: #4caf50; }
 .receive { background: #3f51b5; }
@@ -43,25 +42,15 @@ body {
 .deck { background: #1e88e5; }
 
 /* ===== 行の高さを完全固定 ===== */
-.row {
+.row3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    height: 60px; /* ← 全エリアの高さを統一 */
-    gap: 6px;
-    margin-bottom: 6px;
-}
-
-/* ブロックエリア（2分割） */
-.block-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
     height: 60px;
     gap: 6px;
     margin-bottom: 6px;
 }
 
-/* SET / DECK / EVENT / DROP の横並び */
-.side-row {
+.row2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     height: 60px;
@@ -74,49 +63,30 @@ body {
 <body>
 <div class="court-wrapper">
 
-    <!-- ===== 相手フィールド ===== -->
-    <div class="side-row">
-        <div class="area set">SET</div>
-        <div class="area deck">DECK</div>
-    </div>
-
-    <div class="row">
+    <!-- ===== 上フィールド（下フィールドの180度反転） ===== -->
+    <div class="row3">
         <div class="area attack">ATTACK</div>
         <div class="area toss">TOSS</div>
         <div class="area receive">RECEIVE</div>
     </div>
 
-    <div class="block-row">
-        <div class="area block">CENTER BLOCKER</div>
-        <div class="area block">SIDE BLOCKER</div>
-    </div>
-
-    <div class="side-row">
-        <div class="area event">EVENT</div>
+    <div class="row3">
         <div class="area drop">DROP</div>
-    </div>
-
-    <!-- ===== プレイヤーフィールド ===== -->
-    <div class="side-row">
-        <div class="area set">SET</div>
-        <div class="area deck">DECK</div>
-    </div>
-
-    <div class="row">
-        <div class="area attack">ATTACK</div>
-        <div class="area toss">TOSS</div>
-        <div class="area receive">RECEIVE</div>
-    </div>
-
-    <!-- ★中央で上下がくっつくブロックエリア -->
-    <div class="block-row">
-        <div class="area block">CENTER BLOCKER</div>
-        <div class="area block">SIDE BLOCKER</div>
-    </div>
-
-    <div class="side-row">
         <div class="area serve">SERVE</div>
         <div class="area event">EVENT</div>
+    </div>
+
+    <!-- ===== 下フィールド ===== -->
+    <div class="row3">
+        <div class="area receive">RECEIVE</div>
+        <div class="area toss">TOSS</div>
+        <div class="area attack">ATTACK</div>
+    </div>
+
+    <div class="row3">
+        <div class="area event">EVENT</div>
+        <div class="area serve">SERVE</div>
+        <div class="area drop">DROP</div>
     </div>
 
 </div>
