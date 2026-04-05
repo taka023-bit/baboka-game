@@ -5,11 +5,7 @@
 <title>バボカBREAK</title>
 
 <style>
-body{
- background:black;
- color:white;
- text-align:center;
-}
+body{background:black;color:white;text-align:center;}
 
 .field{
  display:grid;
@@ -28,14 +24,13 @@ body{
  flex-wrap:wrap;
 }
 
-/* 配置 */
 .cpu-serve{grid-column:3;grid-row:1;background:yellow;color:black;}
 .ui-row{grid-column:1/6;grid-row:4;background:#333;}
 
 .pl-serve{grid-column:3;grid-row:7;background:yellow;color:black;}
-
-.cpu-receive{grid-column:2;grid-row:2;background:blue;}
 .pl-receive{grid-column:2;grid-row:6;background:blue;}
+.pl-toss{grid-column:3;grid-row:6;background:green;}
+.pl-attack{grid-column:4;grid-row:6;background:red;}
 
 .card{
  width:40px;height:60px;
@@ -55,16 +50,17 @@ body{
 
 <body>
 
-<h3 id="phase">開始前</h3>
+<h3 id="phase">サイコロ</h3>
 
 <div class="field">
 
 <div class="area cpu-serve" id="cpuServe">CPUサーブ</div>
-<div class="area cpu-receive" id="cpuReceive">CPUレシーブ</div>
 
 <div class="area ui-row" id="ui"></div>
 
 <div class="area pl-receive" id="receiveArea">レシーブ</div>
+<div class="area pl-toss" id="tossArea">トス</div>
+<div class="area pl-attack" id="attackArea">アタック</div>
 <div class="area pl-serve" id="serveArea">サーブ</div>
 
 </div>
@@ -75,7 +71,9 @@ body{
 let game={
  deck:[],
  hand:[],
- selected:null
+ selected:null,
+ phase:"dice",
+ placed:false
 };
 
 // デッキ
@@ -84,7 +82,7 @@ for(let i=0;i<40;i++){
 }
 game.deck.sort(()=>Math.random()-0.5);
 
-// 手札表示
+// 手札
 function renderHand(){
  let h=document.getElementById("hand");
  h.innerHTML="";
@@ -92,17 +90,14 @@ function renderHand(){
   let d=document.createElement("div");
   d.className="card"+(game.selected===i?" selected":"");
   d.innerText=c.name;
-
   d.onclick=()=>{
-   game.selected = (game.selected===i ? null : i);
+   game.selected=(game.selected===i?null:i);
    renderHand();
   };
-
   h.appendChild(d);
  });
 }
 
-// ドロー
 function draw(n){
  for(let i=0;i<n;i++){
   if(game.deck.length) game.hand.push(game.deck.shift());
@@ -110,14 +105,18 @@ function draw(n){
  renderHand();
 }
 
-// 配置
+// 配置制御
 function place(areaId){
- if(!areaId) return;
  if(game.selected===null) return;
+ if(game.placed) return;
+
+ // フェイズごとの制限
+ if(game.phase==="serve" && areaId!=="serveArea") return;
+ if(game.phase==="receive" && areaId!=="receiveArea") return;
+ if(game.phase==="toss" && areaId!=="tossArea") return;
+ if(game.phase==="attack" && areaId!=="attackArea") return;
 
  let area=document.getElementById(areaId);
- if(!area) return;
-
  let card=game.hand[game.selected];
 
  let d=document.createElement("div");
@@ -128,7 +127,37 @@ function place(areaId){
 
  game.hand.splice(game.selected,1);
  game.selected=null;
+ game.placed=true;
+
  renderHand();
+ nextPhase();
+}
+
+// フェイズ進行
+function nextPhase(){
+ if(game.phase==="serve"){
+  game.phase="receive";
+ }else if(game.phase==="receive"){
+  game.phase="toss";
+ }else if(game.phase==="toss"){
+  game.phase="attack";
+ }else if(game.phase==="attack"){
+  game.phase="receive"; // ループ
+ }
+
+ game.placed=false;
+ updatePhaseUI();
+}
+
+// UI更新
+function updatePhaseUI(){
+ let text={
+  serve:"サーブフェイズ",
+  receive:"レシーブフェイズ",
+  toss:"トスフェイズ",
+  attack:"アタックフェイズ"
+ };
+ document.getElementById("phase").innerText=text[game.phase];
 }
 
 // サイコロ
@@ -143,10 +172,11 @@ function rollDice(){
   '<button onclick="startGame()">スタート</button>';
 }
 
-// ゲーム開始
+// 開始
 function startGame(){
  draw(6);
- document.getElementById("phase").innerText="プレイ中";
+ game.phase="serve";
+ updatePhaseUI();
  document.getElementById("ui").innerHTML="";
 }
 
@@ -155,7 +185,6 @@ window.onload=()=>{
  document.getElementById("ui").innerHTML=
  '<button onclick="rollDice()">サイコロ</button>';
 
- // ここが今回の超重要ポイント👇
  document.querySelectorAll(".area").forEach(area=>{
   area.onclick=()=>place(area.id);
  });
