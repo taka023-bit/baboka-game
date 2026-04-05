@@ -3,92 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Baboca Court Layout</title>
+<title>Baboca Field</title>
 
 <style>
 body {
     margin: 0;
-    background: #f0f0f0;
+    background: #000;
     display: flex;
     justify-content: center;
 }
 
-.court-wrapper {
+.wrapper {
     width: 95vw;
     max-width: 480px;
     margin: 10px auto;
 }
 
-/* ===== 共通エリア ===== */
+/* 共通エリア */
 .area {
     border: 2px solid #000;
     color: #fff;
     font-weight: bold;
-    text-align: center;
     display: flex;
     justify-content: center;
     align-items: center;
     box-sizing: border-box;
 }
 
-/* ===== 色設定 ===== */
-.attack { background: #d64545; }
-.toss { background: #4caf50; }
-.receive { background: #3f51b5; }
-.serve { background: #f4d03f; color:#000; }
-.event { background: #bdbdbd; color:#000; }
-.drop { background: #212121; }
-.set { background: #8e44ad; }
-.deck { background: #1e88e5; }
+/* 色 */
+.set { background:#8e44ad; }
+.side { background:#d0d0d0; color:#000; }
+.center { background:#555; }
+.deck { background:#e67e22; }
+.receive { background:#2980b9; }
+.toss { background:#27ae60; }
+.attack { background:#c0392b; }
+.drop { background:#2c3e50; }
+.serve { background:#f1c40f; color:#000; }
+.event { background:#ecf0f1; color:#000; }
 
-/* ===== 行の高さを完全固定 ===== */
-.row3 {
+/* グリッド：5列固定 */
+.row5 {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     height: 60px;
     gap: 6px;
     margin-bottom: 6px;
 }
 
-.row2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    height: 60px;
-    gap: 6px;
-    margin-bottom: 6px;
+/* 空白セル */
+.empty {
+    background: transparent;
+    border: none;
 }
 </style>
 </head>
 
 <body>
-<div class="court-wrapper">
+<div class="wrapper">
 
-    <!-- ===== 上フィールド（下フィールドの180度反転） ===== -->
-    <div class="row3">
+    <!-- ===== CPUフィールド（自分側の180度回転） ===== -->
+    <div class="row5">
+        <div class="area deck">DECK</div>
+        <div class="area side">SIDE</div>
+        <div class="area center">CENTER</div>
+        <div class="area side">SIDE</div>
+        <div class="area set">SET</div>
+    </div>
+
+    <div class="row5">
+        <div class="area drop">DROP</div>
         <div class="area attack">ATTACK</div>
         <div class="area toss">TOSS</div>
         <div class="area receive">RECEIVE</div>
+        <div class="empty"></div>
     </div>
 
-    <div class="row3">
-        <div class="area drop">DROP</div>
-        <div class="area serve">SERVE</div>
+    <div class="row5">
+        <div class="empty"></div>
         <div class="area event">EVENT</div>
+        <div class="area serve">SERVE</div>
+        <div class="area set">SET</div>
+        <div class="empty"></div>
     </div>
 
-    <!-- ===== 下フィールド ===== -->
-    <div class="row3">
+    <!-- ===== 自分フィールド ===== -->
+    <div class="row5">
+        <div class="area set">SET</div>
+        <div class="area side">SIDE</div>
+        <div class="area center">CENTER</div>
+        <div class="area side">SIDE</div>
+        <div class="area deck">DECK</div>
+    </div>
+
+    <div class="row5">
         <div class="area receive">RECEIVE</div>
         <div class="area toss">TOSS</div>
         <div class="area attack">ATTACK</div>
+        <div class="area drop">DROP</div>
+        <div class="empty"></div>
     </div>
 
-    <div class="row3">
-        <div class="area event">EVENT</div>
+    <div class="row5">
+        <div class="area set">SET</div>
         <div class="area serve">SERVE</div>
-        <div class="area drop">DROP</div>
+        <div class="area event">EVENT</div>
+        <div class="empty"></div>
+        <div class="empty"></div>
     </div>
 
 </div>
 </body>
-</html>
