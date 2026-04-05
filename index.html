@@ -22,14 +22,16 @@ body {
 /* ===== 共通エリア ===== */
 .area {
     border: 2px solid #000;
-    padding: 10px;
     color: #fff;
     font-weight: bold;
     text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     box-sizing: border-box;
 }
 
-/* ===== 色設定（画像に合わせた近似色） ===== */
+/* ===== 色設定 ===== */
 .block { background: #4a4a4a; }
 .attack { background: #d64545; }
 .toss { background: #4caf50; }
@@ -40,30 +42,31 @@ body {
 .set { background: #8e44ad; }
 .deck { background: #1e88e5; }
 
-/* ===== レイアウト ===== */
-.field {
+/* ===== 行の高さを完全固定 ===== */
+.row {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
+    height: 60px; /* ← 全エリアの高さを統一 */
     gap: 6px;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
 }
 
-/* ブロックエリアは中央で上下がくっつく */
-.block-area {
+/* ブロックエリア（2分割） */
+.block-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    height: 60px;
     gap: 6px;
+    margin-bottom: 6px;
 }
 
-/* サイドの SET / DECK */
+/* SET / DECK / EVENT / DROP の横並び */
 .side-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-}
-
-.side-row .area {
-    width: 48%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 60px;
+    gap: 6px;
+    margin-bottom: 6px;
 }
 </style>
 </head>
@@ -77,13 +80,13 @@ body {
         <div class="area deck">DECK</div>
     </div>
 
-    <div class="field">
+    <div class="row">
         <div class="area attack">ATTACK</div>
         <div class="area toss">TOSS</div>
         <div class="area receive">RECEIVE</div>
     </div>
 
-    <div class="block-area">
+    <div class="block-row">
         <div class="area block">CENTER BLOCKER</div>
         <div class="area block">SIDE BLOCKER</div>
     </div>
@@ -99,14 +102,14 @@ body {
         <div class="area deck">DECK</div>
     </div>
 
-    <div class="field">
+    <div class="row">
         <div class="area attack">ATTACK</div>
         <div class="area toss">TOSS</div>
         <div class="area receive">RECEIVE</div>
     </div>
 
-    <!-- ★ここが相手とプレイヤーのブロックがくっつく中央ライン -->
-    <div class="block-area">
+    <!-- ★中央で上下がくっつくブロックエリア -->
+    <div class="block-row">
         <div class="area block">CENTER BLOCKER</div>
         <div class="area block">SIDE BLOCKER</div>
     </div>
