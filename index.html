@@ -20,7 +20,7 @@
     width: 100%;
   }
 
-  /* フィールド全体 */
+  /* ===== フィールド全体（7列構成） ===== */
   .field {
     width: 100%;
     display: grid;
@@ -29,7 +29,7 @@
     padding: 6px;
   }
 
-  /* 各エリアの見た目 */
+  /* ===== 各エリアの見た目 ===== */
   .area {
     background: #ffffff;
     border: 2px solid #333;
@@ -39,7 +39,7 @@
     font-size: 12px;
   }
 
-  /* ブロックエリア（3枠） */
+  /* ===== ブロックエリア（3枠） ===== */
   .block-area {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -55,15 +55,15 @@
     font-size: 12px;
   }
 
-  /* コート中央ライン */
+  /* ===== コート中央ライン ===== */
   #divider {
     width: 100%;
-    height: 4px;
+    height: 6px;
     background: #ffcc00;
-    margin: 4px 0;
+    margin: 6px 0;
   }
 
-  /* 手札エリア */
+  /* ===== 手札エリア ===== */
   #hand {
     width: 100%;
     height: 80px;
@@ -80,7 +80,7 @@
 
 <div id="game">
 
-  <!-- 相手フィールド -->
+  <!-- ▼ 相手フィールド（上） -->
   <div class="field opponent">
     <div class="set-area area">SET</div>
     <div class="receive-area area">RECEIVE</div>
@@ -96,3 +96,34 @@
     <div class="deck-area area">DECK</div>
     <div class="drop-area area">DROP</div>
   </div>
+
+  <!-- ▼ コート中央（ブロックエリアが接するライン） -->
+  <div id="divider"></div>
+
+  <!-- ▼ 自分フィールド（下） -->
+  <div class="field player">
+    <div class="set-area area">SET</div>
+    <div class="receive-area area">RECEIVE</div>
+    <div class="toss-area area">TOSS</div>
+    <div class="attack-area area">ATTACK</div>
+
+    <div class="block-area">
+      <div class="block side">SIDE</div>
+      <div class="block center">CENTER</div>
+      <div class="block side">SIDE</div>
+    </div>
+
+    <div class="deck-area area">DECK</div>
+    <div class="drop-area area">DROP</div>
+
+    <div class="serve-area area">SERVE</div>
+    <div class="event-area area">EVENT</div>
+  </div>
+
+  <!-- ▼ 手札 -->
+  <div id="hand">HAND</div>
+
+</div>
+
+</body>
+</html>
