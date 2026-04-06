@@ -14,7 +14,7 @@ body {
     user-select: none;
 }
 
-/* 画面切り替え */
+/ 画面切り替え /
 .screen {
     display: none;
     padding: 20px;
@@ -23,7 +23,7 @@ body {
     display: block;
 }
 
-/* タイトル画面 */
+/ タイトル画面 /
 .title-button {
     width: 80%;
     margin: 20px auto;
@@ -34,13 +34,7 @@ body {
     font-size: 22px;
 }
 
-/* デッキ編成 */
-.deck-builder {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
+/ デッキ編成 /
 .tab-buttons {
     display: flex;
     gap: 10px;
@@ -70,7 +64,7 @@ body {
     border-radius: 4px;
 }
 
-/* デッキ保存ボタン */
+/ デッキ保存ボタン /
 .save-button {
     padding: 15px;
     background: #008cff;
@@ -79,9 +73,9 @@ body {
     margin-top: 10px;
 }
 
-/* ============================= */
-/* あなたのフィールドCSS（統合済） */
-/* ============================= */
+/ ============================= /
+/ あなたのフィールドCSS（統合済） /
+/ ============================= /
 
 .court{
   width: 95vw;
@@ -128,9 +122,7 @@ body {
 
 <body>
 
-<!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
 <!-- タイトル画面 -->
-<!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
 <div id="titleScreen" class="screen active">
     <h1>Baboca</h1>
 
@@ -139,24 +131,739 @@ body {
     <div class="title-button" onclick="openSavedDecks()">保存デッキ一覧</div>
 </div>
 
-<!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
 <!-- デッキ編成画面 -->
-<!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
 <div id="deckBuilderScreen" class="screen">
 
     <h2>デッキ編成</h2>
 
     <div class="tab-buttons">
-        <div id="tabKarasuno" class="tab-button active" onclick="switchTab('karasuno')">烏野</div>
-        <div id="tabNekoma" class="tab-button" onclick="switchTab('nekoma')">音駒</div>
+        <div id="tabKarasuno" class="tab-button active" onclick="switchTab('Karasuno')">烏野</div>
+        <div id="tabNekoma" class="tab-button" onclick="switchTab('Nekoma')">音駒</div>
     </div>
 
     <h3>カード一覧</h3>
     <div id="cardList" class="card-list"></div>
 
-    <h3>デッキ（40枚）</h3>
+    <h3>デッキ（<span id="deckCount">0</span>/40）</h3>
     <div id="deckList" class="deck-list"></div>
 
     <div class="save-button" onclick="saveDeck()">デッキ保存</div>
     <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
 </div>
+
+<!-- 保存デッキ一覧 -->
+<div id="savedDeckScreen" class="screen">
+    <h2>保存デッキ一覧</h2>
+    <div id="savedDeckList"></div>
+
+    <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
+</div>
+
+<!-- デッキ選択画面 -->
+<div id="deckSelectScreen" class="screen">
+    <h2>デッキ選択</h2>
+
+    <h3>プレイヤーのデッキ</h3>
+    <select id="playerDeckSelect"></select>
+
+    <h3>CPUのデッキ</h3>
+    <select id="cpuDeckSelect"></select>
+
+    <div class="title-button" onclick="startBattle()">対戦開始</div>
+    <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
+</div>
+
+<!-- バトル画面 -->
+<div id="battleScreen" class="screen">
+
+  <h2>バトル</h2>
+
+  <div class="court">
+
+    <div class="row cpu">
+      <div class="slot" id="cpuSet">SET</div>
+      <div class="slot" id="cpuSideL">SIDE</div>
+      <div class="slot" id="cpuCenter">CENTER</div>
+      <div class="slot" id="cpuSideR">SIDE</div>
+      <div class="slot" id="cpuDeck">DECK</div>
+    </div>
+
+    <div class="row cpu">
+      <div class="slot" id="cpuBack"></div>
+      <div class="slot" id="cpuReceive">RECEIVE</div>
+      <div class="slot" id="cpuToss">TOSS</div>
+      <div class="slot" id="cpuAttack">ATTACK</div>
+      <div class="slot" id="cpuDrop">DROP</div>
+    </div>
+
+    <div class="net"></div>
+
+    <div class="row">
+      <div class="slot" id="playerBackL"></div>
+      <div class="slot" id="playerBackR"></div>
+      <div class="slot" id="playerServe">SERVE</div>
+      <div class="slot" id="playerEvent">EVENT</div>
+      <div class="slot" id="playerDrop"></div>
+    </div>
+
+  </div>
+
+  <h3>手札（6枚）</h3>
+  <div id="playerHand" class="card-list"></div>
+
+  <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
+</div>
+<script>
+/* ============================================================
+   カードデータ（烏野12＋音駒12＝24枚）
+   ============================================================ */
+const allCards = [
+
+  /* 烏野 D01 */
+
+  {
+    id: "D01-001",
+    name: "日向翔陽",
+    team: "Karasuno",
+    type: "CHARACTER",
+    rarity: "N",
+    grade: "烏野・1年",
+    position: "MB",
+    serve: 2,
+    block: 2,
+    receive: 2,
+    toss: 0,
+    attack: 2,
+    skillText: "2ガッツ払えば使える。このキャラのアタックポイントに+2する。ガッツを払う…このキャラの下のカードを指定された枚数「ドロップエリア」に置く。",
+    skill: null
+  },
+  {
+    id: "D01-002",
+    name: "影山飛雄",
+    team: "Karasuno",
+    type: "CHARACTER",
+    rarity: "N",
+    grade: "烏野・1年",
+    position: "S",
+    serve: 1,
+    block: 1,
+    receive: 2,
+    toss: 1,
+    attack: 1,
+    skillText: "2ガッツ払えば使える。このキャラのトスポイントに+2する。ガッツを払う…このキャラの下のカードを指定された枚数ドロップエリアに置く。",
+    skill: null
+  },
+  {
+    id: "D01-003",
+    name: "月島蛍",
+    team: "Karasuno",
+    type: "CHARACTER",
+    rarity: "N",
+    grade: "烏野・1年",
+    position: "MB",
+    serve: 1,
+    block: 3,
+    receive: 1,
+    toss: 0,
+    attack: 2,
+    skillText: "相手のオフェンスポイントが4以下の場合、1ガッツ払えば使える。カード1枚を引く。ガッツを払う→センターブロッカーの下のカードを指定された枚数ドロップエリアに置く。",
+    skill: null
+  },
+  {
+    id: "D01-004",
+    name: "山口忠",
+    team: "Karasuno",
+    type: "CHARACTER",
+    rarity: "N",
+    grade: "烏野・1年",
+    position: "MB",
+    serve: 5,
+    block: 3,
+    receive: 3,
+    toss: 0,
+    attack: 1,
+    skillText: null,
+    skill: null
+  },
+  {
+    id: "D01-005",
+    name: "西谷夕",
+    team: "Karasuno",
+    type: "CHARACTER",
+    rarity: "N",
+    grade: "烏野・2年",
+    position: "Li",
+    serve: 0,
+    block: 0,
+    receive: 5,
+    toss: 0,
+    attack: 0,
+    skillText: "3ガッツ払えば使える。カード1枚を引き、このキャラのレシーブポイントに+2する。ガッツを払う…このキャラの下のカードを指定された枚数ドロップエリアに置く。",
+    skill: null
+  },
+  {
+    id: "D01-006",
+    name: "田中龍之介",
+    team: "Karasuno",
+    type: "CHARACTER",
+    rarity: "N",
+    grade: "烏野・2年",
+    position: "WS",
+    serve: 1,
+    block: 2,
+    receive: 2,
+    toss: 1,
+    attack: 3,
+    skillText: null,
+    skill: null
+  },
+  {
+    id: "D01-007",
+    name: "縁下力",
+    team: "Karasuno",
+    type: "CHARACTER",
+    rarity: "N",
+    grade: "烏野・2年",
+    position: "WS",
+    serve: 0,
+    block: 0,
+    receive: 2,
+    toss: 0,
+    attack: 3,
+    skillText: "自分の手札からカード1枚をドロップすれば使える。このキャラのレシーブポイントに+3する。ドロップする…指定されたカードを指定された枚数ドロップエリアに置く。",
+    skill: null
+  },
+  {
+    id: "D01-008",
+    name: "澤村大地",
+    team: "Karasuno",
+    type: "CHARACTER",
+    rarity: "N",
+    grade: "烏野・3年",
+    position: "WS",
+    serve: 3,
+    block: 1,
+    receive: 5,
+    toss: 0,
+    attack: 2,
+    skillText: null,
+    skill: null
+  },
+  {
+    id: "D01-009",
+    name: "菅原孝支",
+    team: "Karasuno",
+    type: "CHARACTER",
+    rarity: "N",
+    grade: "烏野・3年",
+    position: "S",
+    serve: 1,
+    block: 1,
+    receive: 2,
+    toss: 2,
+    attack: 3,
+    skillText: null,
+    skill: null
+  },
+  {
+    id: "D01-010",
+    name: "東峰旭",
+    team: "Karasuno",
+    type: "CHARACTER",
+    rarity: "N",
+    grade: "烏野・3年",
+    position: "WS",
+    serve: 2,
+    block: 2,
+    receive: 4,
+    toss: 0,
+    attack: 3,
+    skillText: null,
+    skill: null
+  },
+  {
+    id: "D01-011",
+    name: "バレーは!!!常に上を向くスポーツだ",
+    team: "Karasuno",
+    type: "EVENT",
+    rarity: "N",
+    grade: null,
+    position: null,
+    serve: null,
+    block: null,
+    receive: null,
+    toss: null,
+    attack: null,
+    skillText: "カード1枚を引き、自分のキャラ1人のレシーブポイントに+1する。そのキャラのレシーブポイントが4以下の場合、さらにレシーブポイントに+1する。",
+    skill: null
+  },
+  {
+    id: "D01-012",
+    name: "ブロード攻撃",
+    team: "Karasuno",
+    type: "EVENT",
+    rarity: "N",
+    grade: null,
+    position: null,
+    serve: null,
+    block: null,
+    receive: null,
+    toss: null,
+    attack: null,
+    skillText: "カード1枚を引き、自分の烏野のキャラ1人のアタックポイントに+1する。自分のトスキャラが「影山 飛雄」でアタックキャラが「日向 翔陽」の場合、次の相手のターン中、相手はブロックキャラを1人までしか登場させられない。",
+    skill: null
+  },
+
+  /* 音駒 D02 */
+
+  {
+    id: "D02-001",
+    name: "孤爪研磨",
+    team: "Nekoma",
+    type: "CHARACTER",
+    rarity: "D",
+    grade: "2年",
+    position: "S",
+    serve: 1,
+    block: 2,
+    receive: 1,
+    toss: 1,
+    attack: 0,
+    skillText: "登場トスエリア／2ガッツ払えば使える。このキャラのトスポイント＋1。次の相手ターン中、相手アタックキャラ登場時にアタック−2。",
+    skill: null
+  },
+  {
+    id: "D02-002",
+    name: "黒尾鉄朗",
+    team: "Nekoma",
+    type: "CHARACTER",
+    rarity: "D",
+    grade: "3年",
+    position: "MB",
+    serve: 1,
+    block: 3,
+    receive: 1,
+    toss: 0,
+    attack: 2,
+    skillText: "登場ブロックエリア／1ガッツ払えば使える。このターン中、ブロック成功時にドシャット5。",
+    skill: null
+  },
+  {
+    id: "D02-003",
+    name: "夜久衛輔",
+    team: "Nekoma",
+    type: "CHARACTER",
+    rarity: "D",
+    grade: "3年",
+    position: "Li",
+    serve: 0,
+    block: 0,
+    receive: 5,
+    toss: 0,
+    attack: 0,
+    skillText: "登場レシーブエリア／手札1枚ドロップで使える。レシーブ＋2。",
+    skill: null
+  },
+  {
+    id: "D02-004",
+    name: "灰羽リエーフ",
+    team: "Nekoma",
+    type: "CHARACTER",
+    rarity: "D",
+    grade: "1年",
+    position: "MB",
+    serve: 1,
+    block: 2,
+    receive: 1,
+    toss: 0,
+    attack: 3,
+    skillText: "自分のブロックキャラ登場時、このキャラがアタックキャラなら2ガッツ払ってサイドブロッカーとしてブロックエリアに登場できる。（重複不可・3人制限あり）",
+    skill: null
+  },
+  {
+    id: "D02-005",
+    name: "海信行",
+    team: "Nekoma",
+    type: "CHARACTER",
+    rarity: "D",
+    grade: "3年",
+    position: "WS",
+    serve: 1,
+    block: 2,
+    receive: 5,
+    toss: 0,
+    attack: 2,
+    skillText: null,
+    skill: null
+  },
+  {
+    id: "D02-006",
+    name: "山本猛虎",
+    team: "Nekoma",
+    type: "CHARACTER",
+    rarity: "D",
+    grade: "2年",
+    position: "WS",
+    serve: 5,
+    block: 2,
+    receive: 2,
+    toss: 0,
+    attack: 3,
+    skillText: null,
+    skill: null
+  },
+  {
+    id: "D02-007",
+    name: "福永招平",
+    team: "Nekoma",
+    type: "CHARACTER",
+    rarity: "D",
+    grade: "2年",
+    position: "WS",
+    serve: 1,
+    block: 0,
+    receive: 4,
+    toss: 1,
+    attack: 3,
+    skillText: null,
+    skill: null
+  },
+  {
+    id: "D02-008",
+    name: "犬岡走",
+    team: "Nekoma",
+    type: "CHARACTER",
+    rarity: "D",
+    grade: "1年",
+    position: "MB",
+    serve: 2,
+    block: 3,
+    receive: 3,
+    toss: 0,
+    attack: 3,
+    skillText: null,
+    skill: null
+  },
+  {
+    id: "D02-009",
+    name: "芝山優生",
+    team: "Nekoma",
+    type: "CHARACTER",
+    rarity: "D",
+    grade: "1年",
+    position: "WS",
+    serve: 0,
+    block: 0,
+    receive: 5,
+    toss: 0,
+    attack: 0,
+    skillText: "登場レシーブエリア／2ガッツ払えば使える。カード1枚を引く。",
+    skill: null
+  },
+  {
+    id: "D02-010",
+    name: "手白玉彦",
+    team: "Nekoma",
+    type: "CHARACTER",
+    rarity: "D",
+    grade: "2年",
+    position: "S",
+    serve: 4,
+    block: 1,
+    receive: 4,
+    toss: 1,
+    attack: 0,
+    skillText: null,
+    skill: null
+  },
+  {
+    id: "D02-011",
+    name: "手は前っつったでしょノブカツくん",
+    team: "Nekoma",
+    type: "EVENT",
+    rarity: "D",
+    grade: null,
+    position: null,
+    serve: null,
+    block: null,
+    receive: null,
+    toss: null,
+    attack: null,
+    skillText: "レシーブ、ブロック／カード1枚を引く。以下から1つを選んで使える。▶自分のブロックキャラの「黒尾鉄朗」1人のブロックポイントに+1する。▶自分のキャラ1人のレシーブポイントに+1する。",
+    skill: null
+  },
+  {
+    id: "D02-012",
+    name: "物理攻撃でブン殴ればいいだよね",
+    team: "Nekoma",
+    type: "EVENT",
+    rarity: "D",
+    grade: null,
+    position: null,
+    serve: null,
+    block: null,
+    receive: null,
+    toss: null,
+    attack: null,
+    skillText: "ドロー／カード1枚を引く。自分のデッキの上から3枚を見て、その中の「灰羽リエーフ」か「犬岡走」1枚までを公開し、そのカードを手札に加える。加えなかったカードを好きな順番でデッキの下に置く。",
+    skill: null
+  }
+
+];
+
+/* ============================================================
+   デッキ編成ロジック
+   ============================================================ */
+
+let currentTab = "Karasuno";
+let selectedDeck = [];
+
+function switchTab(team) {
+  currentTab = team;
+  document.getElementById("tabKarasuno").classList.remove("active");
+  document.getElementById("tabNekoma").classList.remove("active");
+  if (team === "Karasuno") {
+    document.getElementById("tabKarasuno").classList.add("active");
+  } else {
+    document.getElementById("tabNekoma").classList.add("active");
+  }
+  renderCardList();
+}
+
+function renderCardList() {
+  const list = document.getElementById("cardList");
+  list.innerHTML = "";
+  allCards
+    .filter(c => c.team === currentTab)
+    .forEach(card => {
+      const count = selectedDeck.filter(x => x.id === card.id).length;
+      const div = document.createElement("div");
+      div.className = "card-item";
+      div.textContent = `${card.id} ${card.name}（${count}枚）`;
+      div.onclick = () => addToDeck(card);
+      list.appendChild(div);
+    });
+}
+
+function addToDeck(card) {
+  if (selectedDeck.length >= 40) {
+    alert("デッキは40枚までです");
+    return;
+  }
+  selectedDeck.push(card);
+  selectedDeck.sort((a, b) => a.id.localeCompare(b.id));
+  renderDeckList();
+  renderCardList();
+}
+
+function renderDeckList() {
+  const list = document.getElementById("deckList");
+  list.innerHTML = "";
+  selectedDeck.forEach((card, index) => {
+    const div = document.createElement("div");
+    div.className = "deck-item";
+    div.textContent = `${card.id} ${card.name}`;
+    div.onclick = () => removeFromDeck(index);
+    list.appendChild(div);
+  });
+  document.getElementById("deckCount").textContent = selectedDeck.length;
+}
+
+function removeFromDeck(index) {
+  selectedDeck.splice(index, 1);
+  renderDeckList();
+  renderCardList();
+}
+
+function saveDeck() {
+  if (selectedDeck.length !== 40) {
+    alert("デッキは40枚ちょうどにしてください");
+    return;
+  }
+  const name = prompt("デッキ名を入力してください");
+  if (!name) return;
+
+  const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
+  decks.push({ name, cards: selectedDeck });
+  localStorage.setItem("babocaDecks", JSON.stringify(decks));
+  alert("保存しました");
+}
+
+/* ============================================================
+   保存デッキ一覧・削除
+   ============================================================ */
+
+function loadSavedDecks() {
+  const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
+  const list = document.getElementById("savedDeckList");
+  list.innerHTML = "";
+  decks.forEach((deck, index) => {
+    const div = document.createElement("div");
+    div.className = "deck-item";
+    div.textContent = `${deck.name}（${deck.cards.length}枚）`;
+
+    const btn = document.createElement("button");
+    btn.textContent = "削除";
+    btn.style.marginLeft = "10px";
+    btn.onclick = () => {
+      const d = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
+      d.splice(index, 1);
+      localStorage.setItem("babocaDecks", JSON.stringify(d));
+      loadSavedDecks();
+    };
+
+    div.appendChild(btn);
+    list.appendChild(div);
+  });
+}
+
+/* ============================================================
+   画面切り替え
+   ============================================================ */
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function returnTitle() {
+  showScreen("titleScreen");
+}
+
+function openDeckBuilder() {
+  showScreen("deckBuilderScreen");
+  renderCardList();
+  renderDeckList();
+}
+
+function openSavedDecks() {
+  showScreen("savedDeckScreen");
+  loadSavedDecks();
+}
+
+function goDeckSelect() {
+  loadDeckSelectOptions();
+  showScreen("deckSelectScreen");
+}
+
+/* ============================================================
+   デッキ選択 → バトル開始
+   ============================================================ */
+
+let playerDeck = [];
+let cpuDeck = [];
+let playerDeckStack = [];
+let cpuDeckStack = [];
+let playerHand = [];
+
+function loadDeckSelectOptions() {
+  const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
+  const pSel = document.getElementById("playerDeckSelect");
+  const cSel = document.getElementById("cpuDeckSelect");
+  pSel.innerHTML = "";
+  cSel.innerHTML = "";
+
+  decks.forEach((deck, i) => {
+    const op1 = document.createElement("option");
+    op1.value = i;
+    op1.textContent = deck.name;
+    pSel.appendChild(op1);
+
+    const op2 = document.createElement("option");
+    op2.value = i;
+    op2.textContent = deck.name;
+    cSel.appendChild(op2);
+  });
+}
+
+function startBattle() {
+  const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
+  const pIndex = document.getElementById("playerDeckSelect").value;
+  const cIndex = document.getElementById("cpuDeckSelect").value;
+  if (pIndex === "" || cIndex === "") {
+    alert("デッキを選択してください");
+    return;
+  }
+
+  playerDeck = JSON.parse(JSON.stringify(decks[pIndex].cards));
+  cpuDeck = JSON.parse(JSON.stringify(decks[cIndex].cards));
+
+  playerDeckStack = shuffle([...playerDeck]);
+  cpuDeckStack = shuffle([...cpuDeck]);
+
+  playerHand = [];
+  for (let i = 0; i < 6; i++) {
+    drawCardToHand();
+  }
+
+  renderHand();
+  clearField();
+  showScreen("battleScreen");
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function drawCardToHand() {
+  if (playerDeckStack.length === 0) return;
+  const card = playerDeckStack.shift();
+  playerHand.push(card);
+}
+
+function renderHand() {
+  const handDiv = document.getElementById("playerHand");
+  handDiv.innerHTML = "";
+  playerHand.forEach((card, index) => {
+    const div = document.createElement("div");
+    div.className = "card-item";
+    div.textContent = `${card.id} ${card.name}`;
+    div.onclick = () => playCardFromHand(index);
+    handDiv.appendChild(div);
+  });
+}
+
+/* ============================================================
+   フィールド簡易処理（とりあえず SERVE に出す）
+   ============================================================ */
+
+function clearField() {
+  const ids = [
+    "cpuSet","cpuSideL","cpuCenter","cpuSideR","cpuDeck",
+    "cpuBack","cpuReceive","cpuToss","cpuAttack","cpuDrop",
+    "playerBackL","playerBackR","playerServe","playerEvent","playerDrop"
+  ];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = el.id.toUpperCase().replace("PLAYER","").replace("CPU","");
+  });
+}
+
+function playCardFromHand(index) {
+  const card = playerHand[index];
+  const serveSlot = document.getElementById("playerServe");
+  if (serveSlot.dataset.cardId) {
+    alert("SERVE にはすでにカードがあります（今は1枚だけにしてる）");
+    return;
+  }
+  serveSlot.textContent = card.name;
+  serveSlot.dataset.cardId = card.id;
+  playerHand.splice(index, 1);
+  renderHand();
+}
+
+/* ============================================================
+   初期化
+   ============================================================ */
+
+window.addEventListener("load", () => {
+  showScreen("titleScreen");
+});
+</script>
+
+</body>
+</html>
