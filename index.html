@@ -74,46 +74,37 @@ body {
 }
 
 /* ======== フィールドCSS ======== */
-.court{
+<!-- ▼ 自分フィールド -->
+.field {
   width: 95vw;
   max-width: 520px;
-  aspect-ratio: 5/7;
-  background:#1a1a1a;
-  border:2px solid #444;
-  border-radius:12px;
-  padding:8px;
-  box-sizing:border-box;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
+  margin: 10px auto;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-auto-rows: 60px;
+  gap: 4px;
 }
 
-.row{
-  display:grid;
-  grid-template-columns:repeat(5, 1fr);
-  gap:6px;
+.field.opponent {
+  transform: rotate(180deg);
 }
 
-.slot{
-  background:#222;
-  border:1px solid #555;
-  border-radius:6px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  color:#ccc;
-  font-size:12px;
+.area, .empty {
+  background: #222;
+  border: 1px solid #555;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ddd;
+  font-size: 14px;
 }
 
-.cpu{
-  transform:rotate(180deg);
+.empty {
+  background: transparent;
+  border: none;
 }
 
-.net{
-  height:4px;
-  background:#777;
-  border-radius:2px;
-}
 </style>
 </head> 
     <body>
@@ -175,39 +166,57 @@ body {
   <h2 style="text-align:center; color:#fff;">バトル</h2>
 
   <!-- ======== フィールド ======== -->
-  <div class="court">
+ <!-- ▼ 相手フィールド（180度回転） -->
+<div class="field opponent">
 
-    <!-- 上段（CPU側） -->
-    <div class="row cpu">
-      <div class="slot" id="cpuSet">SET</div>
-      <div class="slot" id="cpuSideL">SIDE</div>
-      <div class="slot" id="cpuCenter">CENTER</div>
-      <div class="slot" id="cpuSideR">SIDE</div>
-      <div class="slot" id="cpuDeck">DECK</div>
-    </div>
+  <!-- 1段目 -->
+  <div class="area">セット</div>
+  <div class="area side">サイド</div>
+  <div class="area center">センター</div>
+  <div class="area side">サイド</div>
+  <div class="area">デッキ</div>
 
-    <!-- 中段（CPU側） -->
-    <div class="row cpu">
-      <div class="slot" id="cpuBack"></div>
-      <div class="slot" id="cpuReceive">RECEIVE</div>
-      <div class="slot" id="cpuToss">TOSS</div>
-      <div class="slot" id="cpuAttack">ATTACK</div>
-      <div class="slot" id="cpuDrop">DROP</div>
-    </div>
+  <!-- 2段目 -->
+  <div class="empty"></div>
+  <div class="area receive">レシーブ</div>
+  <div class="area toss">トス</div>
+  <div class="area attack">アタック</div>
+  <div class="area drop">ドロップ</div>
 
-    <!-- ネット -->
-    <div class="net"></div>
+  <!-- 3段目 -->
+  <div class="empty"></div>
+  <div class="empty"></div>
+  <div class="area serve">サーブ</div>
+  <div class="area event">イベント</div>
+  <div class="empty"></div>
 
-    <!-- 下段（プレイヤー側） -->
-    <div class="row">
-      <div class="slot" id="playerBackL"></div>
-      <div class="slot" id="playerBackR"></div>
-      <div class="slot" id="playerServe">SERVE</div>
-      <div class="slot" id="playerEvent">EVENT</div>
-      <div class="slot" id="playerDrop"></div>
-    </div>
+</div>
 
-  </div>
+<!-- ▼ 自分フィールド -->
+<div class="field player">
+
+  <!-- 1段目 -->
+  <div class="area">セット</div>
+  <div class="area side">サイド</div>
+  <div class="area center">センター</div>
+  <div class="area side">サイド</div>
+  <div class="area">デッキ</div>
+
+  <!-- 2段目 -->
+  <div class="empty"></div>
+  <div class="area receive">レシーブ</div>
+  <div class="area toss">トス</div>
+  <div class="area attack">アタック</div>
+  <div class="area drop">ドロップ</div>
+
+  <!-- 3段目 -->
+  <div class="empty"></div>
+  <div class="empty"></div>
+  <div class="area serve">サーブ</div>
+  <div class="area event">イベント</div>
+  <div class="empty"></div>
+
+</div>
   <!-- ======== /フィールド ======== -->
 
   <!-- ======== 情報パネル ======== -->
