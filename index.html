@@ -117,7 +117,40 @@ body {
 </style>
 </head>
 <body>
+<!-- ▼ カード詳細ポップアップ ▼ -->
+<div id="cardPopup" style="
+  position: fixed;
+  left: 0; top: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+">
+  <div style="
+    background:#222;
+    padding:20px;
+    border-radius:10px;
+    width:80%;
+    max-width:350px;
+    color:#fff;
+  ">
+    <h3 id="popupName"></h3>
+    <div id="popupStats"></div>
+    <p id="popupSkill" style="margin-top:10px; white-space:pre-wrap;"></p>
 
+    <button onclick="closeCardPopup()" style="
+      margin-top:15px;
+      width:100%;
+      padding:10px;
+      background:#444;
+      color:#fff;
+      border:none;
+      border-radius:6px;
+    ">閉じる</button>
+  </div>
+</div>
 <!-- タイトル画面 -->
 <div id="titleScreen" class="screen active">
     <h1>Baboca</h1>
@@ -842,8 +875,19 @@ function renderHand() {
     const div = document.createElement("div");
     div.className = "card-item";
     div.textContent = `${card.id} ${card.name}`;
+
+    // ▼ 左タップ：プレイ
     div.onclick = () => playCardFromHand(index);
+
+    // ▼ 長押し：カード詳細
+    div.oncontextmenu = (e) => {
+      e.preventDefault();
+      openCardPopup(card.id);
+    };
+
     handDiv.appendChild(div);
+  });
+}
   });
       }
     /* ============================================================
@@ -945,7 +989,33 @@ function playerDeclareLost() {
 function showStateDebug() {
   alert(JSON.stringify(battleState, null, 2));
 }
+function openCardPopup(cardId) {
+  const card = allCards.find(c => c.id === cardId);
+  if (!card) return;
 
+  document.getElementById("popupName").textContent = `${card.id} ${card.name}`;
+
+  if (card.type === "CHARACTER") {
+    document.getElementById("popupStats").innerHTML = `
+      <div>Serve: ${card.serve}</div>
+      <div>Block: ${card.block}</div>
+      <div>Receive: ${card.receive}</div>
+      <div>Toss: ${card.toss}</div>
+      <div>Attack: ${card.attack}</div>
+    `;
+  } else {
+    document.getElementById("popupStats").innerHTML = `<div>イベントカード</div>`;
+  }
+
+  document.getElementById("popupSkill").textContent =
+    card.skillText ? card.skillText : "（効果なし）";
+
+  document.getElementById("cardPopup").style.display = "flex";
+}
+
+function closeCardPopup() {
+  document.getElementById("cardPopup").style.display = "none";
+          }
 /* ============================================================
    初期化
    ============================================================ */
