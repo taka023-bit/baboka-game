@@ -2,146 +2,330 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Baboca Field</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Baboca Deck Viewer</title>
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    background: #111; /* 真っ黒より優しい黒 */
-    font-family: sans-serif;
-    overflow: hidden;
-  }
-
-  #game {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* ===== フィールド（3段×5列） ===== */
-  .field {
-    flex: 1;
-    display: grid;
-
-    grid-template-columns: 1fr 1.2fr 1.2fr 1.2fr 1fr;
-
-    /* 縦幅をさらに削る（0.65fr） */
-    grid-template-rows: repeat(3, 0.65fr);
-
-    gap: 4px;
-    padding: 4px;
-  }
-
-  /* 上のフィールドを180度回転（上下左右反転） */
-  .opponent {
-    transform: rotate(180deg);
-  }
-
-  /* ===== エリア共通 ===== */
-  .area {
-    background: #222;
-    border: 2px solid #ddd; /* 白より優しい枠線 */
-    border-radius: 6px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 14px;
-    color: white;
-  }
-
-  /* ===== 色指定（公式色＋目に優しい調整） ===== */
-  .center { background: #444; }
-  .side   { background: #666; }
-  .receive{ background: #0094ff; }
-  .toss   { background: #00c853; }
-  .attack { background: #ff1744; }
-  .serve  { background: #ffea00; color: #000; }
-  .drop   { background: #444; }
-  .event  { background: #222; }
-
-  /* 空白マス */
-  .empty {
-    background: transparent;
-    border: none;
-  }
-
-  /* ===== 手札エリア（さらに広げる） ===== */
-  #hand {
-    height: 170px; /* ← 150 → 170 に拡大 */
-    background: #222;
-    border-top: 3px solid #ddd;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 18px;
-    color: white;
-  }
+body{
+  margin:0;background:#111;color:#eee;font-family:sans-serif;
+}
+.wrapper{
+  max-width:900px;margin:auto;padding:10px;
+}
+h1{font-size:18px;margin:0 0 10px;}
+.card{
+  background:#222;border:1px solid #444;border-radius:6px;
+  padding:8px;margin-bottom:8px;
+}
+.card h2{margin:0;font-size:15px;}
+.small{font-size:11px;color:#aaa;}
+pre{
+  white-space:pre-wrap;
+  background:#000;padding:8px;border-radius:6px;
+  font-size:11px;overflow-x:auto;
+}
 </style>
 </head>
-
 <body>
+<div class="wrapper">
+<h1>烏野＋音駒 24枚デッキ</h1>
 
-<div id="game">
+<script>
+/* ============================
+   烏野12枚
+============================ */
+const karasunoCards = [
+  {
+    "id": "HV-D01-001",
+    "name": "日向 翔陽",
+    "ruby": "ひなた しょうよう",
+    "type": "CHARACTER",
+    "school": "KARASUNO",
+    "grade": 1,
+    "position": "MB",
+    "entryZone": "ATTACK",
+    "phase": "ATTACK",
+    "stats": { "serve": 2,"block": 2,"receive": 2,"toss": 0,"attack": 2 },
+    "effect": "2ガッツ払えば使える。このキャラのアタックポイントに+2する。\nガッツを払う…このキャラの下のカードを指定された枚数ドロップエリアに置く。",
+    "effectParsed": [
+      { "cost": 2,"costType": "GUTS","target": "self","effectType": "ATTACK_UP","value": 2 }
+    ],
+    "illustrator": "星 和貴"
+  },
+  {
+    "id": "HV-D01-002",
+    "name": "影山 飛雄",
+    "ruby": "かげやま とびお",
+    "type": "CHARACTER",
+    "school": "KARASUNO",
+    "grade": 1,
+    "position": "S",
+    "entryZone": "TOSS",
+    "phase": "TOSS",
+    "stats": { "serve": 1,"block": 1,"receive": 2,"toss": 1,"attack": 1 },
+    "effect": "2ガッツ払えば使える。このキャラのトスポイントに+2する。\nガッツを払う…このキャラの下のカードを指定された枚数ドロップエリアに置く。",
+    "effectParsed": [
+      { "cost": 2,"costType": "GUTS","effectType": "TOSS_UP","value": 2 }
+    ],
+    "illustrator": "星 和貴"
+  },
+  {
+    "id": "HV-D01-003",
+    "name": "月島 蛍",
+    "ruby": "つきしま けい",
+    "type": "CHARACTER",
+    "school": "KARASUNO",
+    "grade": 1,
+    "position": "MB",
+    "entryZone": "BLOCK",
+    "phase": "BLOCK",
+    "stats": { "serve": 1,"block": 3,"receive": 1,"toss": 0,"attack": 2 },
+    "effect": "相手のオフェンスポイントが4以下の場合、1ガッツ払えば使える。カード1枚を引く。\nガッツを払う→センターブロッカーの下のカードを指定された枚数ドロップエリアに置く。",
+    "effectParsed": [
+      { "condition": "opponent_offense <= 4","cost": 1,"costType": "GUTS","effectType": "DRAW","value": 1 }
+    ],
+    "illustrator": "御巫 史"
+  },
+  {
+    "id": "HV-D01-004",
+    "name": "山口 忠",
+    "ruby": "やまぐち ただし",
+    "type": "CHARACTER",
+    "school": "KARASUNO",
+    "grade": 1,
+    "position": "MB",
+    "entryZone": "SERVE",
+    "phase": "SERVE",
+    "stats": { "serve": 5,"block": 3,"receive": 3,"toss": 0,"attack": 1 },
+    "effect": "",
+    "effectParsed": [],
+    "illustrator": "はあと"
+  },
+  {
+    "id": "HV-D01-005",
+    "name": "西谷 夕",
+    "ruby": "にしのや ゆう",
+    "type": "CHARACTER",
+    "school": "KARASUNO",
+    "grade": 2,
+    "position": "Li",
+    "entryZone": "RECEIVE",
+    "phase": "RECEIVE",
+    "stats": { "serve": 0,"block": 0,"receive": 5,"toss": 0,"attack": 0 },
+    "effect": "3ガッツ払えば使える。カード1枚を引き、このキャラのレシーブポイントに+2する。\nガッツを払う…このキャラの下のカードを指定された枚数ドロップエリアに置く。",
+    "effectParsed": [
+      { "cost": 3,"costType": "GUTS","effectType": "DRAW","value": 1 },
+      { "cost": 3,"costType": "GUTS","effectType": "RECEIVE_UP","value": 2 }
+    ],
+    "illustrator": "星 和貴"
+  },
+  {
+    "id": "HV-D01-006",
+    "name": "田中 龍之介",
+    "ruby": "たなか りゅうのすけ",
+    "type": "CHARACTER",
+    "school": "KARASUNO",
+    "grade": 2,
+    "position": "WS",
+    "entryZone": "ATTACK",
+    "phase": "ATTACK",
+    "stats": { "serve": 1,"block": 2,"receive": 2,"toss": 1,"attack": 3 },
+    "effect": "",
+    "effectParsed": [],
+    "illustrator": "雷蔵"
+  },
+  {
+    "id": "HV-D01-007",
+    "name": "縁下 力",
+    "ruby": "えんのした ちから",
+    "type": "CHARACTER",
+    "school": "KARASUNO",
+    "grade": 2,
+    "position": "WS",
+    "entryZone": "RECEIVE",
+    "phase": "RECEIVE",
+    "stats": { "serve": 0,"block": 0,"receive": 2,"toss": 0,"attack": 3 },
+    "effect": "自分の手札からカード1枚をドロップすれば使える。このキャラのレシーブポイントに+3する。",
+    "effectParsed": [
+      { "costType": "DISCARD","cost": 1,"effectType": "RECEIVE_UP","value": 3 }
+    ],
+    "illustrator": "パトリシアーナ菊池"
+  },
+  {
+    "id": "HV-D01-008",
+    "name": "澤村 大地",
+    "ruby": "さわむら だいち",
+    "type": "CHARACTER",
+    "school": "KARASUNO",
+    "grade": 3,
+    "position": "WS",
+    "entryZone": "RECEIVE",
+    "phase": "RECEIVE",
+    "stats": { "serve": 3,"block": 1,"receive": 5,"toss": 0,"attack": 2 },
+    "effect": "",
+    "effectParsed": [],
+    "illustrator": "窓ノ晴雨"
+  },
+  {
+    "id": "HV-D01-009",
+    "name": "菅原 孝支",
+    "ruby": "すがわら こうし",
+    "type": "CHARACTER",
+    "school": "KARASUNO",
+    "grade": 3,
+    "position": "S",
+    "entryZone": "TOSS",
+    "phase": "TOSS",
+    "stats": { "serve": 1,"block": 1,"receive": 2,"toss": 2,"attack": 3 },
+    "effect": "",
+    "effectParsed": [],
+    "illustrator": "はあと"
+  },
+  {
+    "id": "HV-D01-010",
+    "name": "東峰 旭",
+    "ruby": "あずまね あさひ",
+    "type": "CHARACTER",
+    "school": "KARASUNO",
+    "grade": 3,
+    "position": "WS",
+    "entryZone": "ATTACK",
+    "phase": "ATTACK",
+    "stats": { "serve": 2,"block": 2,"receive": 4,"toss": 0,"attack": 3 },
+    "effect": "",
+    "effectParsed": [],
+    "illustrator": "菊野郎"
+  },
+  {
+    "id": "HV-D01-011",
+    "name": "バレーは!!! 常に上を向くスポーツだ",
+    "type": "EVENT",
+    "school": "KARASUNO",
+    "effect": "カード1枚を引き、自分のキャラ1人のレシーブポイントに+1する。そのキャラのレシーブポイントが4以下の場合、さらに+1。",
+    "effectParsed": [
+      { "effectType": "DRAW","value": 1 },
+      { "effectType": "RECEIVE_UP","value": 1 },
+      { "condition": "target_receive <= 4","effectType": "RECEIVE_UP","value": 1 }
+    ],
+    "illustrator": "古舘 春一"
+  },
+  {
+    "id": "HV-D01-012",
+    "name": "ブロード攻撃",
+    "type": "EVENT",
+    "school": "KARASUNO",
+    "effect": "カード1枚を引き、自分の烏野のキャラ1人のアタックポイントに+1する。条件一致で相手ブロック制限。",
+    "effectParsed": [
+      { "effectType": "DRAW","value": 1 },
+      { "effectType": "ATTACK_UP","value": 1 },
+      { "condition": "toss=影山飛雄 AND attack=日向翔陽","effectType": "LIMIT_BLOCKERS","value": 1 }
+    ],
+    "illustrator": "古舘 春一"
+  }
+];
 
-  <!-- ▼ 相手フィールド（180度回転） -->
-  <div class="field opponent">
+/* ============================
+   音駒12枚（ステータス確定版）
+============================ */
+const nekomaCards = [
+  {
+    id:"D02-001",name:"孤爪研磨",team:"Nekoma",type:"CHARACTER",rarity:"D",
+    grade:"2年",position:"S",
+    serve:1,block:2,receive:1,toss:1,attack:0,
+    skillText:"登場トスエリア／2ガッツ払えば使える。このキャラのトスポイント＋1。次の相手ターン中、相手アタックキャラ登場時にアタック−2。",
+    skill:null
+  },
+  {
+    id:"D02-002",name:"黒尾鉄朗",team:"Nekoma",type:"CHARACTER",rarity:"D",
+    grade:"3年",position:"MB",
+    serve:1,block:3,receive:1,toss:0,attack:2,
+    skillText:"登場ブロックエリア／1ガッツ払えば使える。このターン中、ブロック成功時にドシャット5。",
+    skill:null
+  },
+  {
+    id:"D02-003",name:"夜久衛輔",team:"Nekoma",type:"CHARACTER",rarity:"D",
+    grade:"3年",position:"Li",
+    serve:null,block:null,receive:5,toss:0,attack:0,
+    skillText:"登場レシーブエリア／手札1枚ドロップで使える。レシーブ＋2。",
+    skill:null
+  },
+  {
+    id:"D02-004",name:"灰羽リエーフ",team:"Nekoma",type:"CHARACTER",rarity:"D",
+    grade:"1年",position:"MB",
+    serve:1,block:2,receive:1,toss:0,attack:3,
+    skillText:"自分のブロックキャラ登場時、このキャラがアタックキャラなら2ガッツ払ってサイドブロッカーとして登場できる。",
+    skill:null
+  },
+  {
+    id:"D02-005",name:"海信行",team:"Nekoma",type:"CHARACTER",rarity:"D",
+    grade:"3年",position:"WS",
+    serve:1,block:2,receive:5,toss:0,attack:2,
+    skillText:null,skill:null
+  },
+  {
+    id:"D02-006",name:"山本猛虎",team:"Nekoma",type:"CHARACTER",rarity:"D",
+    grade:"2年",position:"WS",
+    serve:5,block:2,receive:2,toss:0,attack:3,
+    skillText:null,skill:null
+  },
+  {
+    id:"D02-007",name:"福永招平",team:"Nekoma",type:"CHARACTER",rarity:"D",
+    grade:"2年",position:"WS",
+    serve:1,block:0,receive:4,toss:1,attack:3,
+    skillText:null,skill:null
+  },
+  {
+    id:"D02-008",name:"犬岡走",team:"Nekoma",type:"CHARACTER",rarity:"D",
+    grade:"1年",position:"MB",
+    serve:2,block:3,receive:3,toss:0,attack:3,
+    skillText:null,skill:null
+  },
+  {
+    id:"D02-009",name:"芝山優生",team:"Nekoma",type:"CHARACTER",rarity:"D",
+    grade:"1年",position:"WS",
+    serve:null,block:null,receive:5,toss:0,attack:0,
+    skillText:"登場レシーブエリア／2ガッツ払えば使える。カード1枚を引く。",
+    skill:null
+  },
+  {
+    id:"D02-010",name:"手白玉彦",team:"Nekoma",type:"CHARACTER",rarity:"D",
+    grade:"2年",position:"S",
+    serve:4,block:1,receive:4,toss:1,attack:0,
+    skillText:null,skill:null
+  },
+  {
+    id:"D02-011",name:"手は前っつったでしょノブカツくん",team:"Nekoma",
+    type:"EVENT",rarity:"D",
+    skillText:"レシーブ、ブロック／カード1枚を引く。以下から1つを選ぶ：黒尾のブロック＋1 or 任意キャラのレシーブ＋1。",
+    skill:null
+  },
+  {
+    id:"D02-012",name:"物理攻撃でブン殴ればいいだよね",team:"Nekoma",
+    type:"EVENT",rarity:"D",
+    skillText:"ドロー／カード1枚を引く。デッキ上3枚から灰羽か犬岡を1枚手札に加える。",
+    skill:null
+  }
+];
 
-    <!-- 1段目 -->
-    <div class="area">セット</div>
-    <div class="area side">サイド</div>
-    <div class="area center">センター</div>
-    <div class="area side">サイド</div>
-    <div class="area">デッキ</div>
+/* ============================
+   表示処理
+============================ */
+const allCards = [...karasunoCards, ...nekomaCards];
 
-    <!-- 2段目 -->
-    <div class="empty"></div>
-    <div class="area receive">レシーブ</div>
-    <div class="area toss">トス</div>
-    <div class="area attack">アタック</div>
-    <div class="area drop">ドロップ</div>
-
-    <!-- 3段目 -->
-    <div class="empty"></div>
-    <div class="empty"></div>
-    <div class="area serve">サーブ</div>
-    <div class="area event">イベント</div>
-    <div class="empty"></div>
-
-  </div>
-
-  <!-- ▼ 自分フィールド -->
-  <div class="field player">
-
-    <!-- 1段目 -->
-    <div class="area">セット</div>
-    <div class="area side">サイド</div>
-    <div class="area center">センター</div>
-    <div class="area side">サイド</div>
-    <div class="area">デッキ</div>
-
-    <!-- 2段目 -->
-    <div class="empty"></div>
-    <div class="area receive">レシーブ</div>
-    <div class="area toss">トス</div>
-    <div class="area attack">アタック</div>
-    <div class="area drop">ドロップ</div>
-
-    <!-- 3段目 -->
-    <div class="empty"></div>
-    <div class="empty"></div>
-    <div class="area serve">サーブ</div>
-    <div class="area event">イベント</div>
-    <div class="empty"></div>
-
-  </div>
-
-  <!-- ▼ 手札 -->
-  <div id="hand">手札</div>
+window.onload = () => {
+  const wrap = document.querySelector(".wrapper");
+  allCards.forEach(c=>{
+    const div = document.createElement("div");
+    div.className="card";
+    div.innerHTML = `
+      <h2>${c.name} <span class="small">(${c.id})</span></h2>
+      <div class="small">${c.type} / ${c.team}</div>
+      <pre>${JSON.stringify(c, null, 2)}</pre>
+    `;
+    wrap.appendChild(div);
+  });
+};
+</script>
 
 </div>
-
 </body>
 </html>
