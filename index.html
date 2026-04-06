@@ -6,55 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    /* コート全体 */
-.court{
-  width: 95vw;
-  max-width: 520px;
-  aspect-ratio: 5/7;
-  background:#1a1a1a;
-  border:2px solid #444;
-  border-radius:12px;
-  padding:8px;
-  box-sizing:border-box;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-
-/* グリッド（5列×3段） */
-.row{
-  display:grid;
-  grid-template-columns:repeat(5, 1fr);
-  gap:6px;
-}
-
-/* スロット共通 */
-.slot{
-  background:#222;
-  border:1px solid #555;
-  border-radius:6px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  color:#ccc;
-  font-size:12px;
-}
-
-/* CPU側は180度回転 */
-.cpu{
-  transform:rotate(180deg);
-}
-
-/* ネット */
-.net{
-  height:4px;
-  background:#777;
-  border-radius:2px;
-}
-    
 body {
     margin: 0;
-    background: #222;
+    background: #111;
     color: #fff;
     font-family: sans-serif;
     user-select: none;
@@ -124,6 +78,51 @@ body {
     border-radius: 8px;
     margin-top: 10px;
 }
+
+/* ============================= */
+/* あなたのフィールドCSS（統合済） */
+/* ============================= */
+
+.court{
+  width: 95vw;
+  max-width: 520px;
+  aspect-ratio: 5/7;
+  background:#1a1a1a;
+  border:2px solid #444;
+  border-radius:12px;
+  padding:8px;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.row{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:6px;
+}
+
+.slot{
+  background:#222;
+  border:1px solid #555;
+  border-radius:6px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#ccc;
+  font-size:12px;
+}
+
+.cpu{
+  transform:rotate(180deg);
+}
+
+.net{
+  height:4px;
+  background:#777;
+  border-radius:2px;
+}
 </style>
 </head>
 
@@ -161,408 +160,3 @@ body {
     <div class="save-button" onclick="saveDeck()">デッキ保存</div>
     <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
 </div>
-
-<script>
-/* ============================================================
-   Part1：デッキ編成の基本ロジック
-   ============================================================ */
-
-let currentTab = "karasuno";
-let selectedDeck = [];
-
-/* カードデータ（24枚） */
-const allCards = [
-    { id:1, name:"日向翔陽", team:"karasuno" },
-    { id:2, name:"影山飛雄", team:"karasuno" },
-    { id:3, name:"澤村大地", team:"karasuno" },
-    { id:4, name:"菅原孝支", team:"karasuno" },
-    { id:5, name:"東峰旭", team:"karasuno" },
-    { id:6, name:"西谷夕", team:"karasuno" },
-
-    { id:7, name:"黒尾鉄朗", team:"nekoma" },
-    { id:8, name:"孤爪研磨", team:"nekoma" },
-    { id:9, name:"山本猛虎", team:"nekoma" },
-    { id:10, name:"海信行", team:"nekoma" },
-    { id:11, name:"犬岡走", team:"nekoma" },
-    { id:12, name:"灰羽リエーフ", team:"nekoma" }
-];
-
-/* タブ切り替え */
-function switchTab(team) {
-    currentTab = team;
-
-    document.getElementById("tabKarasuno").classList.remove("active");
-    document.getElementById("tabNekoma").classList.remove("active");
-
-    if (team === "karasuno") {
-        document.getElementById("tabKarasuno").classList.add("active");
-    } else {
-        document.getElementById("tabNekoma").classList.add("active");
-    }
-
-    renderCardList();
-}
-
-/* カード一覧表示 */
-function renderCardList() {
-    const list = document.getElementById("cardList");
-    list.innerHTML = "";
-
-    allCards
-        .filter(c => c.team === currentTab)
-        .forEach(card => {
-            const div = document.createElement("div");
-            div.className = "card-item";
-            div.textContent = card.name;
-            div.onclick = () => addToDeck(card);
-            list.appendChild(div);
-        });
-}
-
-/* デッキに追加 */
-function addToDeck(card) {
-    if (selectedDeck.length >= 40) {
-        alert("デッキは40枚までです");
-        return;
-    }
-    selectedDeck.push(card);
-    renderDeckList();
-}
-
-/* デッキ表示 */
-function renderDeckList() {
-    const list = document.getElementById("deckList");
-    list.innerHTML = "";
-
-    selectedDeck.forEach((card, index) => {
-        const div = document.createElement("div");
-        div.className = "deck-item";
-        div.textContent = card.name;
-        div.onclick = () => removeFromDeck(index);
-        list.appendChild(div);
-    });
-}
-
-/* デッキから削除 */
-function removeFromDeck(index) {
-    selectedDeck.splice(index, 1);
-    renderDeckList();
-}
-
-/* デッキ保存 */
-function saveDeck() {
-    if (selectedDeck.length !== 40) {
-        alert("デッキは40枚ちょうどにしてください");
-        return;
-    }
-
-    const name = prompt("デッキ名を入力してください");
-    if (!name) return;
-
-    const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
-    decks.push({
-        name,
-        cards: selectedDeck
-    });
-
-    localStorage.setItem("babocaDecks", JSON.stringify(decks));
-
-    alert("保存しました！");
-}
-  /* タイトルへ戻る */
-function returnTitle() {
-    document.getElementById("deckBuilderScreen").classList.remove("active");
-    document.getElementById("titleScreen").classList.add("active");
-}
-
-/* 初期表示 */
-renderCardList();
-renderDeckList();
-
-/* 画面切り替え */
-function openDeckBuilder() {
-    selectedDeck = [];
-    renderDeckList();
-    renderCardList();
-
-    document.getElementById("titleScreen").classList.remove("active");
-    document.getElementById("deckBuilderScreen").classList.add("active");
-}
-
-function goDeckSelect() {
-    loadSavedDecks();
-    document.getElementById("titleScreen").classList.remove("active");
-    document.getElementById("deckSelectScreen").classList.add("active");
-}
-
-function openSavedDecks() {
-    loadSavedDecks();
-    document.getElementById("titleScreen").classList.remove("active");
-    document.getElementById("savedDeckScreen").classList.add("active");
-}
-</script>
-
-<!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
-<!-- 保存デッキ一覧画面 -->
-<!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
-<div id="savedDeckScreen" class="screen">
-    <h2>保存デッキ一覧</h2>
-    <div id="savedDeckList"></div>
-
-    <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
-</div>
-
-<!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
-<!-- デッキ選択画面（プレイヤー/CPU） -->
-<!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
-<div id="deckSelectScreen" class="screen">
-    <h2>デッキ選択</h2>
-
-    <h3>プレイヤーのデッキ</h3>
-    <select id="playerDeckSelect"></select>
-
-    <h3>CPUのデッキ</h3>
-    <select id="cpuDeckSelect"></select>
-
-    <div class="title-button" onclick="startBattle()">対戦開始</div>
-    <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
-</div>
-
-<script>
-/* ============================================================
-   Part2：保存デッキ一覧 & デッキ選択
-   ============================================================ */
-
-function loadSavedDecks() {
-    const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
-
-    const list = document.getElementById("savedDeckList");
-    const playerSelect = document.getElementById("playerDeckSelect");
-    const cpuSelect = document.getElementById("cpuDeckSelect");
-
-    list.innerHTML = "";
-    playerSelect.innerHTML = "";
-    cpuSelect.innerHTML = "";
-
-    decks.forEach((deck, index) => {
-        /* 保存デッキ一覧 */
-        const div = document.createElement("div");
-        div.className = "deck-item";
-        div.textContent = deck.name + "（" + deck.cards.length + "枚）";
-        list.appendChild(div);
-
-        /* プレイヤー選択 */
-        const op1 = document.createElement("option");
-        op1.value = index;
-        op1.textContent = deck.name;
-        playerSelect.appendChild(op1);
-
-        /* CPU選択 */
-        const op2 = document.createElement("option");
-        op2.value = index;
-        op2.textContent = deck.name;
-        cpuSelect.appendChild(op2);
-    });
-}
-
-let playerDeck = [];
-let cpuDeck = [];
-
-function startBattle() {
-    const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
-
-    const pIndex = document.getElementById("playerDeckSelect").value;
-    const cIndex = document.getElementById("cpuDeckSelect").value;
-
-    if (!decks[pIndex] || !decks[cIndex]) {
-        alert("デッキが選択されていません");
-        return;
-    }
-
-    playerDeck = JSON.parse(JSON.stringify(decks[pIndex].cards));
-    cpuDeck = JSON.parse(JSON.stringify(decks[cIndex].cards));
-
-    initBattle();
-  }
-/* ============================================================
-   バトル開始処理
-   ============================================================ */
-function initBattle() {
-    document.getElementById("deckSelectScreen").classList.remove("active");
-    document.getElementById("battleScreen").classList.add("active");
-
-    setupBattle();
-}
-</script>
-
-<!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
-<!-- バトル画面（公式フィールド統合版） -->
-<!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
-<div id="battleScreen" class="screen">
-
-  <h2>バトル</h2>
-
-  <!-- コート全体 -->
-  <div class="court">
-
-    <!-- 上段（CPU側） -->
-    <div class="row cpu">
-      <div class="slot" id="cpuSet">SET</div>
-      <div class="slot" id="cpuSideL">SIDE</div>
-      <div class="slot" id="cpuCenter">CENTER</div>
-      <div class="slot" id="cpuSideR">SIDE</div>
-      <div class="slot" id="cpuDeck">DECK</div>
-    </div>
-
-    <!-- 中段（CPU中段） -->
-    <div class="row cpu">
-      <div class="slot" id="cpuBack"></div>
-      <div class="slot" id="cpuReceive">RECEIVE</div>
-      <div class="slot" id="cpuToss">TOSS</div>
-      <div class="slot" id="cpuAttack">ATTACK</div>
-      <div class="slot" id="cpuDrop">DROP</div>
-    </div>
-
-    <!-- ネット -->
-    <div class="net"></div>
-
-    <!-- 下段（プレイヤー側） -->
-    <div class="row">
-      <div class="slot" id="playerBackL"></div>
-      <div class="slot" id="playerBackR"></div>
-      <div class="slot" id="playerServe">SERVE</div>
-      <div class="slot" id="playerEvent">EVENT</div>
-      <div class="slot" id="playerDrop"></div>
-    </div>
-
-  </div>
-
-  <!-- 手札表示 -->
-  <h3>手札（6枚）</h3>
-  <div id="playerHand" class="card-list"></div>
-
-  <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
-</div>
-/* ============================================================
-   Part3：ゲームロジック（簡易版）
-   ============================================================ */
-
-let playerHand = [];
-let playerField = [];
-let cpuField = [];
-
-/* バトル初期化 */
-function setupBattle() {
-    playerHand = [];
-    playerField = [];
-    cpuField = [];
-
-   // プレイヤー手札6枚
-for (let i = 0; i < 6; i++) {
-    if (playerDeck.length > 0) {
-        playerHand.push(playerDeck.shift());
-    }
-}
-
-    // CPUは1枚場に出す
-    if (cpuDeck.length > 0) {
-        cpuField.push(cpuDeck.shift());
-    }
-
-    renderBattle();
-}
-
-/* 描画 */
-function renderBattle() {
-    const hand = document.getElementById("playerHand");
-    const pf = document.getElementById("playerField");
-    const cf = document.getElementById("cpuField");
-
-    hand.innerHTML = "";
-    pf.innerHTML = "";
-    cf.innerHTML = "";
-
-    playerHand.forEach((card, index) => {
-        const div = document.createElement("div");
-        div.className = "card-item";
-        div.textContent = card.name;
-        div.onclick = () => playCard(index);
-        hand.appendChild(div);
-    });
-
-    playerField.forEach(card => {
-        const div = document.createElement("div");
-        div.className = "card-item";
-        div.textContent = card.name + "（攻撃）";
-        pf.appendChild(div);
-    });
-
-    cpuField.forEach(card => {
-        const div = document.createElement("div");
-        div.className = "card-item";
-        div.textContent = card.name + "（CPU）";
-        cf.appendChild(div);
-    });
-}
-
-/* 手札から場に出す */
-function playCard(index) {
-    const card = playerHand.splice(index, 1)[0];
-    playerField.push(card);
-    renderBattle();
-}
-  /* ============================================================
-   CPU 行動（超簡易AI）
-   ============================================================ */
-function cpuTurn() {
-    // CPUは山札があれば1枚場に出す
-    if (cpuDeck.length > 0) {
-        cpuField.push(cpuDeck.shift());
-    }
-
-    renderBattle();
-}
-
-/* ============================================================
-   スキル発動（簡易版）
-   ============================================================ */
-// 今は「カードをタップ → 攻撃扱い」の簡易処理
-// 本格的なスキル処理は後で追加可能
-
-function playerAttack() {
-    if (playerField.length === 0) {
-        alert("場にカードがありません");
-        return;
-    }
-    if (cpuField.length === 0) {
-        alert("CPUの場が空です。勝利！");
-        returnTitle();
-        return;
-    }
-
-    // とりあえず CPU の1枚を破壊
-    cpuField.shift();
-
-    renderBattle();
-
-    // CPUターン
-    setTimeout(cpuTurn, 500);
-}
-
-/* ============================================================
-   勝敗チェック
-   ============================================================ */
-function checkWin() {
-    if (cpuDeck.length === 0 && cpuField.length === 0) {
-        alert("勝利！");
-        returnTitle();
-    }
-    if (playerDeck.length === 0 && playerField.length === 0) {
-        alert("敗北…");
-        returnTitle();
-    }
-}
-</script>
-
-</body>
-</html>
