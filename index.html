@@ -351,30 +351,53 @@ function initBattle() {
 </script>
 
 <!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
-<!-- ゲーム画面（バトル） -->
+<!-- バトル画面（公式フィールド統合版） -->
 <!-- ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝ -->
 <div id="battleScreen" class="screen">
-    <h2>バトル</h2>
 
-    <div>
-        <h3>プレイヤー手札</h3>
-        <div id="playerHand" class="card-list"></div>
+  <h2>バトル</h2>
+
+  <!-- コート全体 -->
+  <div class="court">
+
+    <!-- 上段（CPU側） -->
+    <div class="row cpu">
+      <div class="slot" id="cpuSet">SET</div>
+      <div class="slot" id="cpuSideL">SIDE</div>
+      <div class="slot" id="cpuCenter">CENTER</div>
+      <div class="slot" id="cpuSideR">SIDE</div>
+      <div class="slot" id="cpuDeck">DECK</div>
     </div>
 
-    <div>
-        <h3>プレイヤー場</h3>
-        <div id="playerField" class="card-list"></div>
+    <!-- 中段（CPU中段） -->
+    <div class="row cpu">
+      <div class="slot" id="cpuBack"></div>
+      <div class="slot" id="cpuReceive">RECEIVE</div>
+      <div class="slot" id="cpuToss">TOSS</div>
+      <div class="slot" id="cpuAttack">ATTACK</div>
+      <div class="slot" id="cpuDrop">DROP</div>
     </div>
 
-    <div>
-        <h3>CPU場</h3>
-        <div id="cpuField" class="card-list"></div>
+    <!-- ネット -->
+    <div class="net"></div>
+
+    <!-- 下段（プレイヤー側） -->
+    <div class="row">
+      <div class="slot" id="playerBackL"></div>
+      <div class="slot" id="playerBackR"></div>
+      <div class="slot" id="playerServe">SERVE</div>
+      <div class="slot" id="playerEvent">EVENT</div>
+      <div class="slot" id="playerDrop"></div>
     </div>
 
-    <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
+  </div>
+
+  <!-- 手札表示 -->
+  <h3>手札（6枚）</h3>
+  <div id="playerHand" class="card-list"></div>
+
+  <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
 </div>
-
-<script>
 /* ============================================================
    Part3：ゲームロジック（簡易版）
    ============================================================ */
