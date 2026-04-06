@@ -14,7 +14,7 @@ body {
     user-select: none;
 }
 
-/ 画面切り替え /
+/* 画面切り替え */
 .screen {
     display: none;
     padding: 20px;
@@ -23,7 +23,7 @@ body {
     display: block;
 }
 
-/ タイトル画面 /
+/* タイトル画面 */
 .title-button {
     width: 80%;
     margin: 20px auto;
@@ -34,7 +34,7 @@ body {
     font-size: 22px;
 }
 
-/ デッキ編成 /
+/* デッキ編成 */
 .tab-buttons {
     display: flex;
     gap: 10px;
@@ -64,7 +64,7 @@ body {
     border-radius: 4px;
 }
 
-/ デッキ保存ボタン /
+/* デッキ保存ボタン */
 .save-button {
     padding: 15px;
     background: #008cff;
@@ -73,10 +73,7 @@ body {
     margin-top: 10px;
 }
 
-/ ============================= /
-/ あなたのフィールドCSS（統合済） /
-/ ============================= /
-
+/* ======== フィールドCSS ======== */
 .court{
   width: 95vw;
   max-width: 520px;
@@ -119,7 +116,6 @@ body {
 }
 </style>
 </head>
-
 <body>
 
 <!-- タイトル画面 -->
@@ -173,13 +169,15 @@ body {
     <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
 </div>
 
-<!-- バトル画面 -->
+<!-- バトル画面（最新版） -->
 <div id="battleScreen" class="screen">
 
-  <h2>バトル</h2>
+  <h2 style="text-align:center; color:#fff;">バトル</h2>
 
+  <!-- ======== フィールド ======== -->
   <div class="court">
 
+    <!-- 上段（CPU側） -->
     <div class="row cpu">
       <div class="slot" id="cpuSet">SET</div>
       <div class="slot" id="cpuSideL">SIDE</div>
@@ -188,6 +186,7 @@ body {
       <div class="slot" id="cpuDeck">DECK</div>
     </div>
 
+    <!-- 中段（CPU側） -->
     <div class="row cpu">
       <div class="slot" id="cpuBack"></div>
       <div class="slot" id="cpuReceive">RECEIVE</div>
@@ -196,8 +195,10 @@ body {
       <div class="slot" id="cpuDrop">DROP</div>
     </div>
 
+    <!-- ネット -->
     <div class="net"></div>
 
+    <!-- 下段（プレイヤー側） -->
     <div class="row">
       <div class="slot" id="playerBackL"></div>
       <div class="slot" id="playerBackR"></div>
@@ -207,20 +208,68 @@ body {
     </div>
 
   </div>
+  <!-- ======== /フィールド ======== -->
 
-  <h3>手札（6枚）</h3>
-  <div id="playerHand" class="card-list"></div>
+  <!-- ======== 情報パネル ======== -->
+  <div style="background:#222; padding:10px; border-radius:8px; margin:10px 0; color:#fff;">
+    <div>ターン：<span id="turnPlayerLabel">-</span></div>
+    <div>フェイズ：<span id="phaseLabel">-</span></div>
+    <div>サーブ権：<span id="serveOwnerLabel">-</span></div>
+    <div>ロスト数：あなた <span id="lostPlayer">0</span> / CPU <span id="lostCpu">0</span></div>
+  </div>
+
+  <!-- ======== バトルログ ======== -->
+  <div id="battleInfo" style="
+    background:#333; 
+    padding:10px; 
+    border-radius:8px; 
+    min-height:60px; 
+    color:#fff;
+    margin-bottom:10px;
+  ">バトル開始</div>
+
+  <!-- ======== 手札 ======== -->
+  <h3 style="color:#fff;">あなたの手札（タップでプレイ）</h3>
+  <div id="playerHand" style="
+    background:#222; 
+    padding:10px; 
+    border-radius:8px; 
+    min-height:100px;
+    color:#fff;
+  "></div>
+
+  <!-- ======== ボタン ======== -->
+  <div style="margin-top:10px;">
+    <button onclick="playerDeclareLost()" style="
+      padding:10px; 
+      background:#c62828; 
+      color:#fff; 
+      border:none; 
+      border-radius:6px;
+      margin-right:6px;
+    ">ロスト宣言</button>
+
+    <button onclick="showStateDebug()" style="
+      padding:10px; 
+      background:#008cff; 
+      color:#fff; 
+      border:none; 
+      border-radius:6px;
+    ">状態確認</button>
+  </div>
 
   <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
+
 </div>
+
+<!-- ▼▼▼ ここから Part C（JS 全部）が入る ▼▼▼ -->
 <script>
-/* ============================================================
+    /* ============================================================
    カードデータ（烏野12＋音駒12＝24枚）
    ============================================================ */
 const allCards = [
 
   /* 烏野 D01 */
-
   {
     id: "D01-001",
     name: "日向翔陽",
@@ -234,7 +283,7 @@ const allCards = [
     receive: 2,
     toss: 0,
     attack: 2,
-    skillText: "2ガッツ払えば使える。このキャラのアタックポイントに+2する。ガッツを払う…このキャラの下のカードを指定された枚数「ドロップエリア」に置く。",
+    skillText: "2ガッツ払えば使える。このキャラのアタックポイントに+2する。",
     skill: null
   },
   {
@@ -250,7 +299,7 @@ const allCards = [
     receive: 2,
     toss: 1,
     attack: 1,
-    skillText: "2ガッツ払えば使える。このキャラのトスポイントに+2する。ガッツを払う…このキャラの下のカードを指定された枚数ドロップエリアに置く。",
+    skillText: "2ガッツ払えば使える。このキャラのトスポイントに+2する。",
     skill: null
   },
   {
@@ -266,7 +315,7 @@ const allCards = [
     receive: 1,
     toss: 0,
     attack: 2,
-    skillText: "相手のオフェンスポイントが4以下の場合、1ガッツ払えば使える。カード1枚を引く。ガッツを払う→センターブロッカーの下のカードを指定された枚数ドロップエリアに置く。",
+    skillText: "相手のオフェンスポイントが4以下の場合、1ガッツ払えば使える。",
     skill: null
   },
   {
@@ -298,7 +347,7 @@ const allCards = [
     receive: 5,
     toss: 0,
     attack: 0,
-    skillText: "3ガッツ払えば使える。カード1枚を引き、このキャラのレシーブポイントに+2する。ガッツを払う…このキャラの下のカードを指定された枚数ドロップエリアに置く。",
+    skillText: "3ガッツ払えば使える。カード1枚を引き、レシーブ+2。",
     skill: null
   },
   {
@@ -330,7 +379,7 @@ const allCards = [
     receive: 2,
     toss: 0,
     attack: 3,
-    skillText: "自分の手札からカード1枚をドロップすれば使える。このキャラのレシーブポイントに+3する。ドロップする…指定されたカードを指定された枚数ドロップエリアに置く。",
+    skillText: "手札1枚ドロップで使える。レシーブ+3。",
     skill: null
   },
   {
@@ -387,14 +436,7 @@ const allCards = [
     team: "Karasuno",
     type: "EVENT",
     rarity: "N",
-    grade: null,
-    position: null,
-    serve: null,
-    block: null,
-    receive: null,
-    toss: null,
-    attack: null,
-    skillText: "カード1枚を引き、自分のキャラ1人のレシーブポイントに+1する。そのキャラのレシーブポイントが4以下の場合、さらにレシーブポイントに+1する。",
+    skillText: "カード1枚引き、レシーブ+1。4以下ならさらに+1。",
     skill: null
   },
   {
@@ -403,19 +445,11 @@ const allCards = [
     team: "Karasuno",
     type: "EVENT",
     rarity: "N",
-    grade: null,
-    position: null,
-    serve: null,
-    block: null,
-    receive: null,
-    toss: null,
-    attack: null,
-    skillText: "カード1枚を引き、自分の烏野のキャラ1人のアタックポイントに+1する。自分のトスキャラが「影山 飛雄」でアタックキャラが「日向 翔陽」の場合、次の相手のターン中、相手はブロックキャラを1人までしか登場させられない。",
+    skillText: "カード1枚引き、烏野キャラのアタック+1。",
     skill: null
   },
 
   /* 音駒 D02 */
-
   {
     id: "D02-001",
     name: "孤爪研磨",
@@ -429,7 +463,7 @@ const allCards = [
     receive: 1,
     toss: 1,
     attack: 0,
-    skillText: "登場トスエリア／2ガッツ払えば使える。このキャラのトスポイント＋1。次の相手ターン中、相手アタックキャラ登場時にアタック−2。",
+    skillText: "登場トス／2ガッツでトス+1、相手アタック-2。",
     skill: null
   },
   {
@@ -445,7 +479,7 @@ const allCards = [
     receive: 1,
     toss: 0,
     attack: 2,
-    skillText: "登場ブロックエリア／1ガッツ払えば使える。このターン中、ブロック成功時にドシャット5。",
+    skillText: "登場ブロック／1ガッツでドシャット5。",
     skill: null
   },
   {
@@ -461,7 +495,7 @@ const allCards = [
     receive: 5,
     toss: 0,
     attack: 0,
-    skillText: "登場レシーブエリア／手札1枚ドロップで使える。レシーブ＋2。",
+    skillText: "登場レシーブ／手札1枚ドロップでレシーブ+2。",
     skill: null
   },
   {
@@ -477,7 +511,7 @@ const allCards = [
     receive: 1,
     toss: 0,
     attack: 3,
-    skillText: "自分のブロックキャラ登場時、このキャラがアタックキャラなら2ガッツ払ってサイドブロッカーとしてブロックエリアに登場できる。（重複不可・3人制限あり）",
+    skillText: "ブロック登場時、2ガッツでサイドブロック登場可。",
     skill: null
   },
   {
@@ -557,7 +591,7 @@ const allCards = [
     receive: 5,
     toss: 0,
     attack: 0,
-    skillText: "登場レシーブエリア／2ガッツ払えば使える。カード1枚を引く。",
+    skillText: "登場レシーブ／2ガッツでカード1枚引く。",
     skill: null
   },
   {
@@ -582,14 +616,7 @@ const allCards = [
     team: "Nekoma",
     type: "EVENT",
     rarity: "D",
-    grade: null,
-    position: null,
-    serve: null,
-    block: null,
-    receive: null,
-    toss: null,
-    attack: null,
-    skillText: "レシーブ、ブロック／カード1枚を引く。以下から1つを選んで使える。▶自分のブロックキャラの「黒尾鉄朗」1人のブロックポイントに+1する。▶自分のキャラ1人のレシーブポイントに+1する。",
+    skillText: "カード1枚引き、ブロック+1 または レシーブ+1。",
     skill: null
   },
   {
@@ -598,14 +625,7 @@ const allCards = [
     team: "Nekoma",
     type: "EVENT",
     rarity: "D",
-    grade: null,
-    position: null,
-    serve: null,
-    block: null,
-    receive: null,
-    toss: null,
-    attack: null,
-    skillText: "ドロー／カード1枚を引く。自分のデッキの上から3枚を見て、その中の「灰羽リエーフ」か「犬岡走」1枚までを公開し、そのカードを手札に加える。加えなかったカードを好きな順番でデッキの下に置く。",
+    skillText: "カード1枚引き、デッキ上3枚からリエーフ/犬岡を手札に。",
     skill: null
   }
 
@@ -628,9 +648,8 @@ function switchTab(team) {
     document.getElementById("tabNekoma").classList.add("active");
   }
   renderCardList();
-}
-
-function renderCardList() {
+    }
+    function renderCardList() {
   const list = document.getElementById("cardList");
   list.innerHTML = "";
   allCards
@@ -690,7 +709,7 @@ function saveDeck() {
 }
 
 /* ============================================================
-   保存デッキ一覧・削除
+   保存デッキ一覧
    ============================================================ */
 
 function loadSavedDecks() {
@@ -798,6 +817,7 @@ function startBattle() {
 
   renderHand();
   clearField();
+  initBattleState();
   showScreen("battleScreen");
 }
 
@@ -825,10 +845,9 @@ function renderHand() {
     div.onclick = () => playCardFromHand(index);
     handDiv.appendChild(div);
   });
-}
-
-/* ============================================================
-   フィールド簡易処理（とりあえず SERVE に出す）
+      }
+    /* ============================================================
+   フィールド簡易処理（初期化）
    ============================================================ */
 
 function clearField() {
@@ -839,21 +858,92 @@ function clearField() {
   ];
   ids.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.textContent = el.id.toUpperCase().replace("PLAYER","").replace("CPU","");
+    if (el) {
+      el.textContent = el.id.toUpperCase().replace("PLAYER","").replace("CPU","");
+      delete el.dataset.cardId;
+    }
   });
 }
+
+/* ============================================================
+   バトルステート（ターン・フェイズ・ロスト）
+   ============================================================ */
+
+let battleState = {
+  turnPlayer: "PLAYER",   // PLAYER or CPU
+  phase: "SERVE",         // SERVE → RECEIVE → TOSS → ATTACK → BLOCK → RESULT
+  serveOwner: "PLAYER",   // サーブ権
+  lostPlayer: 0,
+  lostCpu: 0
+};
+
+function initBattleState() {
+  battleState = {
+    turnPlayer: "PLAYER",
+    phase: "SERVE",
+    serveOwner: "PLAYER",
+    lostPlayer: 0,
+    lostCpu: 0
+  };
+  updateBattleInfo("バトル開始！");
+  updateStatePanel();
+}
+
+function updateStatePanel() {
+  document.getElementById("turnPlayerLabel").textContent =
+    battleState.turnPlayer === "PLAYER" ? "あなた" : "CPU";
+
+  document.getElementById("phaseLabel").textContent = battleState.phase;
+  document.getElementById("serveOwnerLabel").textContent =
+    battleState.serveOwner === "PLAYER" ? "あなた" : "CPU";
+
+  document.getElementById("lostPlayer").textContent = battleState.lostPlayer;
+  document.getElementById("lostCpu").textContent = battleState.lostCpu;
+}
+
+function updateBattleInfo(text) {
+  const info = document.getElementById("battleInfo");
+  info.textContent = text;
+}
+
+/* ============================================================
+   手札からカードを出す（とりあえず SERVE に出す）
+   ============================================================ */
 
 function playCardFromHand(index) {
   const card = playerHand[index];
   const serveSlot = document.getElementById("playerServe");
+
   if (serveSlot.dataset.cardId) {
-    alert("SERVE にはすでにカードがあります（今は1枚だけにしてる）");
+    alert("SERVE にはすでにカードがあります（今は1枚だけ）");
     return;
   }
+
   serveSlot.textContent = card.name;
   serveSlot.dataset.cardId = card.id;
+
   playerHand.splice(index, 1);
   renderHand();
+
+  updateBattleInfo(`${card.name} を SERVE に登場！`);
+}
+
+/* ============================================================
+   ロスト宣言
+   ============================================================ */
+
+function playerDeclareLost() {
+  battleState.lostPlayer++;
+  updateBattleInfo("あなたがロストを宣言！");
+  updateStatePanel();
+}
+
+/* ============================================================
+   状態確認（デバッグ用）
+   ============================================================ */
+
+function showStateDebug() {
+  alert(JSON.stringify(battleState, null, 2));
 }
 
 /* ============================================================
