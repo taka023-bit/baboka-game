@@ -283,6 +283,10 @@ body {
     <button onclick="showStateDebug()" style="padding:10px; background:#008cff; color:#fff; border:none; border-radius:6px;">
       状態確認
     </button>
+      <button onclick="endPhase()" 
+  style="padding:10px; background:#4caf50; color:#fff; border:none; border-radius:6px; margin-left:6px;">
+  フェイズエンド
+      </button>
   </div>
 
   <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
@@ -768,13 +772,11 @@ function playCardFromHand(index) {
   battleState.phase = "SERVE";
   updateStatePanel();
 
-  // CPU側もサーブを自動で出す（簡易AI）
+  // CPUもサーブを出す（自動）
   cpuAutoServe();
 
-  // サーブが揃ったらレシーブへ
-  setTimeout(() => {
-    proceedPhase();
-  }, 600);
+  // ★ここで自動進行しない★
+  // proceedPhase() は endPhase() ボタンで手動実行
 }
 
 function cpuAutoServe() {
