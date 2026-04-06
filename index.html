@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>Baboca 完全版</title>
+<title>Baboca 完全復元版</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -115,42 +115,9 @@ body {
   border-radius:2px;
 }
 </style>
-</head>
-<body>
-<!-- ▼ カード詳細ポップアップ ▼ -->
-<div id="cardPopup" style="
-  position: fixed;
-  left: 0; top: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.7);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-">
-  <div style="
-    background:#222;
-    padding:20px;
-    border-radius:10px;
-    width:80%;
-    max-width:350px;
-    color:#fff;
-  ">
-    <h3 id="popupName"></h3>
-    <div id="popupStats"></div>
-    <p id="popupSkill" style="margin-top:10px; white-space:pre-wrap;"></p>
+</head> 
+    <body>
 
-    <button onclick="closeCardPopup()" style="
-      margin-top:15px;
-      width:100%;
-      padding:10px;
-      background:#444;
-      color:#fff;
-      border:none;
-      border-radius:6px;
-    ">閉じる</button>
-  </div>
-</div>
 <!-- タイトル画面 -->
 <div id="titleScreen" class="screen active">
     <h1>Baboca</h1>
@@ -262,7 +229,7 @@ body {
   ">バトル開始</div>
 
   <!-- ======== 手札 ======== -->
-  <h3 style="color:#fff;">あなたの手札（タップでプレイ）</h3>
+  <h3 style="color:#fff;">あなたの手札（タップでプレイ / 長押しで詳細）</h3>
   <div id="playerHand" style="
     background:#222; 
     padding:10px; 
@@ -293,6 +260,41 @@ body {
 
   <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
 
+</div>
+
+<!-- ▼ カード詳細ポップアップ ▼ -->
+<div id="cardPopup" style="
+  position: fixed;
+  left: 0; top: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+">
+  <div style="
+    background:#222;
+    padding:20px;
+    border-radius:10px;
+    width:80%;
+    max-width:350px;
+    color:#fff;
+  ">
+    <h3 id="popupName"></h3>
+    <div id="popupStats"></div>
+    <p id="popupSkill" style="margin-top:10px; white-space:pre-wrap;"></p>
+
+    <button onclick="closeCardPopup()" style="
+      margin-top:15px;
+      width:100%;
+      padding:10px;
+      background:#444;
+      color:#fff;
+      border:none;
+      border-radius:6px;
+    ">閉じる</button>
+  </div>
 </div>
 
 <!-- ▼▼▼ ここから Part C（JS 全部）が入る ▼▼▼ -->
@@ -660,11 +662,11 @@ const allCards = [
     rarity: "D",
     skillText: "カード1枚引き、デッキ上3枚からリエーフ/犬岡を手札に。",
     skill: null
+    
   }
 
 ];
-
-/* ============================================================
+    /* ============================================================
    デッキ編成ロジック
    ============================================================ */
 
@@ -681,8 +683,9 @@ function switchTab(team) {
     document.getElementById("tabNekoma").classList.add("active");
   }
   renderCardList();
-    }
-    function renderCardList() {
+}
+
+function renderCardList() {
   const list = document.getElementById("cardList");
   list.innerHTML = "";
   allCards
@@ -797,8 +800,7 @@ function goDeckSelect() {
   loadDeckSelectOptions();
   showScreen("deckSelectScreen");
 }
-
-/* ============================================================
+    /* ============================================================
    デッキ選択 → バトル開始
    ============================================================ */
 
@@ -888,10 +890,9 @@ function renderHand() {
     handDiv.appendChild(div);
   });
 }
-  });
-      }
-    /* ============================================================
-   フィールド簡易処理（初期化）
+
+/* ============================================================
+   フィールド初期化
    ============================================================ */
 
 function clearField() {
@@ -910,13 +911,13 @@ function clearField() {
 }
 
 /* ============================================================
-   バトルステート（ターン・フェイズ・ロスト）
+   バトルステート
    ============================================================ */
 
 let battleState = {
-  turnPlayer: "PLAYER",   // PLAYER or CPU
-  phase: "SERVE",         // SERVE → RECEIVE → TOSS → ATTACK → BLOCK → RESULT
-  serveOwner: "PLAYER",   // サーブ権
+  turnPlayer: "PLAYER",
+  phase: "START",
+  serveOwner: "PLAYER",
   lostPlayer: 0,
   lostCpu: 0
 };
@@ -924,12 +925,12 @@ let battleState = {
 function initBattleState() {
   battleState = {
     turnPlayer: "PLAYER",
-    phase: "SERVE",
+    phase: "START",
     serveOwner: "PLAYER",
     lostPlayer: 0,
     lostCpu: 0
   };
-  updateBattleInfo("バトル開始！");
+  updateBattleInfo("ゲーム準備完了 → あなたのスタートフェイズ");
   updateStatePanel();
 }
 
@@ -951,7 +952,7 @@ function updateBattleInfo(text) {
 }
 
 /* ============================================================
-   手札からカードを出す（とりあえず SERVE に出す）
+   手札からカードを出す
    ============================================================ */
 
 function playCardFromHand(index) {
@@ -959,7 +960,7 @@ function playCardFromHand(index) {
   const serveSlot = document.getElementById("playerServe");
 
   if (serveSlot.dataset.cardId) {
-    alert("SERVE にはすでにカードがあります（今は1枚だけ）");
+    alert("SERVE にはすでにカードがあります");
     return;
   }
 
@@ -970,6 +971,13 @@ function playCardFromHand(index) {
   renderHand();
 
   updateBattleInfo(`${card.name} を SERVE に登場！`);
+
+  // ▼ START → SERVE へ進む
+  if (battleState.phase === "START") {
+    battleState.phase = "SERVE";
+    updateBattleInfo(`${card.name} をサーブ → サーブフェイズへ`);
+    updateStatePanel();
+  }
 }
 
 /* ============================================================
@@ -983,12 +991,16 @@ function playerDeclareLost() {
 }
 
 /* ============================================================
-   状態確認（デバッグ用）
+   状態確認（デバッグ）
    ============================================================ */
 
 function showStateDebug() {
   alert(JSON.stringify(battleState, null, 2));
 }
+    /* ============================================================
+   カード詳細ポップアップ
+   ============================================================ */
+
 function openCardPopup(cardId) {
   const card = allCards.find(c => c.id === cardId);
   if (!card) return;
@@ -1015,7 +1027,8 @@ function openCardPopup(cardId) {
 
 function closeCardPopup() {
   document.getElementById("cardPopup").style.display = "none";
-          }
+}
+
 /* ============================================================
    初期化
    ============================================================ */
@@ -1023,7 +1036,7 @@ function closeCardPopup() {
 window.addEventListener("load", () => {
   showScreen("titleScreen");
 });
-</script>
+    </script>
 
 </body>
 </html>
