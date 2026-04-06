@@ -167,27 +167,28 @@ body {
 
   <!-- ======== フィールド ======== -->
  <!-- ▼ 相手フィールド（180度回転） -->
+<!-- ▼ 相手フィールド（180度回転） -->
 <div class="field opponent">
 
   <!-- 1段目 -->
-  <div class="area">セット</div>
-  <div class="area side">サイド</div>
-  <div class="area center">センター</div>
-  <div class="area side">サイド</div>
-  <div class="area">デッキ</div>
+  <div class="area" id="cpuSet">セット</div>
+  <div class="area side" id="cpuSideL">サイド</div>
+  <div class="area center" id="cpuCenter">センター</div>
+  <div class="area side" id="cpuSideR">サイド</div>
+  <div class="area" id="cpuDeck">デッキ</div>
 
   <!-- 2段目 -->
   <div class="empty"></div>
-  <div class="area receive">レシーブ</div>
-  <div class="area toss">トス</div>
-  <div class="area attack">アタック</div>
-  <div class="area drop">ドロップ</div>
+  <div class="area receive" id="cpuReceive">レシーブ</div>
+  <div class="area toss" id="cpuToss">トス</div>
+  <div class="area attack" id="cpuAttack">アタック</div>
+  <div class="area drop" id="cpuDrop">ドロップ</div>
 
   <!-- 3段目 -->
   <div class="empty"></div>
   <div class="empty"></div>
-  <div class="area serve">サーブ</div>
-  <div class="area event">イベント</div>
+  <div class="area serve" id="cpuServe">サーブ</div>
+  <div class="area event" id="cpuEvent">イベント</div>
   <div class="empty"></div>
 
 </div>
@@ -196,27 +197,9 @@ body {
 <div class="field player">
 
   <!-- 1段目 -->
-  <div class="area">セット</div>
-  <div class="area side">サイド</div>
-  <div class="area center">センター</div>
-  <div class="area side">サイド</div>
-  <div class="area">デッキ</div>
-
-  <!-- 2段目 -->
-  <div class="empty"></div>
-  <div class="area receive">レシーブ</div>
-  <div class="area toss">トス</div>
-  <div class="area attack">アタック</div>
-  <div class="area drop">ドロップ</div>
-
-  <!-- 3段目 -->
-  <div class="empty"></div>
-  <div class="empty"></div>
-  <div class="area serve">サーブ</div>
-  <div class="area event">イベント</div>
-  <div class="empty"></div>
-
-</div>
+  <div class="area" id="playerSet">セット</div>
+  <div class="area side" id="playerSideL">サイド</div>
+  <div class="area center" id="playerCenter">
   <!-- ======== /フィールド ======== -->
 
   <!-- ======== 情報パネル ======== -->
