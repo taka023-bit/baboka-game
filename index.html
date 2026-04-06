@@ -201,7 +201,19 @@ body {
   <div class="title-button" onclick="startBattle()">対戦開始</div>
   <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
 </div>
+<!-- ▼ サーブ/レシーブ選択画面 -->
+<div id="serveChoiceScreen" class="screen">
+  <h2>先攻決定</h2>
 
+  <div id="diceResult" style="font-size:20px; margin:10px 0;"></div>
+
+  <div id="serveChoiceButtons" style="display:none;">
+    <div class="title-button" onclick="chooseServe('SERVE')">サーブを選ぶ</div>
+    <div class="title-button" onclick="chooseServe('RECEIVE')">レシーブを選ぶ</div>
+  </div>
+
+  <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
+</div>
 <!-- ▼ バトル画面 -->
 <div id="battleScreen" class="screen">
 
@@ -305,6 +317,14 @@ body {
     </button>
   </div>
 </div>
+    <div id="mulliganScreen" class="screen">
+  <h2>マリガン</h2>
+  <p>引き直したいカードをタップしてください（複数可）</p>
+
+  <div id="mulliganHand"></div>
+
+  <div class="title-button" onclick="finishMulligan()">決定</div>
+    </div>
 <script>
 /* ============================================================
    カードデータ（簡略：烏野＋音駒）
@@ -614,10 +634,6 @@ function startBattle() {
   const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
   const pIndex = document.getElementById("playerDeckSelect").value;
   const cIndex = document.getElementById("cpuDeckSelect").value;
-  if (pIndex === "" || cIndex === "") {
-    alert("デッキを選択してください");
-    return;
-  }
 
   playerDeck = JSON.parse(JSON.stringify(decks[pIndex].cards));
   cpuDeck = JSON.parse(JSON.stringify(decks[cIndex].cards));
@@ -627,15 +643,14 @@ function startBattle() {
 
   playerHand = [];
   cpuHand = [];
+
   for (let i = 0; i < 6; i++) {
     drawCardToHand("PLAYER");
     drawCardToHand("CPU");
   }
 
-  renderHand();
-  clearField();
-  initBattleState();
-  showScreen("battleScreen");
+  // ★ ゲーム開始前の準備へ
+  startPreGame();
 }
 
 function shuffle(arr) {
@@ -999,6 +1014,59 @@ window.addEventListener("load", () => {
 });
     function endPhase() {
   proceedPhase();
+    }
+    function startPreGame() {
+  showScreen("serveChoiceScreen");
+
+  const playerDice = Math.floor(Math.random() * 6) + 1;
+  const cpuDice = Math.floor(Math.random() * 6) + 1;
+
+  document.getElementById("diceResult").textContent =
+    `あなたの出目：${playerDice} / CPUの出目：${cpuDice}`;
+
+  if (playerDice >= cpuDice) {
+    document.getElementById("diceResult").textContent += "\nあなたが先攻です。サーブかレシーブを選んでください。";
+    document.getElementById("serveChoiceButtons").style.display = "block";
+  } else {
+    document.getElementById("diceResult").textContent += "\nCPUが先攻です。";
+    cpuChooseServe();
+  }
+    }
+    function chooseServe(choice) {
+  battleState.serveOwner = "PLAYER";
+  battleState.turnPlayer = "PLAYER";
+  battleState.playerChoice = choice;
+
+  startMulligan();
+    }
+    function cpuChooseServe() {
+  const choice = Math.random() < 0.5 ? "SERVE" : "RECEIVE";
+
+  battleState.serveOwner = "CPU";
+  battleState.turnPlayer = "CPU";
+  battleState.cpuChoice = choice;
+
+  startMulligan();
+    }
+    function placeInitialSetCards() {
+  const pSet = document.getElementById("playerSet");
+  const cSet = document.getElementById("cpuSet");
+
+  const pCards = [playerDeckStack.shift(), playerDeckStack.shift()];
+  const cCards = [cpuDeckStack.shift(), cpuDeckStack.shift()];
+
+  pSet.dataset.setCards = JSON.stringify(pCards);
+  cSet.dataset.setCards = JSON.stringify(cCards);
+
+  pSet.textContent = "セット（2）";
+  cSet.textContent = "セット（2）";
+    }
+    function startBattlePhase() {
+  showScreen("battleScreen");
+  battleState.phase = "START";
+  updateBattleInfo("ゲーム開始：スタートフェイズ");
+  updateStatePanel();
+  renderHand();
     }
 </script>
 
