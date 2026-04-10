@@ -1,1100 +1,154 @@
-
-`html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<title>Baboca 完全版</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>バボカBREAK Web</title>
+    <style>
+        :root {
+            --court-color: #f39c12;
+            --card-width: 75px;
+            --card-height: 110px;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            font-family: sans-serif;
+            overflow: hidden; /* スマホのスクロールを固定 */
+            color: white;
+        }
+        /* 全体コンテナ */
+        #game-screen {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+        }
+        /* 相手エリア */
+        .opponent-side {
+            height: 20%;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 2px dashed white;
+        }
+        /* メインコート */
+        .court {
+            flex: 1;
+            background-color: var(--court-color);
+            position: relative;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 5px;
+            padding: 10px;
+        }
+        /* 各エリアの枠 */
+        .area-slot {
+            border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 8px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        /* カードの重なり（スタック）を表現 */
+        .card-stack {
+            position: relative;
+            width: var(--card-width);
+            height: var(--card-height);
+        }
+        .card {
+            width: 100%;
+            height: 100%;
+            background: white;
+            color: black;
+            border-radius: 5px;
+            position: absolute;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            padding: 4px;
+            box-sizing: border-box;
+            transition: transform 0.2s;
+        }
+        /* ガッツ（下のカード）のズレ演出 */
+        .card.guts { transform: translateY(8px); filter: brightness(0.8); }
+        .card.guts-deep { transform: translateY(16px); filter: brightness(0.6); }
 
-<style>
-/ ======== 全体 ======== /
-body {
-  margin: 0;
-  background: #111;
-  color: #fff;
-  font-family: sans-serif;
-  user-select: none;
-}
-
-.screen {
-  display: none;
-  padding: 20px;
-}
-.active {
-  display: block;
-}
-
-/ ======== タイトル画面 ======== /
-.title-button {
-  width: 80%;
-  margin: 20px auto;
-  padding: 20px;
-  background: #444;
-  text-align: center;
-  border-radius: 10px;
-  font-size: 20px;
-}
-
-/ ======== デッキ編成 ======== /
-.tab-buttons {
-  display: flex;
-  gap: 10px;
-}
-.tab-button {
-  flex: 1;
-  padding: 10px;
-  background: #555;
-  text-align: center;
-  border-radius: 6px;
-}
-.tab-button.active {
-  background: #ff9800;
-}
-
-.card-list, .deck-list {
-  background: #333;
-  padding: 10px;
-  border-radius: 6px;
-  min-height: 200px;
-}
-
-.card-item, .deck-item {
-  padding: 8px;
-  margin: 5px 0;
-  background: #444;
-  border-radius: 4px;
-}
-
-/ ======== ボタン ======== /
-.save-button {
-  padding: 15px;
-  background: #008cff;
-  text-align: center;
-  border-radius: 8px;
-  margin-top: 10px;
-}
-
-/ ======== フィールド ======== /
-.field {
-  width: 95vw;
-  max-width: 520px;
-  margin: 10px auto;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-auto-rows: 60px;
-  gap: 4px;
-}
-
-.field.opponent {
-  transform: rotate(180deg);
-}
-
-.area, .empty {
-  background: #222;
-  border: 1px solid #555;
-  border-radius: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #ddd;
-  font-size: 14px;
-}
-
-.empty {
-  background: transparent;
-  border: none;
-}
-
-/ ======== バトル情報パネル ======== /
-
-battleInfo {
-  background:#333;
-  padding:10px;
-  border-radius:8px;
-  min-height:60px;
-  color:#fff;
-  margin-bottom:10px;
-}
-
-/ ======== 手札 ======== /
-
-playerHand {
-  background:#222;
-  padding:10px;
-  border-radius:8px;
-  min-height:100px;
-  color:#fff;
-}
-
-.card-item {
-  background:#444;
-  padding:8px;
-  margin:5px 0;
-  border-radius:6px;
-}
-
-/ ======== カード詳細ポップアップ ======== /
-
-cardPopup {
-  position: fixed;
-  left: 0; top: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.7);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-  /* サーブ/レシーブ選択画面を最前面にする */
-#serveChoiceScreen {
-  position: relative;
-  z-index: 9999;
-}
-</style>
+        /* 自分側の操作UI */
+        .player-ui {
+            height: 35%;
+            background: #34495e;
+            padding: 10px;
+        }
+        .hand-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            padding-bottom: 10px;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            font-weight: bold;
+            background: #e74c3c;
+            color: white;
+        }
+    </style>
 </head>
-
 <body>
 
-<!-- ▼ タイトル画面 -->
-<div id="titleScreen" class="screen active">
-  <h1>Baboca</h1>
+<div id="game-screen">
+    <div class="opponent-side">
+        <div>相手セット: 🎴🎴 山札: 34</div>
+    </div>
 
-  <div class="title-button" onclick="goDeckSelect()">ゲーム開始</div>
-  <div class="title-button" onclick="openDeckBuilder()">デッキ編成</div>
-  <div class="title-button" onclick="openSavedDecks()">保存デッキ一覧</div>
+    <div class="court">
+        <div class="area-slot">RECEIVE
+            <div class="card-stack" id="receive-stack">
+                <div class="card guts-deep"></div>
+                <div class="card guts"></div>
+                <div class="card">澤村</div>
+            </div>
+        </div>
+        <div class="area-slot">TOSS / ATTACK
+            <div class="card-stack" id="attack-stack">
+                <div class="card">影山</div>
+            </div>
+        </div>
+        <div class="area-slot" style="grid-column: span 2;">BLOCK (Center / Side)
+            <div id="block-display" style="display: flex; gap: 5px;">
+                <div class="card-stack" style="transform: scale(0.8);">
+                    <div class="card">月島</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="player-ui">
+        <div class="hand-container" id="hand">
+            <div class="card" style="position:relative;">日向</div>
+            <div class="card" style="position:relative;">及川</div>
+            <div class="card" style="position:relative;">岩泉</div>
+        </div>
+        <div class="controls">
+            <button onclick="alert('ロスト宣言！')">ロスト宣言</button>
+            <button style="background:#2ecc71;">スキル発動</button>
+        </div>
+    </div>
 </div>
-
-<!-- ▼ デッキ編成画面 -->
-<div id="deckBuilderScreen" class="screen">
-  <h2>デッキ編成</h2>
-
-  <div class="tab-buttons">
-    <div id="tabKarasuno" class="tab-button active" onclick="switchTab('Karasuno')">烏野</div>
-    <div id="tabNekoma" class="tab-button" onclick="switchTab('Nekoma')">音駒</div>
-  </div>
-
-  <h3>カード一覧</h3>
-  <div id="cardList" class="card-list"></div>
-
-  <h3>デッキ（<span id="deckCount">0</span>/40）</h3>
-  <div id="deckList" class="deck-list"></div>
-
-  <div class="save-button" onclick="saveDeck()">デッキ保存</div>
-  <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
-</div>
-
-<!-- ▼ 保存デッキ一覧 -->
-<div id="savedDeckScreen" class="screen">
-  <h2>保存デッキ一覧</h2>
-  <div id="savedDeckList"></div>
-
-  <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
-</div>
-
-<!-- ▼ デッキ選択画面 -->
-<div id="deckSelectScreen" class="screen">
-  <h2>デッキ選択</h2>
-
-  <h3>プレイヤーのデッキ</h3>
-  <select id="playerDeckSelect"></select>
-
-  <h3>CPUのデッキ</h3>
-  <select id="cpuDeckSelect"></select>
-
-  <div class="title-button" onclick="startBattle()">対戦開始</div>
-  <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
-</div>
-
-<!-- ▼ サーブ/レシーブ選択画面 -->
-<div id="serveChoiceScreen" class="screen">
-  <h2>先攻決定</h2>
-  <div id="diceResult" style="font-size:18px; margin:10px 0; white-space:pre-line;"></div>
-
-  <div id="serveChoiceButtons" style="display:none;">
-    <div class="title-button" onclick="chooseServe('SERVE')">サーブを選ぶ</div>
-    <div class="title-button" onclick="chooseServe('RECEIVE')">レシーブを選ぶ</div>
-  </div>
-
-  <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
-</div>
-
-<!-- ▼ マリガン画面 -->
-<div id="mulliganScreen" class="screen">
-  <h2>マリガン</h2>
-  <p>引き直したいカードをタップしてください（複数可）</p>
-  <div id="mulliganHand"></div>
-  <div class="title-button" onclick="finishMulligan()">決定</div>
-</div>
-
-<!-- ▼ バトル画面 -->
-<div id="battleScreen" class="screen">
-
-  <h2 style="text-align:center;">バトル</h2>
-
-  <!-- ▼ 相手フィールド（180度回転） -->
-  <div class="field opponent">
-
-    <!-- 1段目 -->
-    <div class="area" id="cpuSet">セット</div>
-    <div class="area side" id="cpuSideL">サイド</div>
-    <div class="area center" id="cpuCenter">センター</div>
-    <div class="area side" id="cpuSideR">サイド</div>
-    <div class="area" id="cpuDeck">デッキ</div>
-
-    <!-- 2段目 -->
-    <div class="empty"></div>
-    <div class="area receive" id="cpuReceive">レシーブ</div>
-    <div class="area toss" id="cpuToss">トス</div>
-    <div class="area attack" id="cpuAttack">アタック</div>
-    <div class="area drop" id="cpuDrop">ドロップ</div>
-
-    <!-- 3段目 -->
-    <div class="empty"></div>
-    <div class="empty"></div>
-    <div class="area serve" id="cpuServe">サーブ</div>
-    <div class="area event" id="cpuEvent">イベント</div>
-    <div class="empty"></div>
-
-  </div>
-
-  <!-- ▼ 自分フィールド -->
-  <div class="field player">
-
-    <!-- 1段目 -->
-    <div class="area" id="playerSet">セット</div>
-    <div class="area side" id="playerSideL">サイド</div>
-    <div class="area center" id="playerCenter">センター</div>
-    <div class="area side" id="playerSideR">サイド</div>
-    <div class="area" id="playerDeck">デッキ</div>
-
-    <!-- 2段目 -->
-    <div class="empty"></div>
-    <div class="area receive" id="playerReceive">レシーブ</div>
-    <div class="area toss" id="playerToss">トス</div>
-    <div class="area attack" id="playerAttack">アタック</div>
-    <div class="area drop" id="playerDrop">ドロップ</div>
-
-    <!-- 3段目 -->
-    <div class="empty"></div>
-    <div class="empty"></div>
-    <div class="area serve" id="playerServe">サーブ</div>
-    <div class="area event" id="playerEvent">イベント</div>
-    <div class="empty"></div>
-
-  </div>
-
-  <!-- ▼ 情報パネル -->
-  <div style="background:#222; padding:10px; border-radius:8px; margin:10px 0;">
-    <div>ターン：<span id="turnPlayerLabel">-</span></div>
-    <div>フェイズ：<span id="phaseLabel">-</span></div>
-    <div>サーブ権：<span id="serveOwnerLabel">-</span></div>
-    <div>ロスト数：あなた <span id="lostPlayer">0</span> / CPU <span id="lostCpu">0</span></div>
-    <div>あなたガッツ：<span id="gutsPlayer">0</span> / CPUガッツ：<span id="gutsCpu">0</span></div>
-  </div>
-
-  <!-- ▼ バトルログ -->
-  <div id="battleInfo">バトル開始</div>
-
-  <!-- ▼ 手札 -->
-  <h3>あなたの手札（タップでプレイ / 長押しで詳細）</h3>
-  <div id="playerHand"></div>
-
-  <!-- ▼ ボタン -->
-  <div style="margin-top:10px;">
-    <button onclick="playerDeclareLost()" style="padding:10px; background:#c62828; color:#fff; border:none; border-radius:6px; margin-right:6px;">
-      ロスト宣言
-    </button>
-    <button onclick="showStateDebug()" style="padding:10px; background:#008cff; color:#fff; border:none; border-radius:6px; margin-right:6px;">
-      状態確認
-    </button>
-    <button onclick="endPhase()" style="padding:10px; background:#4caf50; color:#fff; border:none; border-radius:6px;">
-      フェイズエンド
-    </button>
-  </div>
-
-  <div class="title-button" onclick="returnTitle()">タイトルへ戻る</div>
-
-</div>
-
-<!-- ▼ カード詳細ポップアップ -->
-<div id="cardPopup">
-  <div style="background:#222; padding:20px; border-radius:10px; width:80%; max-width:350px; color:#fff;">
-    <h3 id="popupName"></h3>
-    <div id="popupStats"></div>
-    <p id="popupSkill" style="margin-top:10px; white-space:pre-wrap;"></p>
-
-    <button onclick="closeCardPopup()" style="margin-top:15px; width:100%; padding:10px; background:#444; color:#fff; border:none; border-radius:6px;">
-      閉じる
-    </button>
-  </div>
-</div>
-
-<script>
-/* ============================================================
-   カードデータ（簡略）
-   ============================================================ */
-const allCards = [
-  {
-    id: "D01-001",
-    name: "日向翔陽",
-    team: "Karasuno",
-    type: "CHARACTER",
-    grade: "1年",
-    position: "MB",
-    serve: 2, block: 2, receive: 2, toss: 0, attack: 2,
-    skillText: "2ガッツ払えば使える。このキャラのアタックポイントに+2する。",
-    skill: { type: "buffAttack", cost: 2, value: 2 }
-  },
-  {
-    id: "D01-002",
-    name: "影山飛雄",
-    team: "Karasuno",
-    type: "CHARACTER",
-    grade: "1年",
-    position: "S",
-    serve: 1, block: 1, receive: 2, toss: 1, attack: 1,
-    skillText: "2ガッツ払えば使える。このキャラのトスポイントに+2する。",
-    skill: { type: "buffToss", cost: 2, value: 2 }
-  },
-  {
-    id: "D01-005",
-    name: "西谷夕",
-    team: "Karasuno",
-    type: "CHARACTER",
-    grade: "2年",
-    position: "Li",
-    serve: 0, block: 0, receive: 5, toss: 0, attack: 0,
-    skillText: "3ガッツ払えば使える。カード1枚を引き、レシーブ+2。",
-    skill: { type: "drawAndBuffReceive", cost: 3, value: 2 }
-  },
-  {
-    id: "D01-011",
-    name: "バレーは!!!常に上を向くスポーツだ",
-    team: "Karasuno",
-    type: "EVENT",
-    skillText: "カード1枚引き、レシーブ+1。",
-    skill: { type: "eventReceiveBoost" }
-  },
-  {
-    id: "D02-001",
-    name: "孤爪研磨",
-    team: "Nekoma",
-    type: "CHARACTER",
-    grade: "2年",
-    position: "S",
-    serve: 1, block: 2, receive: 1, toss: 1, attack: 0,
-    skillText: "登場トス／2ガッツでトス+1、相手アタック-2。",
-    skill: { type: "tossAndDebuff", cost: 2, tossUp: 1, atkDown: 2 }
-  },
-  {
-    id: "D02-002",
-    name: "黒尾鉄朗",
-    team: "Nekoma",
-    type: "CHARACTER",
-    grade: "3年",
-    position: "MB",
-    serve: 1, block: 3, receive: 1, toss: 0, attack: 2,
-    skillText: "登場ブロック／1ガッツでドシャット5。",
-    skill: { type: "block5", cost: 1 }
-  },
-  {
-    id: "D02-011",
-    name: "手は前っつったでしょノブカツくん",
-    team: "Nekoma",
-    type: "EVENT",
-    skillText: "カード1枚引き、ブロック+1 または レシーブ+1。",
-    skill: { type: "eventBlockOrReceive" }
-  }
-];
-
-/* ============================================================
-   デッキ編成
-   ============================================================ */
-let currentTab = "Karasuno";
-let selectedDeck = [];
-
-function switchTab(team) {
-  currentTab = team;
-  document.getElementById("tabKarasuno").classList.remove("active");
-  document.getElementById("tabNekoma").classList.remove("active");
-  if (team === "Karasuno") {
-    document.getElementById("tabKarasuno").classList.add("active");
-  } else {
-    document.getElementById("tabNekoma").classList.add("active");
-  }
-  renderCardList();
-}
-
-function renderCardList() {
-  const list = document.getElementById("cardList");
-  list.innerHTML = "";
-  allCards
-    .filter(c => c.team === currentTab)
-    .forEach(card => {
-      const count = selectedDeck.filter(x => x.id === card.id).length;
-      const div = document.createElement("div");
-      div.className = "card-item";
-      div.textContent = ${card.id} ${card.name}（${count}枚）;
-      div.onclick = () => addToDeck(card);
-      list.appendChild(div);
-    });
-}
-
-function addToDeck(card) {
-  if (selectedDeck.length >= 40) {
-    alert("デッキは40枚までです");
-    return;
-  }
-  selectedDeck.push(card);
-  selectedDeck.sort((a, b) => a.id.localeCompare(b.id));
-  renderDeckList();
-  renderCardList();
-}
-
-function renderDeckList() {
-  const list = document.getElementById("deckList");
-  list.innerHTML = "";
-  selectedDeck.forEach((card, index) => {
-    const div = document.createElement("div");
-    div.className = "deck-item";
-    div.textContent = ${card.id} ${card.name};
-    div.onclick = () => removeFromDeck(index);
-    list.appendChild(div);
-  });
-  document.getElementById("deckCount").textContent = selectedDeck.length;
-}
-
-function removeFromDeck(index) {
-  selectedDeck.splice(index, 1);
-  renderDeckList();
-  renderCardList();
-}
-
-function saveDeck() {
-  if (selectedDeck.length !== 40) {
-    alert("デッキは40枚ちょうどにしてください");
-    return;
-  }
-  const name = prompt("デッキ名を入力してください");
-  if (!name) return;
-
-  const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
-  decks.push({ name, cards: selectedDeck });
-  localStorage.setItem("babocaDecks", JSON.stringify(decks));
-  alert("保存しました");
-}
-
-/* ============================================================
-   保存デッキ一覧
-   ============================================================ */
-function loadSavedDecks() {
-  const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
-  const list = document.getElementById("savedDeckList");
-  list.innerHTML = "";
-  decks.forEach((deck, index) => {
-    const div = document.createElement("div");
-    div.className = "deck-item";
-    div.textContent = ${deck.name}（${deck.cards.length}枚）;
-
-    const btn = document.createElement("button");
-    btn.textContent = "削除";
-    btn.style.marginLeft = "10px";
-    btn.onclick = () => {
-      const d = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
-      d.splice(index, 1);
-      localStorage.setItem("babocaDecks", JSON.stringify(d));
-      loadSavedDecks();
-    };
-
-    div.appendChild(btn);
-    list.appendChild(div);
-  });
-}
-
-/* ============================================================
-   画面切り替え
-   ============================================================ */
-function showScreen(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-
-function returnTitle() {
-  showScreen("titleScreen");
-}
-
-function openDeckBuilder() {
-  showScreen("deckBuilderScreen");
-  renderCardList();
-  renderDeckList();
-}
-
-function openSavedDecks() {
-  showScreen("savedDeckScreen");
-  loadSavedDecks();
-}
-
-function goDeckSelect() {
-  loadDeckSelectOptions();
-  showScreen("deckSelectScreen");
-}
-
-/* ============================================================
-   デッキ選択 → バトル開始前準備
-   ============================================================ */
-let playerDeck = [];
-let cpuDeck = [];
-let playerDeckStack = [];
-let cpuDeckStack = [];
-let playerHand = [];
-let cpuHand = [];
-
-function loadDeckSelectOptions() {
-  const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
-  const pSel = document.getElementById("playerDeckSelect");
-  const cSel = document.getElementById("cpuDeckSelect");
-  pSel.innerHTML = "";
-  cSel.innerHTML = "";
-
-  decks.forEach((deck, i) => {
-    const op1 = document.createElement("option");
-    op1.value = i;
-    op1.textContent = deck.name;
-    pSel.appendChild(op1);
-
-    const op2 = document.createElement("option");
-    op2.value = i;
-    op2.textContent = deck.name;
-    cSel.appendChild(op2);
-  });
-}
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-function drawCardToHand(side) {
-  if (side === "PLAYER") {
-    if (playerDeckStack.length === 0) return;
-    const card = playerDeckStack.shift();
-    playerHand.push(card);
-  } else {
-    if (cpuDeckStack.length === 0) return;
-    const card = cpuDeckStack.shift();
-    cpuHand.push(card);
-  }
-}
-
-function renderHand() {
-  const handDiv = document.getElementById("playerHand");
-  handDiv.innerHTML = "";
-  playerHand.forEach((card, index) => {
-    const div = document.createElement("div");
-    div.className = "card-item";
-    div.textContent = ${card.id} ${card.name};
-
-    div.onclick = () => playCardFromHand(index);
-    div.oncontextmenu = (e) => {
-      e.preventDefault();
-      openCardPopup(card.id);
-    };
-
-    handDiv.appendChild(div);
-  });
-}
-
-/*
-===========================================================
-   バトルステート
-   ============================================================ */
-let battleState = {
-  turnPlayer: "PLAYER",
-  phase: "START",
-  serveOwner: "PLAYER",
-  lostPlayer: 0,
-  lostCpu: 0,
-  gutsPlayer: 0,
-  gutsCpu: 0
-};
-
-function initBattleState() {
-  battleState = {
-    turnPlayer: "PLAYER",
-    phase: "START",
-    serveOwner: "PLAYER",
-    lostPlayer: 0,
-    lostCpu: 0,
-    gutsPlayer: 0,
-    gutsCpu: 0
-  };
-  updateBattleInfo("ゲーム準備完了 → スタートフェイズ");
-  updateStatePanel();
-}
-
-function updateStatePanel() {
-  document.getElementById("turnPlayerLabel").textContent =
-    battleState.turnPlayer === "PLAYER" ? "あなた" : "CPU";
-
-  document.getElementById("phaseLabel").textContent = battleState.phase;
-  document.getElementById("serveOwnerLabel").textContent =
-    battleState.serveOwner === "PLAYER" ? "あなた" : "CPU";
-
-  document.getElementById("lostPlayer").textContent = battleState.lostPlayer;
-  document.getElementById("lostCpu").textContent = battleState.lostCpu;
-  document.getElementById("gutsPlayer").textContent = battleState.gutsPlayer;
-  document.getElementById("gutsCpu").textContent = battleState.gutsCpu;
-}
-
-function updateBattleInfo(text) {
-  document.getElementById("battleInfo").textContent = text;
-}
-
-/* ============================================================
-   ゲーム開始：デッキ選択 → 準備
-   ============================================================ */
-function startBattle() {
-  const decks = JSON.parse(localStorage.getItem("babocaDecks") || "[]");
-  const pIndex = document.getElementById("playerDeckSelect").value;
-  const cIndex = document.getElementById("cpuDeckSelect").value;
-  if (pIndex === "" || cIndex === "") {
-    alert("デッキを選択してください");
-    return;
-  }
-
-  playerDeck = JSON.parse(JSON.stringify(decks[pIndex].cards));
-  cpuDeck = JSON.parse(JSON.stringify(decks[cIndex].cards));
-
-  playerDeckStack = shuffle([...playerDeck]);
-  cpuDeckStack = shuffle([...cpuDeck]);
-
-  playerHand = [];
-  cpuHand = [];
-
-  for (let i = 0; i < 6; i++) {
-    drawCardToHand("PLAYER");
-    drawCardToHand("CPU");
-  }
-
-  initBattleState();
-  startPreGame();
-}
-
-/* ============================================================
-   ゲーム開始前：サイコロ → サーブ/レシーブ選択
-   ============================================================ */
-function startPreGame() {
-  showScreen("serveChoiceScreen");
-
-  const playerDice = Math.floor(Math.random() * 6) + 1;
-  const cpuDice = Math.floor(Math.random() * 6) + 1;
-
-  let text = あなたの出目：${playerDice} / CPUの出目：${cpuDice}\n;
-  if (playerDice >= cpuDice) {
-    text += "あなたが先攻です。サーブかレシーブを選んでください。";
-    document.getElementById("serveChoiceButtons").style.display = "block";
-    battleState.turnPlayer = "PLAYER";
-  } else {
-    text += "CPUが先攻です。";
-    document.getElementById("serveChoiceButtons").style.display = "none";
-    battleState.turnPlayer = "CPU";
-    cpuChooseServe();
-  }
-  document.getElementById("diceResult").textContent = text;
-}
-
-function chooseServe(choice) {
-  battleState.serveOwner = "PLAYER";
-  battleState.playerChoice = choice;
-  startMulligan();
-}
-
-function cpuChooseServe() {
-  const choice = Math.random() < 0.5 ? "SERVE" : "RECEIVE";
-  battleState.serveOwner = "CPU";
-  battleState.cpuChoice = choice;
-  startMulligan();
-}
-
-/*
-==========================================================
-   マリガン
-   ============================================================ */
-let mulliganSelected = [];
-
-function startMulligan() {
-  showScreen("mulliganScreen");
-  mulliganSelected = [];
-
-  const area = document.getElementById("mulliganHand");
-  area.innerHTML = "";
-
-  playerHand.forEach((card, i) => {
-    const div = document.createElement("div");
-    div.className = "card-item";
-    div.textContent = ${card.id} ${card.name};
-    div.onclick = () => {
-      if (mulliganSelected.includes(i)) {
-        mulliganSelected = mulliganSelected.filter(x => x !== i);
-        div.style.background = "#444";
-      } else {
-        mulliganSelected.push(i);
-        div.style.background = "#008cff";
-      }
-    };
-    area.appendChild(div);
-  });
-}
-
-function finishMulligan() {
-  const returnCards = mulliganSelected.map(i => playerHand[i]);
-  returnCards.forEach(c => playerDeckStack.push(c));
-  playerHand = playerHand.filter((_, i) => !mulliganSelected.includes(i));
-  playerDeckStack = shuffle(playerDeckStack);
-  for (let i = 0; i < returnCards.length; i++) {
-    drawCardToHand("PLAYER");
-  }
-
-  placeInitialSetCards();
-  startBattlePhase();
-}
-
-/* ============================================================
-   初期セットカード
-   ============================================================ */
-function placeInitialSetCards() {
-  const pSet = document.getElementById("playerSet");
-  const cSet = document.getElementById("cpuSet");
-
-  const pCards = [playerDeckStack.shift(), playerDeckStack.shift()];
-  const cCards = [cpuDeckStack.shift(), cpuDeckStack.shift()];
-
-  pSet.dataset.setCards = JSON.stringify(pCards);
-  cSet.dataset.setCards = JSON.stringify(cCards);
-
-  pSet.textContent = "セット（2）";
-  cSet.textContent = "セット（2）";
-}
-
-/* ============================================================
-   バトル開始（START フェイズへ）
-   ============================================================ */
-function startBattlePhase() {
-  showScreen("battleScreen");
-  battleState.phase = "START";
-  updateBattleInfo("ゲーム開始：スタートフェイズ");
-  updateStatePanel();
-  clearField();
-  renderHand();
-}
-
-/* ============================================================
-   フィールド初期化
-   ============================================================ */
-function clearField() {
-  const ids = [
-    "cpuSideL","cpuCenter","cpuSideR","cpuReceive","cpuToss","cpuAttack","cpuDrop","cpuServe","cpuEvent",
-    "playerSideL","playerCenter","playerSideR","playerReceive","playerToss","playerAttack","playerDrop","playerServe","playerEvent"
-  ];
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.textContent = el.textContent.split(" ")[0];
-      delete el.dataset.cardId;
-    }
-  });
-}
-
-/* ============================================================
-   手札からサーブを出す
-   ============================================================ */
-function playCardFromHand(index) {
-  const card = playerHand[index];
-
-  if (battleState.phase !== "START" && battleState.phase !== "SERVE") {
-    alert("今はサーブを出せません");
-    return;
-  }
-
-  const serveSlot = document.getElementById("playerServe");
-  if (serveSlot.dataset.cardId) {
-    alert("サーブゾーンにはすでにカードがあります");
-    return;
-  }
-
-  serveSlot.textContent = "サーブ " + card.name;
-  serveSlot.dataset.cardId = card.id;
-
-  playerHand.splice(index, 1);
-  renderHand();
-
-  updateBattleInfo(${card.name} をサーブに登場！);
-  battleState.phase = "SERVE";
-  updateStatePanel();
-
-  cpuAutoServe();
-}
-
-/* ============================================================
-   CPU サーブ
-   ============================================================ */
-function cpuAutoServe() {
-  const serveSlot = document.getElementById("cpuServe");
-  if (serveSlot.dataset.cardId) return;
-  if (cpuHand.length === 0) drawCardToHand("CPU");
-  const card = cpuHand.shift();
-  if (!card) return;
-  serveSlot.textContent = "サーブ " + card.name;
-  serveSlot.dataset.cardId = card.id;
-}
-
-/* ============================================================
-   フェイズ進行エンジン
-   ============================================================ */
-function endPhase() {
-  proceedPhase();
-}
-
-function proceedPhase() {
-  if (checkGameEnd()) return;
-
-  switch (battleState.phase) {
-    case "START":
-      battleState.phase = "SERVE";
-      updateBattleInfo("サーブフェイズ：サーブを出してください");
-      break;
-
-    case "SERVE":
-      battleState.phase = "RECEIVE";
-      updateBattleInfo("レシーブフェイズ");
-      autoReceive();
-      break;
-
-    case "RECEIVE":
-      battleState.phase = "TOSS";
-      updateBattleInfo("トスフェイズ");
-      autoToss();
-      break;
-
-    case "TOSS":
-      battleState.phase = "ATTACK";
-      updateBattleInfo("アタックフェイズ");
-      autoAttack();
-      break;
-
-    case "ATTACK":
-      battleState.phase = "BLOCK";
-      updateBattleInfo("ブロックフェイズ（簡易処理）");
-      autoBlock();
-      break;
-
-    case "BLOCK":
-      battleState.phase = "RESULT";
-      resolveResult();
-      break;
-
-    case "RESULT":
-      startNextRally();
-      break;
-  }
-  updateStatePanel();
-}
-
-/* ============================================================
-   ステータス計算
-   ============================================================ */
-function getCardBySlot(id) {
-  const el = document.getElementById(id);
-  if (!el || !el.dataset.cardId) return null;
-  return allCards.find(c => c.id === el.dataset.cardId) || null;
-}
-
-function autoReceive() {
-  const pServe = getCardBySlot("playerServe");
-  const cServe = getCardBySlot("cpuServe");
-
-  const pReceive = pServe ? pServe.receive : 0;
-  const cReceive = cServe ? cServe.receive : 0;
-
-  document.getElementById("playerReceive").textContent = "レシーブ " + pReceive;
-  document.getElementById("cpuReceive").textContent = "レシーブ " + cReceive;
-}
-
-function autoToss() {
-  const pServe = getCardBySlot("playerServe");
-  const cServe = getCardBySlot("cpuServe");
-
-  const pToss = pServe ? pServe.toss : 0;
-  const cToss = cServe ? cServe.toss : 0;
-
-  document.getElementById("playerToss").textContent = "トス " + pToss;
-  document.getElementById("cpuToss").textContent = "トス " + cToss;
-}
-
-function autoAttack() {
-  const pServe = getCardBySlot("playerServe");
-  const cServe = getCardBySlot("cpuServe");
-
-  let pAtk = pServe ? pServe.attack : 0;
-  let cAtk = cServe ? cServe.attack : 0;
-
-  if (pServe && pServe.skill && pServe.skill.type === "buffAttack" && battleState.gutsPlayer >= pServe.skill.cost) {
-    pAtk += pServe.skill.value;
-    battleState.gutsPlayer -= pServe.skill.cost;
-  }
-  if (cServe && cServe.skill && cServe.skill.type === "buffAttack" && battleState.gutsCpu >= cServe.skill.cost) {
-    cAtk += cServe.skill.value;
-    battleState.gutsCpu -= cServe.skill.cost;
-  }
-
-  document.getElementById("playerAttack").textContent = "アタック " + pAtk;
-  document.getElementById("cpuAttack").textContent = "アタック " + cAtk;
-}
-
-function autoBlock() {
-  // 簡易：ブロック値は0扱い（将来拡張用）
-}
-
-/*
-===========================================================
-   結果判定 → ロスト・ガッツ・SET処理
-   ============================================================ */
-function resolveResult() {
-  const pText = document.getElementById("playerAttack").textContent;
-  const cText = document.getElementById("cpuAttack").textContent;
-
-  const pAtk = parseInt(pText.replace(/[^0-9]/g, "")) || 0;
-  const cAtk = parseInt(cText.replace(/[^0-9]/g, "")) || 0;
-
-  if (pAtk > cAtk) {
-    battleState.lostCpu++;
-    battleState.gutsPlayer++;
-    updateBattleInfo(あなたのポイント！ CPUがロスト（CPUロスト：${battleState.lostCpu}）);
-    cpuSetToHand();
-  } else if (pAtk < cAtk) {
-    battleState.lostPlayer++;
-    battleState.gutsCpu++;
-    updateBattleInfo(CPUのポイント！ あなたがロスト（あなたロスト：${battleState.lostPlayer}）);
-    playerSetToHand();
-  } else {
-    updateBattleInfo("引き分け：ポイントなし");
-  }
-
-  battleState.phase = "RESULT";
-  updateStatePanel();
-  checkGameEnd();
-}
-
-function playerSetToHand() {
-  const pSet = document.getElementById("playerSet");
-  if (!pSet.dataset.setCards) return;
-  let cards = JSON.parse(pSet.dataset.setCards);
-  if (cards.length === 0) return;
-  const card = cards.shift();
-  playerHand.push(card);
-  renderHand();
-  pSet.dataset.setCards = JSON.stringify(cards);
-  pSet.textContent = セット（${cards.length}）;
-}
-
-function cpuSetToHand() {
-  const cSet = document.getElementById("cpuSet");
-  if (!cSet.dataset.setCards) return;
-  let cards = JSON.parse(cSet.dataset.setCards);
-  if (cards.length === 0) return;
-  const card = cards.shift();
-  cpuHand.push(card);
-  cSet.dataset.setCards = JSON.stringify(cards);
-  cSet.textContent = セット（${cards.length}）;
-}
-
-function checkGameEnd() {
-  const pSet = document.getElementById("playerSet");
-  const cSet = document.getElementById("cpuSet");
-  const pSetCount = pSet.dataset.setCards ? JSON.parse(pSet.dataset.setCards).length : 0;
-  const cSetCount = cSet.dataset.setCards ? JSON.parse(cSet.dataset.setCards).length : 0;
-
-  if (battleState.lostPlayer >= 5 || pSetCount === 0) {
-    updateBattleInfo("あなたのロスト or セット切れで CPU の勝利！");
-    return true;
-  }
-  if (battleState.lostCpu >= 5 || cSetCount === 0) {
-    updateBattleInfo("CPUのロスト or セット切れで あなたの勝利！");
-    return true;
-  }
-  return false;
-}
-
-function startNextRally() {
-  clearField();
-  drawCardToHand("PLAYER");
-  drawCardToHand("CPU");
-  renderHand();
-
-  battleState.phase = "START";
-  battleState.turnPlayer = battleState.turnPlayer === "PLAYER" ? "CPU" : "PLAYER";
-  battleState.serveOwner = battleState.turnPlayer;
-  updateBattleInfo("次のラリー開始：スタートフェイズ");
-  updateStatePanel();
-}
-
-/* ============================================================
-   ロスト宣言・デバッグ
-   ============================================================ */
-function playerDeclareLost() {
-  battleState.lostPlayer++;
-  updateBattleInfo("あなたがロストを宣言！");
-  updateStatePanel();
-  checkGameEnd();
-}
-
-function showStateDebug() {
-  alert(JSON.stringify(battleState, null, 2));
-}
-
-/* ============================================================
-   カード詳細ポップアップ
-   ============================================================ */
-function openCardPopup(cardId) {
-  const card = allCards.find(c => c.id === cardId);
-  if (!card) return;
-
-  document.getElementById("popupName").textContent = ${card.id} ${card.name};
-
-  if (card.type === "CHARACTER") {
-    document.getElementById("popupStats").innerHTML = `
-      <div>Serve: ${card.serve}</div>
-      <div>Block: ${card.block}</div>
-      <div>Receive: ${card.receive}</div>
-      <div>Toss: ${card.toss}</div>
-      <div>Attack: ${card.attack}</div>
-    `;
-  } else {
-    document.getElementById("popupStats").innerHTML = <div>イベントカード</div>;
-  }
-
-  document.getElementById("popupSkill").textContent =
-    card.skillText ? card.skillText : "（効果なし）";
-
-  document.getElementById("cardPopup").style.display = "flex";
-}
-
-function closeCardPopup() {
-  document.getElementById("cardPopup").style.display = "none";
-}
-
-/* ============================================================
-   初期化
-   ============================================================ */
-window.addEventListener("load", () => {
-  showScreen("titleScreen");
-});
-</script>
 
 </body>
 </html>
-`
+
