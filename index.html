@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>バボカBREAK - 5x3 Grid Layout</title>
+    <title>バボカBREAK - Battle Engine</title>
     <style>
         :root {
             --court-color: #e67e22;
@@ -16,19 +16,18 @@
         }
         #game-screen { display: flex; flex-direction: column; height: 100vh; }
 
-        /* ヘッダー */
+        /* ヘッダー：対戦情報を強調 */
         .header {
-            height: 10%; background: #000; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; border-bottom: 2px solid #333;
+            height: 12%; background: #000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; border-bottom: 2px solid #f1c40f;
         }
-        .phase-name { color: #f1c40f; font-weight: bold; font-size: 14px; }
+        .phase-name { color: #f1c40f; font-weight: bold; font-size: 14px; margin-bottom: 2px; }
+        .battle-info { font-size: 16px; font-weight: bold; color: #fff; text-shadow: 0 0 5px #e74c3c; }
 
         /* 5x3 コートレイアウト */
         .court-grid {
             flex: 1; background: var(--court-color);
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            grid-template-rows: repeat(3, 1fr);
+            display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(3, 1fr);
             gap: 4px; padding: 6px; border: 3px solid #fff; margin: 4px; border-radius: 8px;
         }
         .area-slot {
@@ -37,10 +36,16 @@
             display: flex; justify-content: center; align-items: flex-start; padding-top: 15px;
         }
         .area-slot.empty { border: none; background: none; }
+        
+        /* ラベルと数値表示 */
         .label {
-            position: absolute; top: 0; left: 0; right: 0; background: rgba(0,0,0,0.7);
+            position: absolute; top: 0; left: 0; right: 0; background: rgba(0,0,0,0.8);
             font-size: 7px; text-align: center; padding: 1px 0; border-radius: 4px 4px 0 0;
-            white-space: nowrap;
+            z-index: 50;
+        }
+        .point-badge {
+            position: absolute; bottom: 2px; right: 2px; background: #f1c40f; color: #000;
+            font-size: 11px; font-weight: bold; padding: 1px 4px; border-radius: 3px; z-index: 60;
         }
 
         /* カード描画 */
@@ -48,10 +53,10 @@
         .card {
             width: var(--card-width); height: var(--card-height);
             background: #fff; color: #333; border-radius: 4px; border: 1px solid #666;
-            position: absolute; display: flex; align-items: center; justify-content: center;
-            font-size: 9px; font-weight: bold; text-align: center; box-sizing: border-box;
+            position: absolute; display: flex; flex-direction: column; align-items: center; 
+            justify-content: center; font-size: 8px; font-weight: bold; box-sizing: border-box;
         }
-        .card.character { z-index: 20; border: 2px solid #2980b9; box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+        .card.character { z-index: 20; border: 2px solid #2980b9; }
         .card.guts { z-index: 5; filter: brightness(0.6); }
 
         /* UIパネル */
@@ -59,7 +64,7 @@
         .hand-scroll { flex: 1; display: flex; gap: 6px; overflow-x: auto; align-items: center; margin-bottom: 4px; }
         .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         
-        button { padding: 10px; border: none; border-radius: 6px; font-weight: bold; color: white; font-size: 11px; }
+        button { padding: 12px; border: none; border-radius: 6px; font-weight: bold; color: white; font-size: 12px; }
         .btn-main { background: #27ae60; grid-column: span 2; }
         .btn-choice { background: #8e44ad; }
         .btn-end { background: #d35400; grid-column: span 2; }
@@ -76,25 +81,26 @@
 
 <div id="game-screen">
     <div class="header">
-        <div id="phase-label" class="phase-name">LOADING...</div>
+        <div id="phase-label" class="phase-name">バボカ！</div>
+        <div id="battle-display" class="battle-info">READY?</div>
     </div>
 
     <div class="court-grid">
         <div class="area-slot"><div class="label">SET</div><div class="stack" id="stk-set"></div></div>
-        <div class="area-slot"><div class="label">SIDE(L)</div><div class="stack" id="stk-blockL"></div></div>
-        <div class="area-slot"><div class="label">CENTER</div><div class="stack" id="stk-blockC"></div></div>
-        <div class="area-slot"><div class="label">SIDE(R)</div><div class="stack" id="stk-blockR"></div></div>
+        <div class="area-slot"><div class="label">SIDE(L)</div><div class="stack" id="stk-blockL"></div><div class="point-badge" id="val-blockL">0</div></div>
+        <div class="area-slot"><div class="label">CENTER</div><div class="stack" id="stk-blockC"></div><div class="point-badge" id="val-blockC">0</div></div>
+        <div class="area-slot"><div class="label">SIDE(R)</div><div class="stack" id="stk-blockR"></div><div class="point-badge" id="val-blockR">0</div></div>
         <div class="area-slot"><div class="label">DECK</div><div class="stack" id="stk-deck"></div></div>
 
         <div class="area-slot empty"></div>
-        <div class="area-slot"><div class="label">RECEIVE</div><div class="stack" id="stk-receive"></div></div>
-        <div class="area-slot"><div class="label">TOSS</div><div class="stack" id="stk-toss"></div></div>
-        <div class="area-slot"><div class="label">ATTACK</div><div class="stack" id="stk-attack"></div></div>
+        <div class="area-slot"><div class="label">RECEIVE</div><div class="stack" id="stk-receive"></div><div class="point-badge" id="val-receive">0</div></div>
+        <div class="area-slot"><div class="label">TOSS</div><div class="stack" id="stk-toss"></div><div class="point-badge" id="val-toss">0</div></div>
+        <div class="area-slot"><div class="label">ATTACK</div><div class="stack" id="stk-attack"></div><div class="point-badge" id="val-attack">0</div></div>
         <div class="area-slot"><div class="label">DROP</div><div class="stack" id="stk-drop"></div></div>
 
         <div class="area-slot empty"></div>
         <div class="area-slot empty"></div>
-        <div class="area-slot"><div class="label">SERVE</div><div class="stack" id="stk-serve"></div></div>
+        <div class="area-slot"><div class="label">SERVE</div><div class="stack" id="stk-serve"></div><div class="point-badge" id="val-serve">0</div></div>
         <div class="area-slot"><div class="label">EVENT</div><div class="stack" id="stk-event"></div></div>
         <div class="area-slot empty"></div>
     </div>
@@ -111,10 +117,19 @@
 </div>
 
 <script>
+    const CHAR_DATABASE = {
+        "バランス": { S:2, R:3, T:3, A:3, B:2 },
+        "砲弾アタッカー": { S:3, R:1, T:1, A:5, B:1 },
+        "精密セッター": { S:2, R:2, T:5, A:1, B:1 },
+        "守護神": { S:1, R:6, T:1, A:1, B:1 },
+        "鉄壁中央": { S:1, R:2, T:1, A:2, B:5 }
+    };
+
     let state = {
         deck: [], hand: [], set: [], drop: [],
         areas: { serve:[], receive:[], toss:[], attack:[], blockL:[], blockC:[], blockR:[], event:[] },
-        phase: "WAITING"
+        phase: "WAITING",
+        opponentPower: 4 // 相手の攻撃力（仮：本来は相手のターンで決定）
     };
 
     const PHASES = {
@@ -124,7 +139,12 @@
     };
 
     function init() {
-        state.deck = Array.from({length:40}, (_, i) => `選手${i+1}`).sort(()=>Math.random()-0.5);
+        const types = Object.keys(CHAR_DATABASE);
+        state.deck = Array.from({length:40}, (_, i) => {
+            const type = types[i % types.length];
+            return { id: i, name: type + (Math.floor(i/5)+1), ...CHAR_DATABASE[type] };
+        }).sort(()=>Math.random()-0.5);
+
         state.hand = []; state.set = []; state.drop = [];
         Object.keys(state.areas).forEach(k => state.areas[k] = []);
         for(let i=0; i<6; i++) draw();
@@ -135,28 +155,50 @@
 
     function draw() {
         if(state.deck.length > 0) state.hand.push(state.deck.pop());
-        else { alert("デッキ切れ！敗北。"); location.reload(); }
+        else { alert("デッキ切れ！"); location.reload(); }
     }
 
     function movePhase(p) {
         state.phase = p;
-        if(p === "RECEIVE") draw(); // レシーブ選択時の1枚ドロー
+        if(p === "RECEIVE") draw(); 
         render();
     }
 
+    // オフェンス合計値を算出
+    function getOffensePower() {
+        if (state.phase === "SERVE") return state.areas.serve[0]?.S || 0;
+        const t = state.areas.toss[0]?.T || 0;
+        const a = state.areas.attack[0]?.A || 0;
+        return t + a;
+    }
+
+    // ディフェンス合計値を算出
+    function getDefensePower() {
+        if (state.phase === "RECEIVE") return state.areas.receive[0]?.R || 0;
+        if (state.phase === "BLOCK") {
+            return (state.areas.blockL[0]?.B || 0) + (state.areas.blockC[0]?.B || 0) + (state.areas.blockR[0]?.B || 0);
+        }
+        return 0;
+    }
+
     function executeEnd() {
-        // イベントエリアのカードをドロップへ
+        // 次のターンの相手の攻撃力をランダムに設定（シミュレーション用）
+        state.opponentPower = Math.floor(Math.random() * 5) + 3;
         while(state.areas.event.length > 0) state.drop.push(state.areas.event.shift());
         movePhase("START");
     }
 
     function resolveBlock() {
+        const dp = getDefensePower();
+        if(dp < state.opponentPower) return alert("ブロックを抜かれました！");
+        
         ['blockL','blockR'].forEach(a => { if(state.areas[a].length > 0) state.drop.push(state.areas[a].shift()); });
+        alert("ブロック成功！相手に返す打点は0ポイントになります。");
         movePhase("END");
     }
 
     function lost() {
-        if(state.set.length === 0) return alert("セットなし！敗北。");
+        if(state.set.length === 0) return alert("敗北...");
         state.hand.push(state.set.pop());
         while(state.hand.length < 6) draw();
         Object.keys(state.areas).forEach(k => {
@@ -169,10 +211,7 @@
         const modal = document.getElementById('modal');
         const btns = document.getElementById('modal-btns');
         const p = state.phase;
-        let targets = [];
-
-        // 全フェイズ共通でイベントエリアには置ける
-        targets.push({n:'EVENT', k:'event'});
+        let targets = [{n:'EVENT', k:'event'}];
 
         if(p === "SERVE") targets.push({n:'SERVE', k:'serve'});
         else if(p === "RECEIVE") targets.push({n:'RECEIVE', k:'receive'});
@@ -188,12 +227,9 @@
             const b = document.createElement('button');
             b.innerText = t.n;
             b.onclick = () => {
-                const name = state.hand[idx];
-                const activeOnCourt = Object.keys(state.areas)
-                    .filter(k => k !== 'event') // イベントエリア同士は同名可（ルールにより調整可）
-                    .map(k => state.areas[k][0]).filter(Boolean);
-                
-                if(t.k !== 'event' && activeOnCourt.includes(name)) return alert("同名キャラは登場不可！");
+                const card = state.hand[idx];
+                const activeOnCourt = Object.keys(state.areas).filter(k => k !== 'event').map(k => state.areas[k][0]).filter(Boolean);
+                if(t.k !== 'event' && activeOnCourt.some(c => c.name === card.name)) return alert("同名キャラは登場不可！");
                 
                 state.areas[t.k].unshift(state.hand.splice(idx,1)[0]);
                 modal.style.display = 'none';
@@ -205,47 +241,79 @@
 
     function render() {
         document.getElementById('phase-label').innerText = PHASES[state.phase];
+        
+        // バトル表示の更新
+        const battleDisplay = document.getElementById('battle-display');
+        const op = getOffensePower();
+        const dp = getDefensePower();
 
+        if (state.phase === "START" || state.phase === "RECEIVE" || state.phase === "BLOCK") {
+            battleDisplay.innerHTML = `敵打点: ${state.opponentPower} VS 守備力: ${dp}`;
+            battleDisplay.style.color = (dp >= state.opponentPower) ? "#2ecc71" : "#e74c3c";
+        } else {
+            battleDisplay.innerHTML = `自打点: ${op}`;
+            battleDisplay.style.color = "#f1c40f";
+        }
+
+        // 手札表示
         const handEl = document.getElementById('hand-list');
         handEl.innerHTML = '';
-        state.hand.forEach((n, i) => {
+        state.hand.forEach((c, i) => {
             const d = document.createElement('div');
-            d.className = 'card'; d.innerText = n;
+            d.className = 'card';
+            d.innerHTML = `<div>${c.name}</div><div style="font-size:7px; color:#e67e22; margin-top:2px;">S:${c.S} R:${c.R} T:${c.T} A:${c.A} B:${c.B}</div>`;
             d.onclick = () => openSelect(i);
             handEl.appendChild(d);
         });
 
+        // スタック描画
         const drawStk = (id, arr, isFaceDown=false) => {
             const el = document.getElementById(id); el.innerHTML = '';
-            arr.forEach((n, i) => {
-                const c = document.createElement('div');
-                c.className = 'card ' + (i === 0 ? 'character' : 'guts');
-                c.style.zIndex = 100 - i;
-                if(i > 0) c.style.transform = `translateY(${i * 3}px)`;
-                c.innerText = isFaceDown ? "VB" : n;
-                el.appendChild(c);
+            arr.forEach((c, i) => {
+                const div = document.createElement('div');
+                div.className = 'card ' + (i === 0 ? 'character' : 'guts');
+                div.style.zIndex = 100 - i;
+                if(i > 0) div.style.transform = `translateY(${i * 3}px)`;
+                div.innerHTML = isFaceDown ? "VB" : `<div>${c.name}</div>`;
+                el.appendChild(div);
             });
+            const badge = document.getElementById('val-' + id.replace('stk-', ''));
+            if(badge) {
+                const k = id.replace('stk-', '');
+                const char = arr[0];
+                let val = 0;
+                if(char) {
+                    if(k === 'serve') val = char.S;
+                    if(k === 'receive') val = char.R;
+                    if(k === 'toss') val = char.T;
+                    if(k === 'attack') val = char.A;
+                    if(k === 'blockL' || k === 'blockC' || k === 'blockR') val = char.B;
+                }
+                badge.innerText = val;
+            }
         };
 
-        // 各スロット描画
         Object.keys(state.areas).forEach(k => drawStk('stk-' + k, state.areas[k]));
         drawStk('stk-set', state.set, true);
         drawStk('stk-deck', state.deck, true);
         drawStk('stk-drop', state.drop);
 
+        // UIボタン
         const btnEl = document.getElementById('ui-btns');
         btnEl.innerHTML = '';
         const p = state.phase;
         if(p === "WAITING") btnEl.innerHTML = '<button class="btn-main" onclick="init()">ゲーム開始</button>';
-        else if(p === "SERVE") btnEl.innerHTML = '<button class="btn-end" onclick="movePhase(\'END\')">サーブ完了 → エンドへ</button>';
-        else if(p === "START") btnEl.innerHTML = '<button class="btn-choice" onclick="movePhase(\'RECEIVE\')">レシーブを選択</button><button class="btn-choice" onclick="movePhase(\'BLOCK\')">ブロックを選択</button>';
-        else if(p === "RECEIVE") btnEl.innerHTML = '<button class="btn-end" onclick="movePhase(\'TOSS\')">レシーブ完了 → トスへ</button>';
-        else if(p === "TOSS") btnEl.innerHTML = '<button class="btn-end" onclick="movePhase(\'ATTACK\')">トス完了 → アタックへ</button>';
-        else if(p === "ATTACK") btnEl.innerHTML = '<button class="btn-end" onclick="movePhase(\'END\')">アタック完了 → エンドへ</button>';
-        else if(p === "BLOCK") btnEl.innerHTML = '<button class="btn-end" onclick="resolveBlock()">ブロック成功！</button>';
+        else if(p === "SERVE") btnEl.innerHTML = '<button class="btn-end" onclick="movePhase(\'END\')">サーブ完了</button>';
+        else if(p === "START") btnEl.innerHTML = '<button class="btn-choice" onclick="movePhase(\'RECEIVE\')">レシーブ</button><button class="btn-choice" onclick="movePhase(\'BLOCK\')">ブロック</button>';
+        else if(p === "RECEIVE") {
+            const canNext = getDefensePower() >= state.opponentPower;
+            btnEl.innerHTML = `<button class="btn-end" ${canNext ? "" : "disabled style='opacity:0.5'"} onclick="movePhase('TOSS')">トスへ (レシーブ${canNext?'成功':'不足'})</button>`;
+        } else if(p === "TOSS") btnEl.innerHTML = '<button class="btn-end" onclick="movePhase(\'ATTACK\')">アタックへ</button>';
+        else if(p === "ATTACK") btnEl.innerHTML = '<button class="btn-end" onclick="movePhase(\'END\')">アタック完了 (合計:${getOffensePower()})</button>';
+        else if(p === "BLOCK") btnEl.innerHTML = '<button class="btn-end" onclick="resolveBlock()">ブロック成功判定</button>';
         else if(p === "END") btnEl.innerHTML = '<button class="btn-main" onclick="executeEnd()">ボールを打ち込む</button>';
         
-        if(p !== "WAITING") btnEl.innerHTML += '<button class="btn-lost" onclick="lost()">失点(ロスト)宣言</button>';
+        if(p !== "WAITING") btnEl.innerHTML += '<button class="btn-lost" onclick="lost()">失点(ロスト)</button>';
     }
 
     render();
