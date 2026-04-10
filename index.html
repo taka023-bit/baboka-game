@@ -3,236 +3,213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>バボカBREAK Web - Definitive Edition</title>
+    <title>バボカBREAK Web - Full Automation</title>
     <style>
         :root {
             --court-color: #f39c12;
-            --card-width: 65px;
-            --card-height: 95px;
+            --card-width: 60px;
+            --card-height: 85px;
         }
         body {
             margin: 0; padding: 0;
             background-color: #2c3e50;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: sans-serif;
             overflow: hidden; color: white; user-select: none;
         }
         #game-screen { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
 
-        /* ヘッダー情報 */
+        /* ステータスバー */
         .status-bar {
-            height: 10%; background: rgba(0,0,0,0.6);
+            height: 12%; background: rgba(0,0,0,0.7);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            font-size: 11px; border-bottom: 2px solid #ecf0f1;
+            border-bottom: 2px solid #ecf0f1;
         }
-        .stats-row { display: flex; gap: 15px; margin-top: 4px; }
+        .phase-name { font-weight: bold; color: #f1c40f; font-size: 16px; text-shadow: 1px 1px 2px #000; }
+        .stats { font-size: 11px; margin-top: 4px; display: flex; gap: 10px; }
 
-        /* メインコート */
+        /* コートエリア */
         .court {
             flex: 1; background-color: var(--court-color);
-            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1.2fr 1fr;
-            gap: 8px; padding: 10px;
+            display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr;
+            gap: 6px; padding: 10px;
         }
         .area-slot {
-            border: 2px solid rgba(255,255,255,0.5); border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.4); border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-            background: rgba(255,255,255,0.1); position: relative; padding-top: 20px;
+            background: rgba(255,255,255,0.1); position: relative; padding-top: 15px;
         }
-        .area-label { font-size: 9px; position: absolute; top: 2px; background: #000; padding: 1px 4px; z-index: 50; }
+        .area-label { font-size: 8px; position: absolute; top: 1px; background: #000; padding: 1px 3px; z-index: 50; }
 
-        .block-grid { display: flex; gap: 4px; justify-content: center; width: 100%; }
-
-        /* カード描画 */
+        /* カードとスタック */
         .card-stack { position: relative; width: var(--card-width); height: var(--card-height); }
         .card {
             width: var(--card-width); height: var(--card-height);
-            background: #fff; color: #333; border-radius: 5px;
-            position: absolute; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: bold; border: 1px solid #999;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-align: center; padding: 2px; box-sizing: border-box;
+            background: #fff; color: #333; border-radius: 4px;
+            position: absolute; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: bold; border: 1px solid #999;
+            transition: all 0.3s ease; text-align: center;
         }
         .card.top { z-index: 10; border: 2px solid #2980b9; }
-        .card.guts { transform: translateY(10px); filter: brightness(0.7); z-index: 5 !important; }
-        .card.selected { border: 3px solid #e74c3c; transform: translateY(-15px); z-index: 100; }
+        .card.guts { transform: translateY(8px); filter: brightness(0.7); z-index: 5 !important; }
 
         /* 下部UI */
-        .player-ui { height: 38%; background: #34495e; display: flex; flex-direction: column; padding: 5px; }
-        .hand-container { flex: 1; display: flex; overflow-x: auto; gap: 8px; align-items: center; padding: 5px; }
-        
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 5px; }
+        .player-ui { height: 35%; background: #34495e; display: flex; flex-direction: column; padding: 5px; }
+        .hand-container { flex: 1; display: flex; overflow-x: auto; gap: 5px; align-items: center; padding: 5px; }
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         
         button {
-            padding: 10px; border-radius: 8px; border: none;
-            font-weight: bold; color: white; font-size: 11px;
-            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+            padding: 12px; border-radius: 8px; border: none;
+            font-weight: bold; color: white; font-size: 12px;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.3);
         }
-        button:active { transform: translateY(2px); box-shadow: none; }
+        .btn-full { grid-column: span 2; }
+        .btn-start { background: #2ecc71; }
+        .btn-choice { background: #9b59b6; }
+        .btn-end { background: #e67e22; }
+        .btn-lost { background: #e74c3c; grid-column: span 2; margin-top: 4px; padding: 8px; }
 
-        .btn-receive { background: #9b59b6; grid-column: span 2; font-size: 14px; }
-        .btn-atk-done { background: #e67e22; }
-        .btn-blk-done { background: #3498db; }
-        .btn-lost { background: #e74c3c; grid-column: span 2; margin-top: 5px; }
-
-        /* モーダル */
         #modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 1000;
-            justify-content: center; align-items: center; flex-direction: column;
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 1000; flex-direction: column; justify-content: center; align-items: center;
         }
-        #modal-content { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 80%; }
+        #modal-content { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 85%; }
     </style>
 </head>
 <body>
 
 <div id="game-screen">
     <div class="status-bar">
-        <div id="phase-display" style="font-weight: bold; color: #f1c40f; font-size: 14px;">READY</div>
-        <div class="stats-row">
+        <div id="phase-display" class="phase-name">LOADING...</div>
+        <div class="stats">
             <div>デッキ:<span id="deck-count">0</span></div>
-            <div>ドロップ:<span id="drop-count">0</span></div>
             <div>セット:<span id="set-count">0</span></div>
+            <div>ドロップ:<span id="drop-count">0</span></div>
         </div>
     </div>
 
     <div class="court">
+        <div class="area-slot"><span class="area-label">SERVE</span><div class="card-stack" id="serve-stack"></div></div>
         <div class="area-slot"><span class="area-label">RECEIVE</span><div class="card-stack" id="receive-stack"></div></div>
-        <div class="area-slot"><span class="area-label">TOSS/ATTACK</span><div class="card-stack" id="attack-stack"></div></div>
-        <div class="area-slot" style="grid-column: span 2;">
-            <span class="area-label">BLOCK AREA</span>
-            <div class="block-grid">
+        <div class="area-slot"><span class="area-label">TOSS</span><div class="card-stack" id="toss-stack"></div></div>
+        <div class="area-slot" style="grid-column: span 3; height: 110px;">
+            <span class="area-label">BLOCK / ATTACK</span>
+            <div style="display: flex; gap: 10px;">
                 <div class="card-stack" id="block-side-L"></div>
                 <div class="card-stack" id="block-center"></div>
                 <div class="card-stack" id="block-side-R"></div>
+                <div style="width: 2px; background: rgba(255,255,255,0.2);"></div>
+                <div class="card-stack" id="attack-stack"></div>
             </div>
         </div>
     </div>
 
     <div class="player-ui">
         <div class="hand-container" id="hand-display"></div>
-        
-        <div class="controls" id="ui-controls">
-            </div>
+        <div class="controls" id="ui-controls"></div>
     </div>
 </div>
 
 <div id="modal">
-    <h3 id="modal-title" style="margin-bottom: 20px;">出し先を選択</h3>
+    <h3 id="modal-title" style="margin-bottom: 20px;">登場エリアを選択</h3>
     <div id="modal-content"></div>
 </div>
 
 <script>
     let gameState = {
         deck: [], hand: [], setArea: [], dropArea: [],
-        areas: { 
-            receive: [], attack: [], 
-            blockCenter: [], blockSideL: [], blockSideR: [] 
-        },
-        phase: "WAITING", // WAITING, MULLIGAN, START, RECEIVE_PHASE, PLAY
-        selectedIndices: []
+        areas: { serve: [], receive: [], toss: [], attack: [], blockCenter: [], blockSideL: [], blockSideR: [] },
+        phase: "WAITING"
+    };
+
+    const PHASE_TEXT = {
+        WAITING: "ゲーム開始前", MULLIGAN: "マリガン(引き直し)",
+        SERVE_PHASE: "サーブフェイズ", START_PHASE: "スタートフェイズ",
+        RECEIVE_PHASE: "レシーブフェイズ", TOSS_PHASE: "トスフェイズ",
+        ATTACK_PHASE: "アタックフェイズ", BLOCK_PHASE: "ブロックフェイズ",
+        END_PHASE: "エンドフェイズ"
     };
 
     function initGame() {
         gameState.deck = Array.from({length:40}, (_, i) => `選手${i+1}`).sort(()=>Math.random()-0.5);
         gameState.hand = []; gameState.setArea = []; gameState.dropArea = [];
         Object.keys(gameState.areas).forEach(k => gameState.areas[k] = []);
-        
-        // 初手6枚 + セット2枚
-        for(let i=0; i<6; i++) gameState.hand.push(gameState.deck.pop());
-        gameState.setArea.push(gameState.deck.pop());
-        gameState.setArea.push(gameState.deck.pop());
-        
-        gameState.phase = "MULLIGAN";
+        for(let i=0; i<6; i++) draw();
+        for(let i=0; i<2; i++) gameState.setArea.push(gameState.deck.pop());
+        gameState.phase = "SERVE_PHASE"; // 最初はサーブから
         render();
     }
 
-    function drawCard() {
-        if (gameState.deck.length > 0) {
-            gameState.hand.push(gameState.deck.pop());
-            return true;
-        }
-        alert("デッキ切れ！敗北です。");
-        location.reload();
-        return false;
+    function draw() {
+        if (gameState.deck.length > 0) return gameState.hand.push(gameState.deck.pop());
+        alert("デッキ切れ敗北！"); location.reload();
     }
 
-    function handleMulligan() {
-        let kept = [];
-        gameState.hand.forEach((card, i) => {
-            if (gameState.selectedIndices.includes(i)) gameState.deck.push(card);
-            else kept.push(card);
+    // フェイズ進行関数
+    function nextPhase(p) {
+        gameState.phase = p;
+        if(p === "RECEIVE_PHASE") draw(); // ドローフェイズ自動化
+        render();
+    }
+
+    function executeEndPhase() {
+        // 全エリアの「キャラ」を「ガッツ」にする
+        ['serve', 'receive', 'toss', 'attack'].forEach(a => {
+            if(gameState.areas[a].length > 0) gameState.areas[a].push(gameState.areas[a].shift());
         });
-        gameState.deck.sort(() => Math.random() - 0.5);
-        gameState.hand = kept;
-        while(gameState.hand.length < 6) drawCard();
-        gameState.selectedIndices = [];
-        gameState.phase = "START";
-        render();
-    }
-
-    function startReceivePhase() {
-        if(drawCard()) {
-            gameState.phase = "RECEIVE_PHASE";
-            render();
-        }
-    }
-
-    function finishAttack() {
-        ['receive', 'attack'].forEach(a => {
-            if(gameState.areas[a].length > 0) {
-                const char = gameState.areas[a].shift();
-                gameState.areas[a].push(char); // キャラをガッツへ
-            }
-        });
-        gameState.phase = "START"; // 次のターンへ
-        render();
+        // ブロック成功時の残務（センターのみガッツ化）
+        if(gameState.areas.blockCenter.length > 0) gameState.areas.blockCenter.push(gameState.areas.blockCenter.shift());
+        
+        nextPhase("START_PHASE");
     }
 
     function finishBlock() {
+        // サイド破棄
         ['blockSideL', 'blockSideR'].forEach(a => {
             if(gameState.areas[a].length > 0) gameState.dropArea.push(gameState.areas[a].shift());
         });
-        if(gameState.areas.blockCenter.length > 0) {
-            const center = gameState.areas.blockCenter.shift();
-            gameState.areas.blockCenter.push(center); // センターはガッツ化
-        }
-        render();
+        nextPhase("END_PHASE");
     }
 
     function declareLost() {
-        if(gameState.setArea.length === 0) {
-            alert("セットエリアがありません！敗北！");
-            location.reload();
-            return;
-        }
+        if(gameState.setArea.length === 0) return alert("セットなし敗北！");
         gameState.hand.push(gameState.setArea.pop());
-        while(gameState.hand.length < 6) drawCard();
-        
-        // 全エリアをドロップへ
+        while(gameState.hand.length < 6) draw();
         Object.keys(gameState.areas).forEach(a => {
             while(gameState.areas[a].length > 0) gameState.dropArea.push(gameState.areas[a].shift());
         });
-        gameState.phase = "START";
-        render();
+        nextPhase("SERVE_PHASE");
     }
 
     function openSelection(index) {
-        if(gameState.phase === "START") return alert("レシーブを選択してください");
         const modal = document.getElementById('modal');
         const content = document.getElementById('modal-content');
         modal.style.display = 'flex';
         content.innerHTML = '';
         
-        const locs = [
-            {n:'RECEIVE', k:'receive'}, {n:'ATTACK', k:'attack'},
+        // フェイズに応じた出し先制限
+        let valid = [];
+        const p = gameState.phase;
+        if(p === "SERVE_PHASE") valid = [{n:'SERVE', k:'serve'}];
+        if(p === "RECEIVE_PHASE") valid = [{n:'RECEIVE', k:'receive'}];
+        if(p === "TOSS_PHASE") valid = [{n:'TOSS', k:'toss'}];
+        if(p === "ATTACK_PHASE") valid = [{n:'ATTACK', k:'attack'}];
+        if(p === "BLOCK_PHASE") valid = [
             {n:'B-CENTER', k:'blockCenter'}, {n:'B-SIDE(L)', k:'blockSideL'}, {n:'B-SIDE(R)', k:'blockSideR'}
         ];
 
-        locs.forEach(l => {
+        valid.forEach(l => {
             const b = document.createElement('button');
             b.innerText = l.n; b.style.background = "#34495e";
             b.onclick = () => {
-                gameState.areas[l.k].unshift(gameState.hand.splice(index, 1)[0]);
+                const charName = gameState.hand[index];
+                // 同名カード制限（トス・アタック・ブロック）
+                const currentCards = [...gameState.areas.receive, ...gameState.areas.toss, ...gameState.areas.attack, ...gameState.areas.blockCenter, ...gameState.areas.blockSideL, ...gameState.areas.blockSideR];
+                if(currentCards.includes(charName)) {
+                    alert("同じ名前のキャラは同時に登場できません！");
+                } else {
+                    gameState.areas[l.k].unshift(gameState.hand.splice(index, 1)[0]);
+                }
                 modal.style.display = 'none';
                 render();
             };
@@ -241,31 +218,21 @@
     }
 
     function render() {
-        // ステータス更新
+        document.getElementById('phase-display').innerText = PHASE_TEXT[gameState.phase];
         document.getElementById('deck-count').innerText = gameState.deck.length;
-        document.getElementById('drop-count').innerText = gameState.dropArea.length;
         document.getElementById('set-count').innerText = gameState.setArea.length;
-        document.getElementById('phase-display').innerText = gameState.phase;
+        document.getElementById('drop-count').innerText = gameState.dropArea.length;
 
-        // 手札表示
         const handEl = document.getElementById('hand-display');
         handEl.innerHTML = '';
-        gameState.hand.forEach((name, i) => {
+        gameState.hand.forEach((n, i) => {
             const c = document.createElement('div');
-            c.className = 'card' + (gameState.selectedIndices.includes(i) ? ' selected' : '');
-            c.style.position = 'relative'; c.innerText = name;
-            c.onclick = () => {
-                if(gameState.phase === "MULLIGAN") {
-                    if(gameState.selectedIndices.includes(i)) gameState.selectedIndices = gameState.selectedIndices.filter(x=>x!==i);
-                    else gameState.selectedIndices.push(i);
-                    render();
-                } else openSelection(i);
-            };
+            c.className = 'card'; c.innerText = n;
+            c.onclick = () => openSelection(i);
             handEl.appendChild(c);
         });
 
-        // コート表示
-        const renderStk = (id, arr) => {
+        const rStk = (id, arr) => {
             const el = document.getElementById(id); el.innerHTML = '';
             arr.forEach((n, i) => {
                 const c = document.createElement('div');
@@ -274,27 +241,39 @@
                 el.appendChild(c);
             });
         };
-        renderStk('receive-stack', gameState.areas.receive);
-        renderStk('attack-stack', gameState.areas.attack);
-        renderStk('block-center', gameState.areas.blockCenter);
-        renderStk('block-side-L', gameState.areas.blockSideL);
-        renderStk('block-side-R', gameState.areas.blockSideR);
+        Object.keys(gameState.areas).forEach(k => rStk(k + '-stack', gameState.areas[k]));
+        // 特殊ID用
+        rStk('block-center', gameState.areas.blockCenter);
+        rStk('block-side-L', gameState.areas.blockSideL);
+        rStk('block-side-R', gameState.areas.blockSideR);
 
-        // UIボタン切り替え
         const ctrl = document.getElementById('ui-controls');
         ctrl.innerHTML = '';
-        if(gameState.phase === "WAITING") {
-            ctrl.innerHTML = '<button class="btn-receive" onclick="initGame()">ゲーム開始</button>';
-        } else if(gameState.phase === "MULLIGAN") {
-            ctrl.innerHTML = '<button class="btn-receive" onclick="handleMulligan()">選択したカードを引き直す</button>';
-        } else if(gameState.phase === "START") {
-            ctrl.innerHTML = '<button class="btn-receive" onclick="startReceivePhase()">レシーブを選択 (1枚ドロー)</button>';
-        } else {
+        const p = gameState.phase;
+
+        if(p === "WAITING") {
+            ctrl.innerHTML = '<button class="btn-full btn-start" onclick="initGame()">ゲーム開始</button>';
+        } else if(p === "SERVE_PHASE") {
+            ctrl.innerHTML = '<button class="btn-full btn-end" onclick="nextPhase(\'END_PHASE\')">サーブ完了 → エンドへ</button>';
+        } else if(p === "START_PHASE") {
             ctrl.innerHTML = `
-                <button class="btn-atk-done" onclick="finishAttack()">アタック完了</button>
-                <button class="btn-blk-done" onclick="finishBlock()">ブロック成功</button>
-                <button class="btn-lost" onclick="declareLost()">ロスト宣言</button>
+                <button class="btn-choice" onclick="nextPhase('RECEIVE_PHASE')">レシーブを選択</button>
+                <button class="btn-choice" onclick="nextPhase('BLOCK_PHASE')">ブロックを選択</button>
             `;
+        } else if(p === "RECEIVE_PHASE") {
+            ctrl.innerHTML = '<button class="btn-full btn-end" onclick="nextPhase(\'TOSS_PHASE\')">トスフェイズへ</button>';
+        } else if(p === "TOSS_PHASE") {
+            ctrl.innerHTML = '<button class="btn-full btn-end" onclick="nextPhase(\'ATTACK_PHASE\')">アタックフェイズへ</button>';
+        } else if(p === "ATTACK_PHASE") {
+            ctrl.innerHTML = '<button class="btn-full btn-end" onclick="nextPhase(\'END_PHASE\')">アタック完了 → エンドへ</button>';
+        } else if(p === "BLOCK_PHASE") {
+            ctrl.innerHTML = '<button class="btn-full btn-end" onclick="finishBlock()">ブロック成功！(サイド破棄)</button>';
+        } else if(p === "END_PHASE") {
+            ctrl.innerHTML = '<button class="btn-full btn-start" onclick="executeEndPhase()">ボールを打ち込む(次ターンへ)</button>';
+        }
+        
+        if(p !== "WAITING") {
+            ctrl.innerHTML += '<button class="btn-lost" onclick="declareLost()">ロスト(失点)宣言</button>';
         }
     }
 
