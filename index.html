@@ -3,295 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>バボカBREAK Web - Dev</title>
+    <title>バボカBREAK Web - Definitive Edition</title>
     <style>
         :root {
             --court-color: #f39c12;
-            --card-width: 70px;
-            --card-height: 100px;
-            --accent-color: #e74c3c;
+            --card-width: 65px;
+            --card-height: 95px;
         }
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: #2c3e50;
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            overflow: hidden;
-            color: white;
-            user-select: none;
+            overflow: hidden; color: white; user-select: none;
         }
-        #game-screen {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            width: 100vw;
-        }
+        #game-screen { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
 
-        /* 相手エリア */
-        .opponent-side {
-            height: 15%;
-            background: rgba(0,0,0,0.3);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 14px;
-            border-bottom: 2px dashed rgba(255,255,255,0.5);
+        /* ヘッダー情報 */
+        .status-bar {
+            height: 10%; background: rgba(0,0,0,0.6);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-size: 11px; border-bottom: 2px solid #ecf0f1;
         }
+        .stats-row { display: flex; gap: 15px; margin-top: 4px; }
 
         /* メインコート */
         .court {
-            flex: 1;
-            background-color: var(--court-color);
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-            gap: 10px;
-            padding: 10px;
-            position: relative;
+            flex: 1; background-color: var(--court-color);
+            display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1.2fr 1fr;
+            gap: 8px; padding: 10px;
         }
-
-        /* 各エリアの枠 */
         .area-slot {
-            border: 2px solid rgba(255,255,255,0.6);
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            padding-top: 5px;
-            position: relative;
-            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.5); border-radius: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+            background: rgba(255,255,255,0.1); position: relative; padding-top: 20px;
         }
-        .area-label {
-            font-size: 10px;
-            background: rgba(0,0,0,0.5);
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-bottom: 5px;
-            pointer-events: none;
-        }
+        .area-label { font-size: 9px; position: absolute; top: 2px; background: #000; padding: 1px 4px; z-index: 50; }
 
-        /* カードスタックの見た目 */
-        .card-stack {
-            position: relative;
-            width: var(--card-width);
-            height: var(--card-height);
-        }
+        .block-grid { display: flex; gap: 4px; justify-content: center; width: 100%; }
+
+        /* カード描画 */
+        .card-stack { position: relative; width: var(--card-width); height: var(--card-height); }
         .card {
-            width: var(--card-width);
-            height: var(--card-height);
-            background: #fff;
-            color: #333;
-            border-radius: 6px;
-            position: absolute;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: var(--card-width); height: var(--card-height);
+            background: #fff; color: #333; border-radius: 5px;
+            position: absolute; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: bold; border: 1px solid #999;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center; padding: 2px; box-sizing: border-box;
         }
+        .card.top { z-index: 10; border: 2px solid #2980b9; }
+        .card.guts { transform: translateY(10px); filter: brightness(0.7); z-index: 5 !important; }
+        .card.selected { border: 3px solid #e74c3c; transform: translateY(-15px); z-index: 100; }
 
-        /* ガッツの重なり演出 */
-        .card.guts { transform: translateY(10px); filter: brightness(0.85); z-index: 10; }
-        .card.guts-deep { transform: translateY(20px); filter: brightness(0.7); z-index: 5; }
-        .card.top { z-index: 20; border: 2px solid #2980b9; }
+        /* 下部UI */
+        .player-ui { height: 38%; background: #34495e; display: flex; flex-direction: column; padding: 5px; }
+        .hand-container { flex: 1; display: flex; overflow-x: auto; gap: 8px; align-items: center; padding: 5px; }
+        
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 5px; }
+        
+        button {
+            padding: 10px; border-radius: 8px; border: none;
+            font-weight: bold; color: white; font-size: 11px;
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+        button:active { transform: translateY(2px); box-shadow: none; }
 
-        /* 自分側の操作UI */
-        .player-ui {
-            height: 40%;
-            background: #34495e;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
-        }
-        .hand-container {
-            flex: 1;
-            display: flex;
-            overflow-x: auto;
-            gap: 12px;
-            align-items: center;
-            padding: 0 10px;
-        }
-        .controls {
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-        }
-        .btn {
-            padding: 12px 24px;
-            border-radius: 25px;
-            border: none;
-            font-weight: bold;
-            color: white;
-            font-size: 14px;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
-        }
-        .btn-lost { background: #e74c3c; }
-        .btn-action { background: #2ecc71; }
+        .btn-receive { background: #9b59b6; grid-column: span 2; font-size: 14px; }
+        .btn-atk-done { background: #e67e22; }
+        .btn-blk-done { background: #3498db; }
+        .btn-lost { background: #e74c3c; grid-column: span 2; margin-top: 5px; }
 
-        /* モーダル（エリア選択） */
-        #selection-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
+        /* モーダル */
+        #modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000;
+            justify-content: center; align-items: center; flex-direction: column;
         }
-        .selection-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        .select-btn {
-            background: white;
-            color: black;
-            padding: 20px;
-            border-radius: 10px;
-            font-weight: bold;
-            text-align: center;
-        }
+        #modal-content { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 80%; }
     </style>
 </head>
 <body>
 
 <div id="game-screen">
-    <div class="opponent-side">
-        <div>相手 SET: 🎴🎴 DECK: 34</div>
+    <div class="status-bar">
+        <div id="phase-display" style="font-weight: bold; color: #f1c40f; font-size: 14px;">READY</div>
+        <div class="stats-row">
+            <div>デッキ:<span id="deck-count">0</span></div>
+            <div>ドロップ:<span id="drop-count">0</span></div>
+            <div>セット:<span id="set-count">0</span></div>
+        </div>
     </div>
 
     <div class="court">
-        <div class="area-slot">
-            <span class="area-label">RECEIVE</span>
-            <div class="card-stack" id="receive-stack"></div>
-        </div>
-        <div class="area-slot">
-            <span class="area-label">TOSS</span>
-            <div class="card-stack" id="toss-stack"></div>
-        </div>
-        <div class="area-slot">
-            <span class="area-label">ATTACK</span>
-            <div class="card-stack" id="attack-stack"></div>
-        </div>
-        <div class="area-slot">
-            <span class="area-label">BLOCK</span>
-            <div class="card-stack" id="block-stack"></div>
+        <div class="area-slot"><span class="area-label">RECEIVE</span><div class="card-stack" id="receive-stack"></div></div>
+        <div class="area-slot"><span class="area-label">TOSS/ATTACK</span><div class="card-stack" id="attack-stack"></div></div>
+        <div class="area-slot" style="grid-column: span 2;">
+            <span class="area-label">BLOCK AREA</span>
+            <div class="block-grid">
+                <div class="card-stack" id="block-side-L"></div>
+                <div class="card-stack" id="block-center"></div>
+                <div class="card-stack" id="block-side-R"></div>
+            </div>
         </div>
     </div>
 
     <div class="player-ui">
         <div class="hand-container" id="hand-display"></div>
-        <div class="controls">
-            <button class="btn btn-lost" onclick="declareLost()">ロスト宣言</button>
-            <button class="btn btn-action">イベント使用</button>
-        </div>
+        
+        <div class="controls" id="ui-controls">
+            </div>
     </div>
 </div>
 
-<div id="selection-overlay">
-    <h3 id="select-card-name">どのエリアに出しますか？</h3>
-    <div class="selection-grid">
-        <div class="select-btn" onclick="selectArea('receive')">レシーブ</div>
-        <div class="select-btn" onclick="selectArea('toss')">トス</div>
-        <div class="select-btn" onclick="selectArea('attack')">アタック</div>
-        <div class="select-btn" onclick="selectArea('block')">ブロック</div>
-    </div>
-    <p style="margin-top: 20px;" onclick="cancelSelection()">[キャンセル]</p>
+<div id="modal">
+    <h3 id="modal-title" style="margin-bottom: 20px;">出し先を選択</h3>
+    <div id="modal-content"></div>
 </div>
 
 <script>
-    // --- データ管理 ---
-    const gameState = {
-        hand: ["日向", "影山", "月島", "田中", "西谷", "及川"],
-        areas: {
-            receive: [],
-            toss: [],
-            attack: [],
-            block: []
+    let gameState = {
+        deck: [], hand: [], setArea: [], dropArea: [],
+        areas: { 
+            receive: [], attack: [], 
+            blockCenter: [], blockSideL: [], blockSideR: [] 
         },
-        pendingCardIndex: null
+        phase: "WAITING", // WAITING, MULLIGAN, START, RECEIVE_PHASE, PLAY
+        selectedIndices: []
     };
 
-    // --- メインロジック ---
+    function initGame() {
+        gameState.deck = Array.from({length:40}, (_, i) => `選手${i+1}`).sort(()=>Math.random()-0.5);
+        gameState.hand = []; gameState.setArea = []; gameState.dropArea = [];
+        Object.keys(gameState.areas).forEach(k => gameState.areas[k] = []);
+        
+        // 初手6枚 + セット2枚
+        for(let i=0; i<6; i++) gameState.hand.push(gameState.deck.pop());
+        gameState.setArea.push(gameState.deck.pop());
+        gameState.setArea.push(gameState.deck.pop());
+        
+        gameState.phase = "MULLIGAN";
+        render();
+    }
 
-    // 画面更新
-    function render() {
-        // 手札表示
-        const handEl = document.getElementById('hand-display');
-        handEl.innerHTML = '';
-        gameState.hand.forEach((name, i) => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.style.position = 'relative';
-            card.innerText = name;
-            card.onclick = () => openSelection(i);
-            handEl.appendChild(card);
+    function drawCard() {
+        if (gameState.deck.length > 0) {
+            gameState.hand.push(gameState.deck.pop());
+            return true;
+        }
+        alert("デッキ切れ！敗北です。");
+        location.reload();
+        return false;
+    }
+
+    function handleMulligan() {
+        let kept = [];
+        gameState.hand.forEach((card, i) => {
+            if (gameState.selectedIndices.includes(i)) gameState.deck.push(card);
+            else kept.push(card);
         });
-
-        // 各エリアのスタック表示
-        renderStack('receive-stack', gameState.areas.receive);
-        renderStack('toss-stack', gameState.areas.toss);
-        renderStack('attack-stack', gameState.areas.attack);
-        renderStack('block-stack', gameState.areas.block);
+        gameState.deck.sort(() => Math.random() - 0.5);
+        gameState.hand = kept;
+        while(gameState.hand.length < 6) drawCard();
+        gameState.selectedIndices = [];
+        gameState.phase = "START";
+        render();
     }
 
-    function renderStack(id, cards) {
-        const el = document.getElementById(id);
-        el.innerHTML = '';
-        cards.forEach((name, i) => {
-            const card = document.createElement('div');
-            // 0番目が一番上
-            if (i === 0) card.className = 'card top';
-            else if (i === 1) card.className = 'card guts';
-            else card.className = 'card guts-deep';
-            
-            card.style.zIndex = 100 - i;
-            card.innerText = name;
-            el.appendChild(card);
+    function startReceivePhase() {
+        if(drawCard()) {
+            gameState.phase = "RECEIVE_PHASE";
+            render();
+        }
+    }
+
+    function finishAttack() {
+        ['receive', 'attack'].forEach(a => {
+            if(gameState.areas[a].length > 0) {
+                const char = gameState.areas[a].shift();
+                gameState.areas[a].push(char); // キャラをガッツへ
+            }
         });
+        gameState.phase = "START"; // 次のターンへ
+        render();
     }
 
-    // エリア選択モーダル
-    function openSelection(index) {
-        gameState.pendingCardIndex = index;
-        document.getElementById('select-card-name').innerText = `${gameState.hand[index]} をどこに出す？`;
-        document.getElementById('selection-overlay').style.display = 'flex';
-    }
-
-    function cancelSelection() {
-        document.getElementById('selection-overlay').style.display = 'none';
-    }
-
-    function selectArea(areaKey) {
-        if (gameState.pendingCardIndex === null) return;
-        
-        // 手札から抜いてエリアの先頭へ
-        const name = gameState.hand.splice(gameState.pendingCardIndex, 1)[0];
-        gameState.areas[areaKey].unshift(name);
-        
-        gameState.pendingCardIndex = null;
-        document.getElementById('selection-overlay').style.display = 'none';
-        
-        if (window.navigator.vibrate) window.navigator.vibrate(40);
+    function finishBlock() {
+        ['blockSideL', 'blockSideR'].forEach(a => {
+            if(gameState.areas[a].length > 0) gameState.dropArea.push(gameState.areas[a].shift());
+        });
+        if(gameState.areas.blockCenter.length > 0) {
+            const center = gameState.areas.blockCenter.shift();
+            gameState.areas.blockCenter.push(center); // センターはガッツ化
+        }
         render();
     }
 
     function declareLost() {
-        alert("ロスト！インターバルに移行します。");
-        // ここにガッツ補充やセット回収のロジックを今後追加します
+        if(gameState.setArea.length === 0) {
+            alert("セットエリアがありません！敗北！");
+            location.reload();
+            return;
+        }
+        gameState.hand.push(gameState.setArea.pop());
+        while(gameState.hand.length < 6) drawCard();
+        
+        // 全エリアをドロップへ
+        Object.keys(gameState.areas).forEach(a => {
+            while(gameState.areas[a].length > 0) gameState.dropArea.push(gameState.areas[a].shift());
+        });
+        gameState.phase = "START";
+        render();
     }
 
-    // 初回実行
+    function openSelection(index) {
+        if(gameState.phase === "START") return alert("レシーブを選択してください");
+        const modal = document.getElementById('modal');
+        const content = document.getElementById('modal-content');
+        modal.style.display = 'flex';
+        content.innerHTML = '';
+        
+        const locs = [
+            {n:'RECEIVE', k:'receive'}, {n:'ATTACK', k:'attack'},
+            {n:'B-CENTER', k:'blockCenter'}, {n:'B-SIDE(L)', k:'blockSideL'}, {n:'B-SIDE(R)', k:'blockSideR'}
+        ];
+
+        locs.forEach(l => {
+            const b = document.createElement('button');
+            b.innerText = l.n; b.style.background = "#34495e";
+            b.onclick = () => {
+                gameState.areas[l.k].unshift(gameState.hand.splice(index, 1)[0]);
+                modal.style.display = 'none';
+                render();
+            };
+            content.appendChild(b);
+        });
+    }
+
+    function render() {
+        // ステータス更新
+        document.getElementById('deck-count').innerText = gameState.deck.length;
+        document.getElementById('drop-count').innerText = gameState.dropArea.length;
+        document.getElementById('set-count').innerText = gameState.setArea.length;
+        document.getElementById('phase-display').innerText = gameState.phase;
+
+        // 手札表示
+        const handEl = document.getElementById('hand-display');
+        handEl.innerHTML = '';
+        gameState.hand.forEach((name, i) => {
+            const c = document.createElement('div');
+            c.className = 'card' + (gameState.selectedIndices.includes(i) ? ' selected' : '');
+            c.style.position = 'relative'; c.innerText = name;
+            c.onclick = () => {
+                if(gameState.phase === "MULLIGAN") {
+                    if(gameState.selectedIndices.includes(i)) gameState.selectedIndices = gameState.selectedIndices.filter(x=>x!==i);
+                    else gameState.selectedIndices.push(i);
+                    render();
+                } else openSelection(i);
+            };
+            handEl.appendChild(c);
+        });
+
+        // コート表示
+        const renderStk = (id, arr) => {
+            const el = document.getElementById(id); el.innerHTML = '';
+            arr.forEach((n, i) => {
+                const c = document.createElement('div');
+                c.className = 'card ' + (i===0 ? 'top' : 'guts');
+                c.style.zIndex = 100-i; c.innerText = n;
+                el.appendChild(c);
+            });
+        };
+        renderStk('receive-stack', gameState.areas.receive);
+        renderStk('attack-stack', gameState.areas.attack);
+        renderStk('block-center', gameState.areas.blockCenter);
+        renderStk('block-side-L', gameState.areas.blockSideL);
+        renderStk('block-side-R', gameState.areas.blockSideR);
+
+        // UIボタン切り替え
+        const ctrl = document.getElementById('ui-controls');
+        ctrl.innerHTML = '';
+        if(gameState.phase === "WAITING") {
+            ctrl.innerHTML = '<button class="btn-receive" onclick="initGame()">ゲーム開始</button>';
+        } else if(gameState.phase === "MULLIGAN") {
+            ctrl.innerHTML = '<button class="btn-receive" onclick="handleMulligan()">選択したカードを引き直す</button>';
+        } else if(gameState.phase === "START") {
+            ctrl.innerHTML = '<button class="btn-receive" onclick="startReceivePhase()">レシーブを選択 (1枚ドロー)</button>';
+        } else {
+            ctrl.innerHTML = `
+                <button class="btn-atk-done" onclick="finishAttack()">アタック完了</button>
+                <button class="btn-blk-done" onclick="finishBlock()">ブロック成功</button>
+                <button class="btn-lost" onclick="declareLost()">ロスト宣言</button>
+            `;
+        }
+    }
+
     render();
 </script>
-
 </body>
 </html>
